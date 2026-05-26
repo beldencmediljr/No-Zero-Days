@@ -1,0 +1,181 @@
+/* GLOBAL THEME */
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+body {
+  margin: 0;
+  background-color: #0b1120; /* Dark Navy Background */
+  color: #94a3b8;
+  font-family: 'Share Tech Mono', monospace; /* Tech Font */
+}
+
+.app-background {
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* 70/30 SPLIT LAYOUT */
+.app-container {
+  display: flex;
+  gap: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+  height: 90vh;
+}
+
+/* LEFT PANEL (THE ROOM) */
+.left-panel {
+  flex: 7; /* 70% width */
+  display: flex;
+  flex-direction: column;
+  background-color: #0f172a;
+  border: 2px solid #1e293b;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 15px 20px;
+  background-color: #1e293b;
+  border-bottom: 2px solid #334155;
+}
+
+.room-title {
+  margin: 0;
+  color: #facc15; /* Yellow Title */
+  font-size: 1.5rem;
+}
+
+.room-subtitle {
+  margin: 5px 0 0 0;
+  font-size: 0.9rem;
+}
+
+.room-content {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+  overflow: hidden;
+}
+
+.panel-footer {
+  padding: 15px 20px;
+  background-color: #1e293b;
+  border-top: 2px solid #334155;
+  color: #e2e8f0;
+}
+
+.intel-icon {
+  color: #facc15;
+}
+
+/* RIGHT PANEL (MISSION LOG) */
+.right-panel {
+  flex: 3; /* 30% width */
+  display: flex;
+  flex-direction: column;
+  background-color: #0f172a;
+  border: 2px solid #1e293b;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.mission-header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed #334155;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+.mission-header h3 {
+  margin: 0;
+  color: #60a5fa; /* Light Blue */
+}
+
+.timer {
+  color: #10b981; /* Green */
+}
+
+.tracker-steps {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.step-card {
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid #334155;
+}
+
+.active-step {
+  border-color: #facc15;
+  background-color: rgba(250, 204, 21, 0.05);
+}
+
+.locked-step {
+  opacity: 0.5;
+  background-color: #1e293b;
+}
+
+.step-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.step-title h4 {
+  margin: 0;
+  color: #facc15;
+}
+
+.badge {
+  background-color: #facc15;
+  color: #000;
+  padding: 2px 8px;
+  font-size: 0.8rem;
+  border-radius: 4px;
+}
+
+/* INPUTS & BUTTONS */
+.inputs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.tech-input {
+  background-color: #0b1120;
+  border: 1px solid #334155;
+  color: #fff;
+  padding: 10px;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.run-btn {
+  background-color: #334155;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  margin-top: 10px;
+  cursor: pointer;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.run-btn:hover {
+  background-color: #475569;
+}
+
+.escalate-btn {
+  background-color: transparent;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  padding: 15px;
+  cursor: pointer;
+  font-family: 'Share Tech Mono', monospace;
+}
