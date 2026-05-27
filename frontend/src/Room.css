@@ -1,40 +1,3 @@
-.room-container {
-  position: relative;
-  width: 100%;
-  max-width: 596px;
-  aspect-ratio: 596 / 476;
-  margin: 0 auto;
-  user-select: none;
-  overflow: hidden;
-}
-
-.background-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  image-rendering: pixelated;
-  /* Keeps your pixel art looking sharp, not blurry! */
-}
-
-/* Base styles for the clickable areas */
-.hotspot {
-  position: absolute;
-  background-color: transparent;
-  border: 1px dashed rgba(250, 204, 21, 0.45);
-  /* High-tech glowing border */
-  cursor: pointer;
-  z-index: 10;
-  border-radius: 4px;
-}
-
-.hotspot:hover {
-  background-color: rgba(250, 204, 21, 0.12);
-  border-color: #facc15;
-  box-shadow: 0 0 10px rgba(250, 204, 21, 0.35);
-}
-
 /* --- HOTSPOT POSITIONS --- */
 
 .desk-hotspot {
@@ -124,4 +87,47 @@
   left: 50%;
   width: 15%;
   height: 26%;
+}
+
+/* --- PHASE 4 BREAKROOM POSITIONS --- */
+.phase4-room {
+  /* Natural image ratio 2528×1684 — at max-width 714px, height = 476px (same as Phase 1) */
+  aspect-ratio: 2528 / 1684;
+  max-width: 714px;
+}
+
+
+.phase4-room .corkboard-hotspot {
+  top: 8%;
+  left: 42%;
+  width: 18.5%;
+  height: 15%;
+}
+
+.phase4-room .timesheet-hotspot {
+  top: 13.5%;
+  left: 90%;
+  width: 8%;
+  height: 10%;
+}
+
+.phase4-room .poster-hotspot {
+  top: 10%;
+  left: 61.5%;
+  width: 8%;
+  height: 15%;
+}
+
+.phase4-room .door-hotspot {
+  top: 10%;
+  left: 4%;
+  width: 10%;
+  height: 26%;
+}
+
+.phase4-room .handbook-hotspot {
+  top: 31.5%;
+  left: 32%;
+  width: 3.5%;
+  height: 6%;
 }

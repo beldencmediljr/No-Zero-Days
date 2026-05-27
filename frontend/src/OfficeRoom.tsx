@@ -5,6 +5,7 @@ import overtimeImage from './assets/phase3-overtime.png';
 import breakroomImage from './assets/phase4-breakroom.png';
 import pclabImage from './assets/phase5-6-pclab.png';
 import boardroomImage from './assets/phase7-boardroom.png';
+import './room-base.css';
 import './Room.css';
 
 interface OfficeRoomProps {

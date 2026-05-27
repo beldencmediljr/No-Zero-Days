@@ -5,13 +5,14 @@ import overtimeImage from './assets/phase3-overtime.png';
 import breakroomImage from './assets/phase4-breakroom.png';
 import pclabImage from './assets/phase5-6-pclab.png';
 import boardroomImage from './assets/phase7-boardroom.png';
+import './room-base.css';
 import './Room.css';
 
 export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
 
   if (activePhaseIndex === 4) {
     return (
-      <div className="room-container">
+      <div className="room-container phase4-room">
         <img src={breakroomImage} alt="Employee Notice Board & Breakroom" className="background-image" />
 
         {/* Phase 4 hotspots */}
@@ -19,66 +20,26 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
           className="hotspot corkboard-hotspot"
           title="📌 Corkboard Memos"
           onClick={() => setActivePopup('MEMOS')}
-          style={{
-            position: 'absolute',
-            top: '15%',
-            left: '12%',
-            width: '24%',
-            height: '32%',
-            cursor: 'pointer',
-          }}
         ></button>
         <button
           className="hotspot timesheet-hotspot"
           title="📟 Timesheet Terminal"
           onClick={() => setActivePopup('TIMESHEET_TERMINAL')}
-          style={{
-            position: 'absolute',
-            top: '40%',
-            left: '52%',
-            width: '16%',
-            height: '24%',
-            cursor: 'pointer',
-          }}
         ></button>
         <button
           className="hotspot poster-hotspot"
           title="📋 DOLE Holiday Poster"
           onClick={() => setActivePopup('DOLE_HOLIDAY')}
-          style={{
-            position: 'absolute',
-            top: '15%',
-            left: '40%',
-            width: '18%',
-            height: '32%',
-            cursor: 'pointer',
-          }}
         ></button>
         <button
           className="hotspot door-hotspot"
           title="🚪 Breakroom Exit Door"
           onClick={() => setActivePopup('DOOR')}
-          style={{
-            position: 'absolute',
-            top: '10%',
-            left: '38%',
-            width: '12%',
-            height: '35%',
-            cursor: 'pointer',
-          }}
         ></button>
         <button
           className="hotspot handbook-hotspot"
           title="📘 Company Payroll Manual"
           onClick={() => setActivePopup('HANDBOOK')}
-          style={{
-            position: 'absolute',
-            top: '55%',
-            left: '3%',
-            width: '9%',
-            height: '10%',
-            cursor: 'pointer',
-          }}
         ></button>
       </div>
     );
@@ -116,7 +77,7 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
 
   if (activePhaseIndex === 5 || activePhaseIndex === 6) {
     return (
-      <div className="room-container">
+      <div className="room-container phase5-6-room">
         <img src={pclabImage} alt="PC Lab / Bureaucracy Department" className="background-image" />
         {/* Hotspot 1: Notice Board Corkboard Memos */}
         <button
@@ -187,7 +148,7 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
 
   if (activePhaseIndex === 7) {
     return (
-      <div className="room-container">
+      <div className="room-container phase7-room">
         <img src={boardroomImage} alt="Executive Boardroom" className="background-image" />
         {/* Hotspot 1: Executive Audit Folder */}
         <button
@@ -226,7 +187,7 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
 
   if (activePhaseIndex === 2) {
     return (
-      <div className="room-container">
+      <div className="room-container phase2-room">
         <img src={securityImage} alt="Security Control Point" className="background-image" />
 
         {/* Phase 2 hotspots */}
@@ -240,7 +201,7 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
 
   // Fallback / Phase 1
   return (
-    <div className="room-container">
+    <div className="room-container phase1-room">
       <img src={lobbyImage} alt="Morning Lobby" className="background-image" />
 
       {/* The 5 Invisible Hotspots trigger Popups! */}
