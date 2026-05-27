@@ -2,6 +2,7 @@ import React from 'react';
 import lobbyImage from './assets/phase1-lobby.png';
 import factoryImage from './assets/phase2-biometrics.png';
 import overtimeImage from './assets/phase3-overtime.png';
+import breakroomImage from './assets/phase4-breakroom.png';
 import './Room.css';
 
 interface OfficeRoomProps {
@@ -14,6 +15,106 @@ interface OfficeRoomProps {
  * Factory Floor / Biometrics (Phase 2), and Factory Floor / Overtime Premiums (Phase 3).
  */
 export default function OfficeRoom({ activePhaseIndex, setActivePopup }: OfficeRoomProps) {
+
+  if (activePhaseIndex === 4) {
+    return (
+      <div className="room-container factory-floor" style={{ position: 'relative' }}>
+        <img 
+          src={breakroomImage} 
+          alt="Employee Notice Board & Breakroom" 
+          className="background-image pixelated"
+          style={{ imageRendering: 'pixelated', width: '100%' }}
+        />
+
+        {/* --- Phase 4: Breakroom & Notice Board Hotspots --- */}
+        
+        {/* Hotspot 1: Notice Board Corkboard Memos */}
+        <button 
+          className="hotspot corkboard-hotspot" 
+          title="📌 Corkboard Memos" 
+          onClick={() => setActivePopup('MEMOS')}
+          style={{
+            position: 'absolute',
+            top: '15%',
+            left: '12%',
+            width: '24%',
+            height: '32%',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            border: '1px dashed rgba(96, 165, 250, 0.4)'
+          }}
+        />
+
+        {/* Hotspot 2: Timesheet Terminal */}
+        <button 
+          className="hotspot timesheet-hotspot" 
+          title="📟 Timesheet Terminal" 
+          onClick={() => setActivePopup('TIMESHEET_TERMINAL')}
+          style={{
+            position: 'absolute',
+            top: '40%',
+            left: '52%',
+            width: '16%',
+            height: '24%',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            border: '1px dashed rgba(96, 165, 250, 0.4)'
+          }}
+        />
+
+        {/* Hotspot 3: DOLE Holiday Policy Poster */}
+        <button 
+          className="hotspot poster-hotspot" 
+          title="📋 DOLE Holiday Poster" 
+          onClick={() => setActivePopup('DOLE_HOLIDAY')}
+          style={{
+            position: 'absolute',
+            top: '15%',
+            left: '70%',
+            width: '18%',
+            height: '32%',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            border: '1px dashed rgba(251, 191, 36, 0.4)'
+          }}
+        />
+
+        {/* Hotspot 4: Breakroom Exit Door */}
+        <button 
+          className="hotspot door-hotspot" 
+          title="🚪 Breakroom Exit Door" 
+          onClick={() => setActivePopup('DOOR')}
+          style={{
+            position: 'absolute',
+            top: '10%',
+            left: '38%',
+            width: '12%',
+            height: '35%',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            border: '1px dashed rgba(239, 68, 68, 0.4)'
+          }}
+        />
+
+        {/* Hotspot 5: Company Payroll Policy Manual */}
+        <button 
+          className="hotspot handbook-hotspot" 
+          title="📘 Company Payroll Manual" 
+          onClick={() => setActivePopup('HANDBOOK')}
+          style={{
+            position: 'absolute',
+            top: '55%',
+            left: '3%',
+            width: '9%',
+            height: '10%',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            border: '1px dashed rgba(250, 204, 21, 0.4)'
+          }}
+        />
+      </div>
+    );
+  }
 
   if (activePhaseIndex === 3) {
     return (

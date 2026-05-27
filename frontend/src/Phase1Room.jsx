@@ -2,10 +2,86 @@ import React from 'react';
 import lobbyImage from './assets/phase1-lobby.png'; 
 import securityImage from './assets/phase2-biometrics.png'; 
 import overtimeImage from './assets/phase3-overtime.png';
+import breakroomImage from './assets/phase4-breakroom.png';
 import './Room.css'; 
 
 export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
   
+  if (activePhaseIndex === 4) {
+    return (
+      <div className="room-container">
+        <img src={breakroomImage} alt="Employee Notice Board & Breakroom" className="background-image" />
+
+        {/* Phase 4 hotspots */}
+        <button 
+          className="hotspot corkboard-hotspot" 
+          title="📌 Corkboard Memos" 
+          onClick={() => setActivePopup('MEMOS')}
+          style={{
+            position: 'absolute',
+            top: '15%',
+            left: '12%',
+            width: '24%',
+            height: '32%',
+            cursor: 'pointer',
+          }}
+        ></button>
+        <button 
+          className="hotspot timesheet-hotspot" 
+          title="📟 Timesheet Terminal" 
+          onClick={() => setActivePopup('TIMESHEET_TERMINAL')}
+          style={{
+            position: 'absolute',
+            top: '40%',
+            left: '52%',
+            width: '16%',
+            height: '24%',
+            cursor: 'pointer',
+          }}
+        ></button>
+        <button 
+          className="hotspot poster-hotspot" 
+          title="📋 DOLE Holiday Poster" 
+          onClick={() => setActivePopup('DOLE_HOLIDAY')}
+          style={{
+            position: 'absolute',
+            top: '15%',
+            left: '70%',
+            width: '18%',
+            height: '32%',
+            cursor: 'pointer',
+          }}
+        ></button>
+        <button 
+          className="hotspot door-hotspot" 
+          title="🚪 Breakroom Exit Door" 
+          onClick={() => setActivePopup('DOOR')}
+          style={{
+            position: 'absolute',
+            top: '10%',
+            left: '38%',
+            width: '12%',
+            height: '35%',
+            cursor: 'pointer',
+          }}
+        ></button>
+        <button 
+          className="hotspot handbook-hotspot" 
+          title="📘 Company Payroll Manual" 
+          onClick={() => setActivePopup('HANDBOOK')}
+          style={{
+            position: 'absolute',
+            top: '55%',
+            left: '3%',
+            width: '9%',
+            height: '10%',
+            cursor: 'pointer',
+          }}
+        ></button>
+      </div>
+    );
+  }
+
   if (activePhaseIndex === 3) {
     return (
       <div className="room-container">

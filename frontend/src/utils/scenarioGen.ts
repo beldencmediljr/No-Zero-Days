@@ -160,3 +160,86 @@ export function generatePhase3Scenario(): ScenarioData {
     unpaidLunchHours
   };
 }
+
+/**
+ * Generates a randomized scenario payload specifically suited for Module 2, Phase 2 (Regular Holiday Pay).
+ * Dictates that the employee worked on the Regular Holiday (June 12).
+ */
+export function generatePhase4Scenario(): ScenarioData {
+  const employees = ['Juan Dela Cruz', 'Maria Santos', 'Pedro Penduko', 'Anna Mangahas', 'Jose Rizal'];
+  const companies = ['Apex Industrial Works', 'TechGear Solutions Inc.', 'Starlight Garments Corp.', 'Cebu Logistics Ltd.'];
+  const rates = [500, 600, 750, 800, 900, 1000];
+  const shifts = [7, 8, 9, 10, 11, 12, 13, 14, 15];
+
+  const employeeName = employees[Math.floor(Math.random() * employees.length)];
+  const companyName = companies[Math.floor(Math.random() * companies.length)];
+  const dailyRate = rates[Math.floor(Math.random() * rates.length)];
+  const daysPresent = shifts[Math.floor(Math.random() * shifts.length)];
+  const hourlyRate = dailyRate / 8.0;
+
+  // Biometric logs show employee worked on regular holiday June 12
+  const biometricLogs: BiometricLog[] = [
+    {
+      day: 'MON (June 8)',
+      timeIn: '08:00 AM',
+      timeOut: '05:00 PM',
+      late: 0,
+      early: 0,
+      status: 'ON-TIME'
+    },
+    {
+      day: 'TUE (June 9)',
+      timeIn: '08:00 AM',
+      timeOut: '05:00 PM',
+      late: 0,
+      early: 0,
+      status: 'ON-TIME'
+    },
+    {
+      day: 'WED (June 10)',
+      timeIn: '08:00 AM',
+      timeOut: '05:00 PM',
+      late: 0,
+      early: 0,
+      status: 'ON-TIME'
+    },
+    {
+      day: 'THU (June 11)',
+      timeIn: '08:00 AM',
+      timeOut: '05:00 PM',
+      late: 0,
+      early: 0,
+      status: 'ON-TIME'
+    },
+    {
+      day: 'FRI (June 12)',
+      timeIn: '08:00 AM',
+      timeOut: '05:00 PM',
+      late: 0,
+      early: 0,
+      status: 'HOLIDAY' // Worked on Holiday!
+    }
+  ];
+
+  // Dummy calendar grid for Lobby compatibility
+  const calendarGrid: Record<number, 'P' | 'A'> = {};
+  const weekdaysList = [8, 9, 10, 11, 12, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26];
+  weekdaysList.forEach((day, index) => {
+    calendarGrid[day] = index < daysPresent ? 'P' : 'A';
+  });
+
+  return {
+    employeeName,
+    companyName,
+    dailyRate,
+    daysPresent,
+    riceSubsidy: 1200,
+    uniformAllowance: 1500,
+    hourlyRate,
+    lateMinutes: 0,
+    earlyClockInMinutes: 0,
+    calendarGrid,
+    biometricLogs
+  };
+}
+

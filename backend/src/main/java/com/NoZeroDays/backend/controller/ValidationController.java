@@ -132,8 +132,16 @@ public class ValidationController {
         for (AttemptLog log : attempts) {
             if (log.isSuccessful()) {
                 String step = log.getStep();
-                if (("M1_MATH".equalsIgnoreCase(module) && phase == 2) ? "SYNTHESIS".equalsIgnoreCase(step) : "EXECUTE".equalsIgnoreCase(step)) {
-                    return true;
+                boolean needsSynthesis = ("M1_MATH".equalsIgnoreCase(module) && phase == 2) ||
+                                         ("M2_MULTIPLIERS".equalsIgnoreCase(module) && (phase == 1 || phase == 2));
+                if (needsSynthesis) {
+                    if ("SYNTHESIS".equalsIgnoreCase(step)) {
+                        return true;
+                    }
+                } else {
+                    if ("EXECUTE".equalsIgnoreCase(step)) {
+                        return true;
+                    }
                 }
             }
         }

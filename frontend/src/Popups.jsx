@@ -21,6 +21,7 @@ export default function Popups({ activeHotspot, onClose, scenario, isPhaseComple
                 {activePhaseIndex === 1 && '🎬 NARRATIVE BRIEFING: MORNING LOBBY AUDIT'}
                 {activePhaseIndex === 2 && '🎬 NARRATIVE BRIEFING: BIOMETRICS AUDIT [PHASE 2]'}
                 {activePhaseIndex === 3 && '🎬 NARRATIVE BRIEFING: PRODUCTION OVERTIME AUDIT [PHASE 3]'}
+                {activePhaseIndex === 4 && '🎬 NARRATIVE BRIEFING: BREAKROOM HOLIDAY AUDIT [PHASE 4]'}
               </h4>
               <p>Assigned Auditor Case File // Cebu Institute of Technology - University</p>
             </div>
@@ -59,7 +60,7 @@ export default function Popups({ activeHotspot, onClose, scenario, isPhaseComple
                     <li>Filter out early clock-in noise to compute the exact **Tardiness Deduction**.</li>
                   </ul>
                 </>
-              ) : (
+              ) : activePhaseIndex === 3 ? (
                 <>
                   <p>
                     Auditor, you have been promoted to the **Production Line & Supervisor's Desk**.
@@ -74,6 +75,24 @@ export default function Popups({ activeHotspot, onClose, scenario, isPhaseComple
                      <li>Inspect the **Production Time Card** to extract the raw Overtime Hours and Hourly Rate.</li>
                      <li>Consult the **DOLE Overtime Policy Poster** to identify the standard Overtime Premium multiplier.</li>
                      <li>Ignore the **Unpaid Lunch break** noise to calculate the **Actual OT hours** and compute the correct **Overtime Premium Pay**.</li>
+                  </ul>
+                </>
+              ) : (
+                <>
+                  <p>
+                    Auditor, welcome to **The Factory Breakroom & Employee Notice Board**.
+                  </p>
+                  <p>
+                    Your task is to audit the **Regular Holiday Pay** for <strong>{scenario.employeeName}</strong>. June 12 is Independence Day, a Regular Holiday. The employee worked a full shift on this day.
+                  </p>
+                  <p style={{ color: '#facc15', fontWeight: 'bold', margin: '10px 0 5px 0' }}>
+                    Your Mission Objectives:
+                  </p>
+                  <ul style={{ paddingLeft: '20px', margin: '5px 0' }}>
+                     <li>Inspect the **Notice Board Corkboard** memos to identify the standard Regular Holiday vs decoy Special Holidays.</li>
+                     <li>Scan the **Timesheet Terminal** to verify the hours worked and extract the standard **Daily Rate**.</li>
+                     <li>Consult the **DOLE Holiday Policy Poster** to identify the correct multiplier and compute the **Holiday Pay**.</li>
+                     <li>Synthesize their new running **Total Earnings** by adding the Holiday Pay to their basic gross pay.</li>
                   </ul>
                 </>
               )}
@@ -326,6 +345,116 @@ export default function Popups({ activeHotspot, onClose, scenario, isPhaseComple
           </div>
         );
 
+      case 'DOLE_HOLIDAY':
+        return (
+          <div className="popup-content">
+            <div className="popup-header">
+              <h4>📋 DOLE Compliance - Holiday Pay Multipliers</h4>
+              <p>Philippine Labor Code Article 94</p>
+            </div>
+            
+            <div className="data-box authentic-data" style={{ fontSize: '0.85rem', lineHeight: '1.5' }}>
+              <p><strong>1. REGULAR HOLIDAY WORKED PREMIUM:</strong></p>
+              <div className="formula-box" style={{ margin: '8px 0', padding: '8px', background: '#0b1120', border: '1px solid #1e293b', textAlign: 'center', color: '#fbbf24', fontWeight: 'bold' }}>
+                Holiday Pay Rate = 200% (2.0x) of Daily Rate
+              </div>
+              <p><strong>2. SPECIAL NON-WORKING HOLIDAY WORKED PREMIUM:</strong></p>
+              <div className="formula-box" style={{ margin: '8px 0', padding: '8px', background: '#0b1120', border: '1px solid #1e293b', textAlign: 'center', color: '#fbbf24', fontWeight: 'bold' }}>
+                Special Holiday Rate = 130% (1.3x) of Daily Rate
+              </div>
+              <p style={{ color: '#fca5a5', marginTop: '10px' }}>
+                ⚠️ <strong>Auditor Notice:</strong> Confusing the Regular Holiday multiplier (2.0x) with the Special Non-Working Holiday rate (1.3x) will result in validation auditing penalties. Double-check official memo dates!
+              </p>
+            </div>
+          </div>
+        );
+
+      case 'MEMOS':
+        return (
+          <div className="popup-content">
+            <div className="popup-header">
+              <h4>📌 Corporate Notice Board Memos</h4>
+              <p>Apex Industrial Works // HR Notice Bulletin</p>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
+              <div className="data-box authentic-data" style={{ flex: 1, padding: '10px', border: '1px solid #3b82f6', background: 'rgba(59, 130, 246, 0.05)' }}>
+                <span style={{ color: '#60a5fa', fontWeight: 'bold', fontSize: '0.8rem' }}>📌 MEMO A: JUNE HOLIDAY</span>
+                <p style={{ fontSize: '0.8rem', margin: '5px 0', color: '#e2e8f0' }}>
+                  <strong>Subject:</strong> June 12 Holiday Schedule
+                </p>
+                <p style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                  Please be guided that <strong>June 12 (Independence Day)</strong> is declared a <strong>Regular Holiday</strong>. Operations will run with special premium shifts.
+                </p>
+              </div>
+
+              <div className="data-box herring-data" style={{ flex: 1, padding: '10px', border: '1px solid #f59e0b', background: 'rgba(245, 158, 11, 0.05)' }}>
+                <span style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '0.8rem' }}>📌 MEMO B: AUGUST HOLIDAY</span>
+                <p style={{ fontSize: '0.8rem', margin: '5px 0', color: '#e2e8f0' }}>
+                  <strong>Subject:</strong> August 21 Holiday Notice
+                </p>
+                <p style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                  Please notice that <strong>August 21 (Ninoy Aquino Day)</strong> is declared a <strong>Special Non-Working Holiday</strong>. Only emergency security reports.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'TIMESHEET_TERMINAL':
+        return (
+          <div className="popup-content">
+            <div className="popup-header">
+              <h4>📟 Digital punch-clock Timesheet Terminal</h4>
+              <p>Biometric Punch Audit // Case: {scenario.employeeName}</p>
+            </div>
+            
+            <div className="data-box authentic-data" style={{ padding: '12px' }}>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span>Employee Name:</span> <strong>{scenario.employeeName}</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span>Standard Daily Rate:</span> <strong className="highlight-green">₱{scenario.dailyRate.toFixed(2)}</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Daily Shift Hours:</span> <strong>8.0 Hours / Shift</strong>
+              </div>
+              
+              {/* Monthly Work Summary */}
+              <div style={{ borderTop: '1px dashed #334155', marginTop: '8px', paddingTop: '8px' }}>
+                <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>📊 MONTHLY AUDIT WORK SUMMARY:</span>
+                <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                  <span>Shifts Worked (Days Present):</span> <strong>{scenario.daysPresent} Days</strong>
+                </div>
+              </div>
+              
+              <div style={{ borderTop: '1px dashed #334155', marginTop: '10px', paddingTop: '10px' }}>
+                <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>📅 HOLIDAY ATTENDANCE RECORD:</span>
+                <table style={{ width: '100%', marginTop: '6px', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                  <thead>
+                    <tr style={{ color: '#60a5fa', borderBottom: '1px solid #334155', textAlign: 'left' }}>
+                      <th style={{ padding: '4px' }}>Date</th>
+                      <th style={{ padding: '4px' }}>Shift Status</th>
+                      <th style={{ padding: '4px' }}>Time In</th>
+                      <th style={{ padding: '4px' }}>Time Out</th>
+                      <th style={{ padding: '4px' }}>Worked Hours</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style={{ borderBottom: '1px solid #1e293b' }}>
+                      <td style={{ padding: '6px 4px' }}>June 12 (Fri)</td>
+                      <td style={{ padding: '6px 4px', color: '#facc15' }}>REGULAR HOLIDAY</td>
+                      <td style={{ padding: '6px 4px' }}>08:00 AM</td>
+                      <td style={{ padding: '6px 4px' }}>05:00 PM</td>
+                      <td style={{ padding: '6px 4px', color: '#10b981', fontWeight: 'bold' }}>8.0 Hours</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        );
+
       case 'HANDBOOK':
         return (
           <div className="popup-content">
@@ -337,36 +466,7 @@ export default function Popups({ activeHotspot, onClose, scenario, isPhaseComple
             <div className="data-box authentic-data" style={{ fontSize: '0.85rem', lineHeight: '1.5' }}>
               <p><strong style={{ color: '#fbbf24' }}>STEP-BY-STEP PAYROLL AUDIT PROCEDURE:</strong></p>
               
-              {activePhaseIndex !== 3 ? (
-                <>
-                  <div style={{ marginTop: '10px' }}>
-                    <p><strong>1. Gross Basic Pay (Step 1):</strong></p>
-                    <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
-                      Locate the contracted <strong>Hourly Rate</strong> on the Employee Contract or Biometrics Terminal header, and find the <strong>Days Present</strong> from the worked shifts.
-                      <br />
-                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Gross Pay = Hourly Rate × 8 hours/day × Days Present</code>
-                    </p>
-                  </div>
-
-                  <div style={{ marginTop: '10px' }}>
-                    <p><strong>2. Tardiness Deduction (Step 2):</strong></p>
-                    <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
-                      Review the official <strong>Biometrics Swipe Logs</strong> to sum the employee's raw late minutes. Early clock-in minutes must be ignored.
-                      <br />
-                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Deduction = (Hourly Rate / 60) × Late Minutes</code>
-                    </p>
-                  </div>
-
-                  <div style={{ marginTop: '10px' }}>
-                    <p><strong>3. Net Take-Home Pay (Step 3):</strong></p>
-                    <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
-                      Synthesize the final pay by subtracting the computed tardiness penalties from the verified Gross Basic Pay.
-                      <br />
-                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Net Pay = Gross Pay - Tardiness Deduction</code>
-                    </p>
-                  </div>
-                </>
-              ) : (
+              {activePhaseIndex === 3 ? (
                 <>
                   <div style={{ marginTop: '10px' }}>
                     <p><strong>1. Gross Basic Pay (Step 1):</strong></p>
@@ -395,6 +495,55 @@ export default function Popups({ activeHotspot, onClose, scenario, isPhaseComple
                     </p>
                   </div>
                 </>
+              ) : activePhaseIndex === 4 ? (
+                <>
+                  <div style={{ marginTop: '10px' }}>
+                    <p><strong>1. Regular Holiday Pay (Step 1-3):</strong></p>
+                    <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
+                      Identify the base <strong>Daily Rate</strong> from the Timesheet Terminal and the <strong>Regular Holiday multiplier (2.0)</strong> from the DOLE Poster.
+                      <br />
+                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Holiday Pay = Daily Rate × 2.0</code>
+                    </p>
+                  </div>
+
+                  <div style={{ marginTop: '10px' }}>
+                    <p><strong>2. Total Earnings Synthesis (Step 4):</strong></p>
+                    <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
+                      Synthesize the final holiday-adjusted earnings by adding the Holiday Pay to the basic Gross Pay.
+                      <br />
+                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Total Earnings = Gross Pay + Holiday Pay = (Daily Rate × Days Present) + Holiday Pay</code>
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ marginTop: '10px' }}>
+                    <p><strong>1. Gross Basic Pay (Step 1):</strong></p>
+                    <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
+                      Locate the contracted <strong>Hourly Rate</strong> on the Employee Contract or Biometrics Terminal header, and find the <strong>Days Present</strong> from the worked shifts.
+                      <br />
+                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Gross Pay = Hourly Rate × 8 hours/day × Days Present</code>
+                    </p>
+                  </div>
+
+                  <div style={{ marginTop: '10px' }}>
+                    <p><strong>2. Tardiness Deduction (Step 2):</strong></p>
+                    <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
+                      Review the official <strong>Biometrics Swipe Logs</strong> to sum the employee's raw late minutes. Early clock-in minutes must be ignored.
+                      <br />
+                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Deduction = (Hourly Rate / 60) × Late Minutes</code>
+                    </p>
+                  </div>
+
+                  <div style={{ marginTop: '10px' }}>
+                    <p><strong>3. Net Take-Home Pay (Step 3):</strong></p>
+                    <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
+                      Synthesize the final pay by subtracting the computed tardiness penalties from the verified Gross Basic Pay.
+                      <br />
+                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Net Pay = Gross Pay - Tardiness Deduction</code>
+                    </p>
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -415,6 +564,7 @@ export default function Popups({ activeHotspot, onClose, scenario, isPhaseComple
                     {activePhaseIndex === 1 && "Congratulations! Your Gross Basic Pay calculations match Philippine auditing frameworks perfectly."}
                     {activePhaseIndex === 2 && "Congratulations! Your Tardiness Deduction calculations match Philippine auditing frameworks perfectly."}
                     {activePhaseIndex === 3 && "Congratulations! Your Overtime Premium calculations match Philippine auditing frameworks perfectly."}
+                    {activePhaseIndex === 4 && "Congratulations! Your Regular Holiday Pay calculations match Philippine auditing frameworks perfectly."}
                   </p>
                   <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
                     <button 
@@ -431,7 +581,8 @@ export default function Popups({ activeHotspot, onClose, scenario, isPhaseComple
                     >
                       {activePhaseIndex === 1 && 'PROCEED TO PHASE 2 >'}
                       {activePhaseIndex === 2 && 'PROCEED TO PHASE 3 >'}
-                      {activePhaseIndex === 3 && 'PROCEED TO DASHBOARD >'}
+                      {activePhaseIndex === 3 && 'PROCEED TO PHASE 4 >'}
+                      {activePhaseIndex === 4 && 'PROCEED TO DASHBOARD >'}
                     </button>
                   </div>
                 </div>

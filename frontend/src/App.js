@@ -101,7 +101,13 @@ function App() {
     const earlyInList = [5, 10, 15, 20, 25];
     const newEarly = earlyInList[Math.floor(Math.random() * earlyInList.length)];
 
-    const biometricLogs = [
+    const biometricLogs = phaseToUse === 4 ? [
+      { day: 'MON (June 8)', timeIn: '08:00 AM', timeOut: '05:00 PM', late: 0, early: 0, status: 'ON-TIME' },
+      { day: 'TUE (June 9)', timeIn: '08:00 AM', timeOut: '05:00 PM', late: 0, early: 0, status: 'ON-TIME' },
+      { day: 'WED (June 10)', timeIn: '08:00 AM', timeOut: '05:00 PM', late: 0, early: 0, status: 'ON-TIME' },
+      { day: 'THU (June 11)', timeIn: '08:00 AM', timeOut: '05:00 PM', late: 0, early: 0, status: 'ON-TIME' },
+      { day: 'FRI (June 12)', timeIn: '08:00 AM', timeOut: '05:00 PM', late: 0, early: 0, status: 'HOLIDAY' }
+    ] : [
       { day: 'MON (June 8)', timeIn: `08:${newLate < 10 ? '0' + newLate : newLate} AM`, timeOut: '05:00 PM', late: newLate, early: 0, status: 'LATE' },
       { day: 'TUE (June 9)', timeIn: `07:${60 - newEarly} AM`, timeOut: '05:00 PM', late: 0, early: newEarly, status: 'EARLY IN' },
       { day: 'WED (June 10)', timeIn: '08:00 AM', timeOut: '05:00 PM', late: 0, early: 0, status: 'ON-TIME' },
@@ -170,6 +176,9 @@ function App() {
     } else if (activePhaseIndex === 2) {
       handleRerollScenario(true, 3);
       setFeedback('Production Line Room entered. Scan the Production Time Card and DOLE Overtime Poster to audit overtime premiums.');
+    } else if (activePhaseIndex === 3) {
+      handleRerollScenario(true, 4);
+      setFeedback('Factory Breakroom entered. Scan the Corkboard Corporate Memos and Timesheet Terminal to audit Regular Holiday Pay.');
     } else {
       setCurrentView('DASHBOARD');
       setFeedback('All completed phases Mastered! Returned to Dashboard Command Center.');
@@ -202,8 +211,8 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           studentNumber: student?.studentNumber || 'STU-UNKNOWN',
-          module: activePhaseIndex === 3 ? 'M2_MULTIPLIERS' : 'M1_MATH',
-          phase: activePhaseIndex === 3 ? 1 : activePhaseIndex,
+          module: (activePhaseIndex === 3 || activePhaseIndex === 4) ? 'M2_MULTIPLIERS' : 'M1_MATH',
+          phase: (activePhaseIndex === 3 || activePhaseIndex === 4) ? (activePhaseIndex === 3 ? 1 : 2) : activePhaseIndex,
           step: 'EXTRACT',
           dailyRate: scenario.dailyRate,
           daysPresent: scenario.daysPresent,
@@ -277,8 +286,8 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           studentNumber: student?.studentNumber || 'STU-UNKNOWN',
-          module: activePhaseIndex === 3 ? 'M2_MULTIPLIERS' : 'M1_MATH',
-          phase: activePhaseIndex === 3 ? 1 : activePhaseIndex,
+          module: (activePhaseIndex === 3 || activePhaseIndex === 4) ? 'M2_MULTIPLIERS' : 'M1_MATH',
+          phase: (activePhaseIndex === 3 || activePhaseIndex === 4) ? (activePhaseIndex === 3 ? 1 : 2) : activePhaseIndex,
           step: 'IDENTIFY_RULE',
           dailyRate: scenario.dailyRate,
           daysPresent: scenario.daysPresent,
@@ -326,8 +335,8 @@ function App() {
     try {
       const requestPayload = {
         studentNumber: student?.studentNumber || 'STU-UNKNOWN',
-        module: activePhaseIndex === 3 ? 'M2_MULTIPLIERS' : 'M1_MATH',
-        phase: activePhaseIndex === 3 ? 1 : activePhaseIndex,
+        module: (activePhaseIndex === 3 || activePhaseIndex === 4) ? 'M2_MULTIPLIERS' : 'M1_MATH',
+        phase: (activePhaseIndex === 3 || activePhaseIndex === 4) ? (activePhaseIndex === 3 ? 1 : 2) : activePhaseIndex,
         step: 'EXECUTE',
         dailyRate: scenario.dailyRate,
         daysPresent: scenario.daysPresent,
@@ -352,7 +361,7 @@ function App() {
 
       if (data.success) {
         setStep3Status('SUCCESS');
-        if (activePhaseIndex === 2 || activePhaseIndex === 3) {
+        if (activePhaseIndex === 2 || activePhaseIndex === 3 || activePhaseIndex === 4) {
           setStep4Status('ACTIVE');
         }
         setFeedback(data.message);
@@ -375,12 +384,12 @@ function App() {
   // Submit Step 4: Synthesis
   const handleValidateSynthesis = async () => {
     if (!netPayValue) {
-      setFeedback(activePhaseIndex === 3 ? 'Please enter the final calculated Total Earnings.' : 'Please enter the final calculated Net Take-Home Pay.');
+      setFeedback((activePhaseIndex === 3 || activePhaseIndex === 4) ? 'Please enter the final calculated Total Earnings.' : 'Please enter the final calculated Net Take-Home Pay.');
       return;
     }
 
     setLoading(true);
-    setFeedback(activePhaseIndex === 3 ? 'Auditing final synthesis ledger Total Earnings calculations...' : 'Auditing final synthesis ledger Net Pay calculations...');
+    setFeedback(activePhaseIndex === 2 ? 'Auditing final synthesis ledger Net Pay calculations...' : activePhaseIndex === 4 ? 'Auditing final synthesis ledger Holiday Total Earnings calculations...' : 'Auditing final synthesis ledger Overtime Total Earnings calculations...');
 
     try {
       const grossPay = parseFloat((scenario.dailyRate * scenario.daysPresent).toFixed(2));
@@ -388,8 +397,8 @@ function App() {
 
       const requestPayload = {
         studentNumber: student?.studentNumber || 'STU-UNKNOWN',
-        module: activePhaseIndex === 3 ? 'M2_MULTIPLIERS' : 'M1_MATH',
-        phase: activePhaseIndex === 3 ? 1 : activePhaseIndex,
+        module: (activePhaseIndex === 3 || activePhaseIndex === 4) ? 'M2_MULTIPLIERS' : 'M1_MATH',
+        phase: (activePhaseIndex === 3 || activePhaseIndex === 4) ? (activePhaseIndex === 3 ? 1 : 2) : activePhaseIndex,
         step: 'SYNTHESIS',
         dailyRate: scenario.dailyRate,
         daysPresent: scenario.daysPresent,
@@ -474,7 +483,9 @@ function App() {
                 ? 'ROOM 1: THE CORE LOBBY [PHASE 1]' 
                 : activePhaseIndex === 2 
                   ? 'ROOM 2: SECURITY & BIOMETRICS [PHASE 2]' 
-                  : 'ROOM 3: THE FACTORY FLOOR [PHASE 3]'
+                  : activePhaseIndex === 3
+                    ? 'ROOM 3: THE FACTORY FLOOR [PHASE 3]'
+                    : 'ROOM 4: THE FACTORY BREAKROOM [PHASE 4]'
               }
             </h2>
             <p className="room-subtitle">
@@ -482,7 +493,9 @@ function App() {
                 ? `${scenario.employeeName} Payroll - Gross Basic Pay Calculations` 
                 : activePhaseIndex === 2 
                   ? `${scenario.employeeName} Payroll - Tardiness & Log Audit` 
-                  : `${scenario.employeeName} Payroll - Overtime Premiums Audit`
+                  : activePhaseIndex === 3
+                    ? `${scenario.employeeName} Payroll - Overtime Premiums Audit`
+                    : `${scenario.employeeName} Payroll - Regular Holiday Pay Audit`
               }
             </p>
           </div>
@@ -496,7 +509,9 @@ function App() {
               ? 'Click office objects (Desk, Calendar, Whiteboard) to inspect details.' 
               : activePhaseIndex === 2 
                 ? 'Click office objects (Biometrics, DOLE Poster, Exit Door) to inspect details.' 
-                : 'Click office objects (Time Card, DOLE Overtime Poster, Exit Door) to inspect details.'
+                : activePhaseIndex === 3
+                  ? 'Click office objects (Time Card, DOLE Overtime Poster, Exit Door) to inspect details.'
+                  : 'Click breakroom objects (Corkboard Memos, Timesheet Terminal, DOLE Holiday Poster, Exit Door) to inspect details.'
             }
           </div>
         </div>
@@ -523,11 +538,11 @@ function App() {
               
               <div className="inputs-container">
                 <label>
-                  {activePhaseIndex === 1 ? 'VARIABLE COMPONENT A (Daily Rate)' : 'VARIABLE COMPONENT A (Hourly Rate)'}
+                  {(activePhaseIndex === 1 || activePhaseIndex === 4) ? 'VARIABLE COMPONENT A (Daily Rate)' : 'VARIABLE COMPONENT A (Hourly Rate)'}
                 </label>
                 <input 
                   type="number" 
-                  placeholder={activePhaseIndex === 1 ? "₱ Enter base Daily Rate" : "₱ Enter base Hourly Rate"} 
+                  placeholder={(activePhaseIndex === 1 || activePhaseIndex === 4) ? "₱ Enter base Daily Rate" : "₱ Enter base Hourly Rate"} 
                   className="tech-input"
                   value={extractedA}
                   onChange={(e) => setExtractedA(e.target.value)}
@@ -539,7 +554,9 @@ function App() {
                     ? 'VARIABLE COMPONENT B (Days Present)' 
                     : activePhaseIndex === 2 
                       ? 'VARIABLE COMPONENT B (Late Minutes)' 
-                      : 'VARIABLE COMPONENT B (Actual OT Hours)'}
+                      : activePhaseIndex === 3
+                        ? 'VARIABLE COMPONENT B (Actual OT Hours)'
+                        : 'VARIABLE COMPONENT B (Holiday Multiplier)'}
                 </label>
                 <input 
                   type="number" 
@@ -547,7 +564,9 @@ function App() {
                     ? "Enter shifts worked" 
                     : activePhaseIndex === 2 
                       ? "Enter late minutes" 
-                      : "Enter actual OT hours"} 
+                      : activePhaseIndex === 3
+                        ? "Enter actual OT hours"
+                        : "Enter holiday multiplier (e.g. 2.0)"} 
                   className="tech-input"
                   value={extractedB}
                   onChange={(e) => setExtractedB(e.target.value)}
@@ -604,7 +623,9 @@ function App() {
                       ? 'Gross Basic Pay Equation Formula:' 
                       : activePhaseIndex === 2 
                         ? 'Tardiness Deduction Equation Formula:' 
-                        : 'Overtime Premium Equation Formula:'}
+                        : activePhaseIndex === 3
+                          ? 'Overtime Premium Equation Formula:'
+                          : 'Regular Holiday Pay Equation Formula:'}
                   </label>
                   <select 
                     value={selectedRule}
@@ -626,11 +647,17 @@ function App() {
                         <option value="OFFSET_FORMULA">(Hourly Rate / 60) × (Late Minutes - Early Clock-in)</option>
                         <option value="DAILY_RATE_DIV_60">(Daily Rate / 60) × Late Minutes</option>
                       </>
-                    ) : (
+                    ) : activePhaseIndex === 3 ? (
                       <>
                         <option value="OT_FORMULA">Hourly Rate × OT Hours × 1.25</option>
                         <option value="OT_ADDITION">Hourly Rate + OT Hours + 1.25</option>
                         <option value="OT_DAILY">Daily Rate × OT Hours × 1.25</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="HOLIDAY_FORMULA">Daily Rate × 2.0 (Regular Holiday Pay)</option>
+                        <option value="DAILY_RATE_X_1.3">Daily Rate × 1.3 (Special Non-Working Holiday)</option>
+                        <option value="HOURLY_RATE_X_8">Hourly Rate × 8 (Standard Shift)</option>
                       </>
                     )}
                   </select>
@@ -660,7 +687,9 @@ function App() {
                       ? 'FINAL GROSS BASIC EARNINGS (₱)' 
                       : activePhaseIndex === 2 
                         ? 'TOTAL TARDINESS DEDUCTIONS (₱)' 
-                        : 'FINAL OVERTIME PREMIUM PAY (₱)'}
+                        : activePhaseIndex === 3
+                          ? 'FINAL OVERTIME PREMIUM PAY (₱)'
+                          : 'FINAL REGULAR HOLIDAY PAY (₱)'}
                   </label>
                   <input 
                     type="number" 
@@ -668,7 +697,9 @@ function App() {
                       ? "₱ Enter calculated amount" 
                       : activePhaseIndex === 2 
                         ? "₱ Enter calculated deductions" 
-                        : "₱ Enter calculated overtime pay"} 
+                        : activePhaseIndex === 3
+                          ? "₱ Enter calculated overtime pay"
+                          : "₱ Enter calculated holiday pay"} 
                     className="tech-input"
                     value={calculatedValue}
                     onChange={(e) => setCalculatedValue(e.target.value)}
@@ -685,7 +716,7 @@ function App() {
             </div>
 
             {/* STEP 4: SYNTHESIS COMPUTE NET PAY / TOTAL EARNINGS */}
-            {(activePhaseIndex === 2 || activePhaseIndex === 3) && (
+            {(activePhaseIndex === 2 || activePhaseIndex === 3 || activePhaseIndex === 4) && (
               <div className={`step-card ${step4Status === 'ACTIVE' ? 'active-step' : ''} ${step4Status === 'SUCCESS' ? 'success-step' : ''} ${step4Status === 'ERROR' ? 'error-step' : ''} ${step4Status === 'LOCKED' ? 'locked-step' : ''}`} style={{ border: '2px solid #3b82f6', boxShadow: '0 0 10px rgba(59, 130, 246, 0.2)' }}>
                 <div className="step-title">
                   <h4 style={{ color: '#60a5fa' }}>
@@ -699,7 +730,11 @@ function App() {
                 {step4Status !== 'LOCKED' && (
                   <div className="inputs-container">
                     <label>
-                      {activePhaseIndex === 2 ? 'FINAL TOTAL TAKE-HOME NET PAY (₱)' : 'FINAL OVERTIME-ADJUSTED TOTAL EARNINGS (₱)'}
+                      {activePhaseIndex === 2 
+                        ? 'FINAL TOTAL TAKE-HOME NET PAY (₱)' 
+                        : activePhaseIndex === 4
+                          ? 'FINAL HOLIDAY-ADJUSTED TOTAL EARNINGS (₱)'
+                          : 'FINAL OVERTIME-ADJUSTED TOTAL EARNINGS (₱)'}
                     </label>
                     <input 
                       type="number" 
@@ -734,7 +769,7 @@ function App() {
                     
                     {step4Status !== 'SUCCESS' && (
                       <button className="run-btn" onClick={handleValidateSynthesis} disabled={loading} style={{ backgroundColor: '#1d4ed8', borderColor: '#3b82f6' }}>
-                        {loading ? 'SYNTHESIZING...' : activePhaseIndex === 2 ? 'RUN FINAL SYNTHESIS NET AUDIT >' : 'RUN FINAL SYNTHESIS OT AUDIT >'}
+                        {loading ? 'SYNTHESIZING...' : activePhaseIndex === 2 ? 'RUN FINAL SYNTHESIS NET AUDIT >' : activePhaseIndex === 4 ? 'RUN FINAL SYNTHESIS HOLIDAY AUDIT >' : 'RUN FINAL SYNTHESIS OT AUDIT >'}
                       </button>
                     )}
                   </div>
@@ -745,7 +780,8 @@ function App() {
             {/* Pulsing Amber CTA for Phase Completion */}
             {((activePhaseIndex === 1 && step3Status === 'SUCCESS') || 
               (activePhaseIndex === 2 && step4Status === 'SUCCESS') ||
-              (activePhaseIndex === 3 && step4Status === 'SUCCESS')) && (
+              (activePhaseIndex === 3 && step4Status === 'SUCCESS') ||
+              (activePhaseIndex === 4 && step4Status === 'SUCCESS')) && (
               <div className="text-amber-400 animate-pulse" style={{
                 textAlign: 'center',
                 fontWeight: 'bold',
@@ -761,7 +797,9 @@ function App() {
                   ? "MISSION PHASE 1 COMPLETE. [PROCEED TO ROOM DOOR]" 
                   : activePhaseIndex === 2
                     ? "MISSION PHASE 2 COMPLETE. [PROCEED TO ROOM DOOR]"
-                    : "MISSION PHASE 3 COMPLETE. [PROCEED TO ROOM DOOR]"
+                    : activePhaseIndex === 3
+                      ? "MISSION PHASE 3 COMPLETE. [PROCEED TO ROOM DOOR]"
+                      : "MISSION PHASE 4 COMPLETE. [PROCEED TO ROOM DOOR]"
                 }
               </div>
             )}
@@ -851,7 +889,7 @@ function App() {
         isPhaseComplete={activePhaseIndex === 1 ? step3Status === 'SUCCESS' : step4Status === 'SUCCESS'}
         onProceed={() => {
           setActivePopup(null);
-          if (activePhaseIndex === 1) {
+          if (activePhaseIndex === 1 || activePhaseIndex === 2 || activePhaseIndex === 3) {
             handleTransitionToNextPhase();
           } else {
             setCurrentView('DASHBOARD');

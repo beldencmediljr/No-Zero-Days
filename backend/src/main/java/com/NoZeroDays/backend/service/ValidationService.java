@@ -291,7 +291,10 @@ public class ValidationService {
                     double valA = request.getSubmittedValueA() != null ? request.getSubmittedValueA() : 0.0;
                     double valB = request.getSubmittedValueB() != null ? request.getSubmittedValueB() : 0.0;
 
-                    if (Math.abs(valA - dailyRate) < epsilon && Math.abs(valB - 2.0) < epsilon) {
+                    if (Math.abs(valB - 1.3) < epsilon) {
+                        isRedHerring = true;
+                        message = "ERROR: You extracted the Special Non-Working Holiday multiplier (1.3x). June 12 is Independence Day, which is a Regular Holiday (2.0x).";
+                    } else if (Math.abs(valA - dailyRate) < epsilon && Math.abs(valB - 2.0) < epsilon) {
                         success = true;
                         message = "Extraction Verified! Holiday rate multiplier of 200% (2.0) identified. Proceed to Step 2.";
                     } else {
@@ -313,6 +316,35 @@ public class ValidationService {
                         message = "Holiday Pay verified successfully at ₱" + String.format("%.2f", expected);
                     } else {
                         message = "Arithmetic Error! Holiday Double Pay = Daily Rate (₱" + dailyRate + ") × 2.";
+                    }
+                } else if ("SYNTHESIS".equalsIgnoreCase(step)) {
+                    double result = request.getSubmittedResult() != null ? request.getSubmittedResult() : 0.0;
+                    
+                    double targetDailyRate = request.getDailyRate() != null ? request.getDailyRate() : 0.0;
+                    int targetDaysPresent = request.getDaysPresent() != null ? request.getDaysPresent() : 0;
+                    
+                    double expectedGross = targetDailyRate * targetDaysPresent;
+                    double expectedHolidayPay = targetDailyRate * 2.0;
+                    double expected = expectedGross + expectedHolidayPay;
+
+                    System.out.println("Backend Expected (Phase 4 Synthesis): " + expected + " | Frontend Sent: " + result);
+
+                    BigDecimal grossPayBD = BigDecimal.valueOf(targetDailyRate).multiply(BigDecimal.valueOf(targetDaysPresent)).setScale(2, RoundingMode.HALF_UP);
+                    BigDecimal holidayPayBD = BigDecimal.valueOf(targetDailyRate).multiply(BigDecimal.valueOf(2.0)).setScale(2, RoundingMode.HALF_UP);
+                    BigDecimal expectedTotalEarningsBD = grossPayBD.add(holidayPayBD).setScale(2, RoundingMode.HALF_UP);
+                    double expectedRounded = expectedTotalEarningsBD.doubleValue();
+
+                    boolean isCorrect = Math.abs(expected - result) <= 0.02 || Math.abs(expectedRounded - result) <= 0.02;
+
+                    if (isCorrect) {
+                        success = true;
+                        message = "Phase 4 Complete! Total Holiday-adjusted Earnings verified successfully at ₱" + String.format("%.2f", expectedRounded);
+                        updateProgress(student, "M2_MULTIPLIERS", 2);
+                    } else {
+                        success = false;
+                        message = "Arithmetic Error! Total Earnings = Basic Gross Pay (₱" + String.format("%.2f", grossPayBD.doubleValue()) + ") + Holiday Pay (₱" + String.format("%.2f", holidayPayBD.doubleValue()) + ") again.";
+                        auditExpected = expectedRounded;
+                        auditReceived = result;
                     }
                 }
             }
