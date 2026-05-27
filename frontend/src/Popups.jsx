@@ -111,11 +111,12 @@ export default function Popups({ activeHotspot, onClose }) {
   return (
     <div className="popup-overlay">
       <div className="popup-card">
+        {/* The top-right X button stays so they can still close it! */}
         <button className="close-btn" onClick={onClose}>X</button>
+        
         {renderContent()}
-        <div className="popup-footer">
-          <button className="confirm-btn" onClick={onClose}>CONFIRM & CLOSE</button>
-        </div>
+        
+        {/* The footer div that was here has been completely removed */}
       </div>
     </div>
   );
