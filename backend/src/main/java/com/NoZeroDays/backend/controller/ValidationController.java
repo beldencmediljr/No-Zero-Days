@@ -5,14 +5,19 @@ import com.NoZeroDays.backend.dto.ValidationResponse;
 import com.NoZeroDays.backend.model.StudentProfile;
 import com.NoZeroDays.backend.repository.StudentProfileRepository;
 import com.NoZeroDays.backend.service.ValidationService;
+import com.NoZeroDays.backend.model.AttemptLog;
+import com.NoZeroDays.backend.repository.AttemptLogRepository;
+import com.NoZeroDays.backend.model.GameSession;
+import com.NoZeroDays.backend.repository.GameSessionRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 import java.util.List;
-import com.NoZeroDays.backend.model.AttemptLog;
-import com.NoZeroDays.backend.repository.AttemptLogRepository;
+import java.util.Arrays;
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/api")
@@ -24,6 +29,12 @@ public class ValidationController {
 
     @Autowired
     private StudentProfileRepository studentRepository;
+
+    @Autowired
+    private GameSessionRepository gameSessionRepository;
+
+    @Autowired
+    private AttemptLogRepository attemptLogRepository;
 
     // 1. Unified Validation Endpoint for all Modules, Phases, and Steps
     @PostMapping("/validation/submit")
@@ -43,18 +54,25 @@ public class ValidationController {
         }
 
         Optional<StudentProfile> existing = studentRepository.findByStudentNumber(student.getStudentNumber());
+        StudentProfile profile;
         if (existing.isPresent()) {
-            // Already registered - acts as login
-            return ResponseEntity.ok(existing.get());
+            profile = existing.get();
+        } else {
+            profile = studentRepository.save(student);
         }
 
-        // Save new student
-        StudentProfile saved = studentRepository.save(student);
-        return ResponseEntity.ok(saved);
-    }
+        // Ensure student has an active game session
+        List<GameSession> activeSessions = gameSessionRepository.findByStudentProfileAndStatus(profile, "ACTIVE");
+        if (activeSessions.isEmpty()) {
+            GameSession newSession = new GameSession(profile);
+            newSession.setCurrentModule("M1_MATH");
+            newSession.setCurrentPhase(1);
+            newSession.setStatus("ACTIVE");
+            gameSessionRepository.save(newSession);
+        }
 
-    @Autowired
-    private AttemptLogRepository attemptLogRepository;
+        return ResponseEntity.ok(profile);
+    }
 
     @GetMapping("/progress/status")
     public ResponseEntity<?> getProgressStatus(@RequestParam String studentNumber) {
@@ -107,6 +125,8 @@ public class ValidationController {
                 status = "ACTIVE";
             }
             
+            int completionPercentage = calculateCompletionPercentage(student, module, phaseIndex);
+
             // Calculate best attempt score
             int bestScore = 0;
             if (completed) {
@@ -120,32 +140,52 @@ public class ValidationController {
                 bestScore = Math.max(100 - (failures * 10), 50);
             }
 
-            list.add(new PhaseProgress(phaseId, titles[i], descriptions[i], status, bestScore, module, phaseIndex));
+            list.add(new PhaseProgress(phaseId, titles[i], descriptions[i], status, bestScore, completionPercentage, module, phaseIndex));
             previousCompleted = completed;
         }
 
         return ResponseEntity.ok(list);
     }
 
-    private boolean isPhaseCompleted(StudentProfile student, String module, int phase) {
+    private List<String> getRequiredStepsForPhase(String module, int phase) {
+        if ("M1_MATH".equalsIgnoreCase(module) && phase == 1) {
+            return Arrays.asList("EXTRACT", "IDENTIFY_RULE", "EXECUTE");
+        } else if ("M1_MATH".equalsIgnoreCase(module) && phase == 2) {
+            return Arrays.asList("EXTRACT", "IDENTIFY_RULE", "EXECUTE", "SYNTHESIS");
+        } else if ("M2_MULTIPLIERS".equalsIgnoreCase(module)) {
+            return Arrays.asList("EXTRACT", "IDENTIFY_RULE", "EXECUTE", "SYNTHESIS");
+        } else if ("M3_BUREAUCRACY".equalsIgnoreCase(module)) {
+            return Arrays.asList("EXTRACT", "IDENTIFY_RULE", "EXECUTE", "SYNTHESIS");
+        } else if ("M4_TRIBUNAL".equalsIgnoreCase(module)) {
+            return Arrays.asList("SUBMIT");
+        }
+        return Collections.emptyList();
+    }
+
+    private int calculateCompletionPercentage(StudentProfile student, String module, int phase) {
+        List<String> requiredSteps = getRequiredStepsForPhase(module, phase);
+        if (requiredSteps.isEmpty()) {
+            return 0;
+        }
         List<AttemptLog> attempts = attemptLogRepository.findLatestAttempts(student, module, phase);
+        java.util.Set<String> successfulSteps = new java.util.HashSet<>();
         for (AttemptLog log : attempts) {
             if (log.isSuccessful()) {
                 String step = log.getStep();
-                boolean needsSynthesis = ("M1_MATH".equalsIgnoreCase(module) && phase == 2) ||
-                                         ("M2_MULTIPLIERS".equalsIgnoreCase(module) && (phase == 1 || phase == 2));
-                if (needsSynthesis) {
-                    if ("SYNTHESIS".equalsIgnoreCase(step)) {
-                        return true;
-                    }
-                } else {
-                    if ("EXECUTE".equalsIgnoreCase(step)) {
-                        return true;
-                    }
+                if (step != null) {
+                    successfulSteps.add(step.toUpperCase());
                 }
             }
         }
-        return false;
+        long completedRequiredSteps = requiredSteps.stream()
+            .map(String::toUpperCase)
+            .filter(successfulSteps::contains)
+            .count();
+        return (int) Math.round(((double) completedRequiredSteps / requiredSteps.size()) * 100);
+    }
+
+    private boolean isPhaseCompleted(StudentProfile student, String module, int phase) {
+        return calculateCompletionPercentage(student, module, phase) == 100;
     }
 
     public static class PhaseProgress {
@@ -154,15 +194,17 @@ public class ValidationController {
         private String description;
         private String status; // LOCKED, ACTIVE, COMPLETED
         private int bestScore;
+        private int completionPercentage;
         private String module;
         private int phaseIndex;
 
-        public PhaseProgress(int phaseId, String title, String description, String status, int bestScore, String module, int phaseIndex) {
+        public PhaseProgress(int phaseId, String title, String description, String status, int bestScore, int completionPercentage, String module, int phaseIndex) {
             this.phaseId = phaseId;
             this.title = title;
             this.description = description;
             this.status = status;
             this.bestScore = bestScore;
+            this.completionPercentage = completionPercentage;
             this.module = module;
             this.phaseIndex = phaseIndex;
         }
@@ -172,6 +214,7 @@ public class ValidationController {
         public String getDescription() { return description; }
         public String getStatus() { return status; }
         public int getBestScore() { return bestScore; }
+        public int getCompletionPercentage() { return completionPercentage; }
         public String getModule() { return module; }
         public int getPhaseIndex() { return phaseIndex; }
     }

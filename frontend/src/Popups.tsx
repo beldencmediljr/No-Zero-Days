@@ -41,6 +41,9 @@ export default function Popups({
                 {activePhaseIndex === 2 && '🎬 NARRATIVE BRIEFING: FACTORY FLOOR AUDIT [PHASE 2]'}
                 {activePhaseIndex === 3 && '🎬 NARRATIVE BRIEFING: PRODUCTION OVERTIME AUDIT [PHASE 3]'}
                 {activePhaseIndex === 4 && '🎬 NARRATIVE BRIEFING: BREAKROOM HOLIDAY AUDIT [PHASE 4]'}
+                {activePhaseIndex === 5 && '🎬 NARRATIVE BRIEFING: SSS DEDUCTIONS [PHASE 5]'}
+                {activePhaseIndex === 6 && '🎬 NARRATIVE BRIEFING: PHILHEALTH PREMIUMS [PHASE 6]'}
+                {activePhaseIndex === 7 && '🎬 NARRATIVE BRIEFING: THE BOARDROOM FINAL AUDIT [PHASE 7]'}
               </h4>
               <p>Assigned Auditor Case File // Cebu Institute of Technology - University</p>
             </div>
@@ -97,7 +100,7 @@ export default function Popups({
                      <li>Ignore the **Unpaid Lunch break** noise to calculate the **Actual OT hours** and compute the correct **Overtime Premium Pay**.</li>
                   </ul>
                 </>
-              ) : (
+              ) : activePhaseIndex === 4 ? (
                 <>
                   <p>
                     Auditor, welcome to **The Factory Breakroom & Employee Notice Board**.
@@ -115,10 +118,187 @@ export default function Popups({
                      <li>Synthesize their new running **Total Earnings** by adding the Holiday Pay to their basic gross pay.</li>
                   </ul>
                 </>
+              ) : activePhaseIndex === 5 ? (
+                <>
+                  <p>
+                    Auditor, welcome to **The PC Lab / Bureaucracy Department**.
+                  </p>
+                  <p>
+                    Your next task is to audit the SSS Deductions for <strong>{scenario.employeeName}</strong>. You need to inspect the SSS Contribution Table and the employee's loan statement to extract the correct statutory deductions.
+                  </p>
+                  <p style={{ color: '#facc15', fontWeight: 'bold', margin: '10px 0 5px 0' }}>
+                    Your Mission Objectives:
+                  </p>
+                  <ul style={{ paddingLeft: '20px', margin: '5px 0' }}>
+                     <li>Scan the **Notice Board Corkboard** to check the **SSS Contribution Table** and extract the Employee EE Share. (Ignore Employer ER share decoy).</li>
+                     <li>Review the **Employee Loan Statement** on the PC Monitor to extract the **Personal Salary Loan**. (Ignore Spouse loan decoy).</li>
+                     <li>Calculate the **Total SSS Deduction** by adding the Employee EE Share and the Personal Salary Loan.</li>
+                  </ul>
+                </>
+              ) : activePhaseIndex === 6 ? (
+                <>
+                  <p>
+                    Auditor, you are still in **The PC Lab / Bureaucracy Department**, moving to Phase 6.
+                  </p>
+                  <p>
+                    Your next task is to audit the PhilHealth Premium Deductions for <strong>{scenario.employeeName}</strong>. You need to check the PhilHealth memo and the HR salary database.
+                  </p>
+                  <p style={{ color: '#facc15', fontWeight: 'bold', margin: '10px 0 5px 0' }}>
+                    Your Mission Objectives:
+                  </p>
+                  <ul style={{ paddingLeft: '20px', margin: '5px 0' }}>
+                     <li>Review the **PhilHealth Premium Table** on the notice board to extract the employee PhilHealth rate (2.5% or 0.025).</li>
+                     <li>Read the **HR Salary Database PC** to extract the **Basic Salary**.</li>
+                     <li>Compute the **PhilHealth Deduction** (Basic Salary × 0.025) and calculate the final statutory deductions (SSS Deductions + PhilHealth Deduction).</li>
+                  </ul>
+                </>
+              ) : (
+                <>
+                  <p>
+                    Welcome to the **Executive Boardroom**, Auditor. This is your final audit assessment.
+                  </p>
+                  <p>
+                    You are presented with a single **Executive Audit Folder** containing a comprehensive summary of all variables for <strong>{scenario.employeeName}</strong>. You must perform the complete payroll run from scratch and submit your numbers directly to the Board of Trustees.
+                  </p>
+                  <p style={{ color: '#facc15', fontWeight: 'bold', margin: '10px 0 5px 0' }}>
+                    Your Mission Objectives:
+                  </p>
+                  <ul style={{ paddingLeft: '20px', margin: '5px 0' }}>
+                     <li>Open the **Executive Audit Folder** and carefully note all 11 variables.</li>
+                     <li>Calculate the **Total Gross Earnings** (Basic Gross + OT Pay + Holiday Pay).</li>
+                     <li>Calculate the **Total Deductions** (Tardiness + SSS Deductions + PhilHealth Deductions).</li>
+                     <li>Compute the **Final Net Pay** (Total Gross - Total Deductions) and submit your audit.</li>
+                  </ul>
+                </>
               )}
               <p style={{ marginTop: '10px', fontSize: '0.85rem', color: '#94a3b8', fontStyle: 'italic' }}>
                 Click outside this modal or hit the "X" button at the top-right to begin auditing. Let's make sure there are no zero days!
               </p>
+            </div>
+          </div>
+        );
+
+      case 'HR_DESK':
+        return (
+          <div className="popup-content">
+            <div className="popup-header">
+              <h4>📁 Employee Profile & Contract</h4>
+              <p>Classified HR Document // Form 109-A</p>
+            </div>
+            
+            <div className="data-box authentic-data" style={{ padding: '15px', lineHeight: '1.5' }}>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}><span>Employee Name:</span> <strong>{scenario.employeeName}</strong></div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}><span>Position Grade:</span> <strong>ABM Core Level 12</strong></div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between' }}><span>Contract Daily Rate:</span> <strong className="highlight-green" style={{ color: '#10b981' }}>₱{scenario.dailyRate.toFixed(2)} / Day</strong></div>
+            </div>
+
+            {/* Red Herring Rule */}
+            <div className="data-box herring-data" style={{ padding: '15px', marginTop: '15px', background: '#1e293b', border: '1px solid #ef4444', borderRadius: '6px' }}>
+              <span className="warning-label" style={{ color: '#f87171', fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>⚠️ RED HERRING AUDIT NOISE (DO NOT EXTRACT)</span>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}><span>Rice Subsidy:</span> <strong>₱1,200.00 / Month</strong></div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between' }}><span>Uniform Allowance:</span> <strong>₱1,500.00 / Semester</strong></div>
+              <p className="herring-note" style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '10px', fontStyle: 'italic' }}>
+                ⭐ Note: According to Philippine accounting frameworks, standard Gross Basic Pay strictly uses the basic Daily Rate. Filter out these allowance distractions!
+              </p>
+            </div>
+          </div>
+        );
+
+      case 'WALL_CALENDAR':
+        const renderCalendarGrid = () => {
+          const cells = [];
+          // Week 1 (June 1 to 7)
+          for (let d = 1; d <= 7; d++) {
+            cells.push(<div key={`d-${d}`} className="cal-cell empty" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '35px', border: '1px solid #1e293b', color: '#475569' }}>{d}</div>);
+          }
+          // Weeks 2 to 5 (June 8 to 30)
+          const weekdaysList = [8, 9, 10, 11, 12, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26];
+          const daysSet = new Set(weekdaysList);
+          for (let d = 8; d <= 30; d++) {
+            const isWeekend = (d % 7 === 6 || d % 7 === 0);
+            if (daysSet.has(d)) {
+              const status = scenario.calendarGrid && scenario.calendarGrid[d] ? scenario.calendarGrid[d] : 'A';
+              const isPresent = status === 'P';
+              const isHoliday = d === 12;
+              cells.push(
+                <div 
+                  key={`d-${d}`} 
+                  className={`cal-cell ${isPresent ? 'present' : 'absent'} ${isHoliday ? 'holiday' : ''}`}
+                  style={{ 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    minHeight: '35px', 
+                    border: '1px solid #1e293b',
+                    background: isHoliday ? '#451a03' : (isPresent ? '#064e3b' : '#7f1d1d'),
+                    color: isHoliday ? '#fbbf24' : (isPresent ? '#34d399' : '#f87171'),
+                    fontWeight: 'bold',
+                    position: 'relative'
+                  }}
+                >
+                  {d}
+                  <span className={isPresent ? 'p-mark' : 'a-mark'} style={{ fontSize: '0.65rem', display: 'block', marginTop: '2px' }}>
+                    {isPresent ? (isHoliday ? 'P★' : 'P') : 'A'}
+                  </span>
+                </div>
+              );
+            } else {
+              cells.push(
+                <div 
+                  key={`d-${d}`} 
+                  className="cal-cell empty" 
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    minHeight: '35px', 
+                    border: '1px solid #1e293b', 
+                    color: isWeekend ? '#ef4444' : '#475569',
+                    background: isWeekend ? 'rgba(239, 68, 68, 0.05)' : 'transparent'
+                  }}
+                >
+                  {d}
+                </div>
+              );
+            }
+          }
+          return cells;
+        };
+
+        return (
+          <div className="popup-content">
+            <div className="popup-header">
+              <h4>📅 Official Wall Calendar - June 2026</h4>
+              <p>Total verified present shifts: <strong className="highlight-green" style={{ color: '#10b981' }}>{scenario.daysPresent} Days</strong></p>
+            </div>
+            
+            {/* The Visual Calendar Grid */}
+            <div className="calendar-ui-box" style={{ padding: '15px', background: '#0b1120', border: '1px solid #1e293b', borderRadius: '8px', marginTop: '15px' }}>
+              <div className="cal-header-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', textAlign: 'center', fontWeight: 'bold', color: '#60a5fa', marginBottom: '8px', fontSize: '0.85rem' }}>
+                <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span style={{ color: '#ef4444' }}>S</span><span style={{ color: '#ef4444' }}>S</span>
+              </div>
+              <div className="cal-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', textAlign: 'center', fontSize: '0.85rem' }}>
+                {renderCalendarGrid()}
+              </div>
+              <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '12px', textAlign: 'center', fontStyle: 'italic' }}>
+                ★ June 12 is Independence Day (Regular Holiday) - Present shift recorded.
+              </p>
+            </div>
+          </div>
+        );
+
+      case 'WHITEBOARD':
+        return (
+          <div className="popup-content">
+            <div className="popup-header">
+              <h4>📝 LOBBY ACADEMIC WHITEBOARD</h4>
+            </div>
+            <div className="whiteboard-box" style={{ padding: '20px', background: '#1e293b', border: '2px solid #64748b', borderRadius: '8px', marginTop: '15px', textAlign: 'center' }}>
+              <h5 className="math-rule" style={{ color: '#60a5fa', margin: '0 0 10px 0', fontSize: '1rem', letterSpacing: '1px' }}>▼ GROSS EARNINGS BASIC LAW:</h5>
+              <div className="formula-box" style={{ fontSize: '1.25rem', color: '#fbbf24', fontFamily: 'monospace', fontWeight: 'bold', background: '#0b1120', padding: '15px', borderRadius: '4px', border: '1px solid #334155' }}>
+                Gross Pay = Daily Rate × Days Present
+              </div>
             </div>
           </div>
         );
@@ -375,12 +555,197 @@ export default function Popups({
           </div>
         );
 
+      case 'SSS_TABLE':
+        return (
+          <div className="popup-content">
+            <div className="popup-header">
+              <h4>📋 SSS Contribution Rate Table</h4>
+              <p>Social Security System // Statutory Standard Rates</p>
+            </div>
+            <div className="data-box authentic-data" style={{ padding: '12px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                <thead>
+                  <tr style={{ color: '#60a5fa', borderBottom: '1px solid #334155', textAlign: 'left' }}>
+                    <th style={{ padding: '6px' }}>Contribution Type</th>
+                    <th style={{ padding: '6px' }}>Monthly Rate</th>
+                    <th style={{ padding: '6px' }}>Auditing Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style={{ borderBottom: '1px solid #1e293b' }}>
+                    <td style={{ padding: '8px 6px' }}><strong>Employee EE Share</strong></td>
+                    <td style={{ padding: '8px 6px', color: '#10b981', fontWeight: 'bold' }}>₱{(scenario.sssEeShare ?? 0).toFixed(2)}</td>
+                    <td style={{ padding: '8px 6px', color: '#10b981' }}>STATUTORY DEDUCTION</td>
+                  </tr>
+                  <tr style={{ borderBottom: '1px solid #1e293b' }}>
+                    <td style={{ padding: '8px 6px' }}><strong>Employer ER Share</strong></td>
+                    <td style={{ padding: '8px 6px', color: '#fbbf24' }}>₱{(scenario.sssErShare ?? 0).toFixed(2)}</td>
+                    <td style={{ padding: '8px 6px', color: '#ef4444', fontWeight: 'bold' }}>DECOY (DO NOT DEDUCT)</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style={{ marginTop: '12px', padding: '8px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', borderRadius: '4px', fontSize: '0.8rem', color: '#f87171' }}>
+                ⚠️ <strong>CRITICAL AUDIT NOTICE:</strong> If you input the Employer (ER) share into the employee's deduction ledger, you will immediately trigger a compliance red herring reroll.
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'LOAN_STATEMENT':
+        return (
+          <div className="popup-content">
+            <div className="popup-header">
+              <h4>🖥️ Digital Employee Loan Statement</h4>
+              <p>HR Accounts Ledger // Active Amortizations</p>
+            </div>
+            <div className="data-box authentic-data" style={{ padding: '12px' }}>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span>Employee Name:</span> <strong>{scenario.employeeName}</strong>
+              </div>
+              <table style={{ width: '100%', marginTop: '10px', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                <thead>
+                  <tr style={{ color: '#60a5fa', borderBottom: '1px solid #334155', textAlign: 'left' }}>
+                    <th style={{ padding: '6px' }}>Loan Type</th>
+                    <th style={{ padding: '6px' }}>Monthly Deduction</th>
+                    <th style={{ padding: '6px' }}>Deduction Rule</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style={{ borderBottom: '1px solid #1e293b' }}>
+                    <td style={{ padding: '8px 6px' }}><strong>Personal Salary Loan</strong></td>
+                    <td style={{ padding: '8px 6px', color: '#10b981', fontWeight: 'bold' }}>₱{(scenario.personalSalaryLoan ?? 0).toFixed(2)}</td>
+                    <td style={{ padding: '8px 6px', color: '#10b981' }}>DEDUCT FROM SALARY</td>
+                  </tr>
+                  <tr style={{ borderBottom: '1px solid #1e293b' }}>
+                    <td style={{ padding: '8px 6px' }}><strong>Spouse Salary Loan</strong></td>
+                    <td style={{ padding: '8px 6px', color: '#fbbf24' }}>₱{(scenario.spouseLoan ?? 0).toFixed(2)}</td>
+                    <td style={{ padding: '8px 6px', color: '#ef4444', fontWeight: 'bold' }}>DECOY (DO NOT DEDUCT)</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style={{ marginTop: '12px', padding: '8px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', borderRadius: '4px', fontSize: '0.8rem', color: '#f87171' }}>
+                ⚠️ <strong>CRITICAL AUDIT NOTICE:</strong> Spouse loans are personal debts of a spouse. Deducting them from this employee's basic pay will trigger an immediate compliance red herring reroll.
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'PHILHEALTH_TABLE':
+        return (
+          <div className="popup-content">
+            <div className="popup-header">
+              <h4>📋 PhilHealth Premium Contribution Bulletin</h4>
+              <p>National Insurance Memo // Standard Rates 2026</p>
+            </div>
+            <div className="data-box authentic-data" style={{ padding: '15px', fontSize: '0.9rem', lineHeight: '1.6' }}>
+              <p><strong>1. TOTAL PREMIUM RATE:</strong></p>
+              <p>For June 2026, the total PhilHealth premium is <strong>5.0%</strong> of the employee's basic salary.</p>
+              
+              <p style={{ marginTop: '10px' }}><strong>2. EMPLOYEE VS EMPLOYER SPLIT:</strong></p>
+              <p>The premium is split equally: 50% paid by the Employer, 50% paid by the Employee.</p>
+              
+              <div className="formula-box" style={{ margin: '12px 0', padding: '10px', background: '#0b1120', border: '1px solid #1e293b', textAlign: 'center', color: '#fbbf24', fontWeight: 'bold' }}>
+                Employee Premium Rate = 5.0% × 50% = 2.5% (Multiplier: 0.025)
+              </div>
+              <p style={{ color: '#94a3b8', fontSize: '0.8rem', fontStyle: 'italic' }}>
+                * Calculate PhilHealth Deduction by multiplying the basic salary of the employee by 0.025.
+              </p>
+            </div>
+          </div>
+        );
+
+      case 'SALARY_DATABASE':
+        return (
+          <div className="popup-content">
+            <div className="popup-header">
+              <h4>🖥️ HR Salary Database Portal</h4>
+              <p>Employee Payroll Records // Basic Compensation</p>
+            </div>
+            <div className="data-box authentic-data" style={{ padding: '15px' }}>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span>Employee Name:</span> <strong>{scenario.employeeName}</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span>Standard Daily Rate:</span> <strong>₱{(scenario.dailyRate ?? 0).toFixed(2)} / Day</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span>Days Worked (Present):</span> <strong>{scenario.daysPresent} Days</strong>
+              </div>
+              <div style={{ borderTop: '1px dashed #334155', marginTop: '12px', paddingTop: '12px' }}>
+                <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem' }}>
+                  <span>Basic Salary:</span> <strong style={{ color: '#10b981' }}>₱{(scenario.basicSalary ?? 0).toFixed(2)}</strong>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '8px', fontStyle: 'italic' }}>
+                  * Basic Salary = Daily Rate × Days Present. This is the base amount used for computing PhilHealth deductions.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'AUDIT_FOLDER':
+        return (
+          <div className="popup-content" style={{ maxWidth: '600px' }}>
+            <div className="popup-header" style={{ borderBottom: '2px solid #ef4444', paddingBottom: '10px' }}>
+              <h4 style={{ color: '#ef4444', letterSpacing: '1px' }}>📁 CONFIDENTIAL MASTER AUDIT CASE FILE</h4>
+              <p>Audit Target: {scenario.employeeName} / Company: {scenario.companyName}</p>
+            </div>
+            <div className="data-box authentic-data" style={{ padding: '15px', maxHeight: '420px', overflowY: 'auto' }}>
+              <p style={{ color: '#fbbf24', fontWeight: 'bold', borderBottom: '1px dashed #334155', paddingBottom: '4px' }}>
+                [PART 1: BASIC CONTRACT & ATTENDANCE]
+              </p>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+                <span>Daily Rate:</span> <strong>₱{(scenario.dailyRate ?? 0).toFixed(2)}</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+                <span>Contracted Days Worked:</span> <strong>{scenario.daysPresent} Days</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+                <span>Basic Salary:</span> <strong style={{ color: '#10b981' }}>₱{(scenario.basicSalary ?? 0).toFixed(2)}</strong>
+              </div>
+
+              <p style={{ color: '#fbbf24', fontWeight: 'bold', borderBottom: '1px dashed #334155', paddingBottom: '4px', marginTop: '12px' }}>
+                [PART 2: ATTENDANCE LOGS & DEDUCTIONS]
+              </p>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+                <span>Hourly Rate:</span> <strong>₱{(scenario.hourlyRate ?? 0).toFixed(2)}</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+                <span>Tardiness Minutes:</span> <strong>{scenario.lateMinutes} Minutes</strong>
+              </div>
+
+              <p style={{ color: '#fbbf24', fontWeight: 'bold', borderBottom: '1px dashed #334155', paddingBottom: '4px', marginTop: '12px' }}>
+                [PART 3: OVERTIME & HOLIDAY EARNINGS]
+              </p>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+                <span>Recorded OT Hours:</span> <strong>{(scenario.otHours ?? 0).toFixed(1)} Hours</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+                <span>Unpaid Lunch/Rest Hour:</span> <strong>{(scenario.unpaidLunchHours ?? 0).toFixed(1)} Hour</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+                <span>Worked on June 12 Regular Holiday:</span> <strong style={{ color: scenario.workedOnHoliday ? '#10b981' : '#f87171' }}>{scenario.workedOnHoliday ? 'YES' : 'NO'}</strong>
+              </div>
+
+              <p style={{ color: '#fbbf24', fontWeight: 'bold', borderBottom: '1px dashed #334155', paddingBottom: '4px', marginTop: '12px' }}>
+                [PART 4: STATUTORY CONTRIBUTIONS & LOANS]
+              </p>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+                <span>SSS Employee EE Share:</span> <strong>₱{(scenario.sssEeShare ?? 0).toFixed(2)}</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+                <span>Personal Salary Loan:</span> <strong>₱{(scenario.personalSalaryLoan ?? 0).toFixed(2)}</strong>
+              </div>
+            </div>
+          </div>
+        );
+
       case 'HANDBOOK':
         return (
           <div className="popup-content">
             <div className="popup-header">
               <h4>📘 Audit Procedure Guide</h4>
-              <p>{scenario.companyName} // Standard Operating Guidelines</p>
+              <p>{scenario.companyName} / Standard Operating Guidelines</p>
             </div>
             
             <div className="data-box authentic-data" style={{ fontSize: '0.85rem', lineHeight: '1.5' }}>
@@ -435,6 +800,70 @@ export default function Popups({
                     </p>
                   </div>
                 </>
+              ) : activePhaseIndex === 5 || activePhaseIndex === 6 ? (
+                <>
+                  <div style={{ marginTop: '10px' }}>
+                    <p><strong>1. SSS Deduction Formula (Phase 5):</strong></p>
+                    <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
+                      Add Employee SSS EE share and personal salary loan. Employer ER shares and spouse loans are NOT deducted from basic pay.
+                      <br />
+                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Total SSS Deduction = SSS EE Share + Personal Salary Loan</code>
+                    </p>
+                  </div>
+                  <div style={{ marginTop: '10px' }}>
+                    <p><strong>2. PhilHealth Deduction Formula (Phase 6):</strong></p>
+                    <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
+                      PhilHealth premium is 5%, split 50/50. The employee share is 2.5% (0.025).
+                      <br />
+                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>PhilHealth Deduction = Basic Salary × 0.025</code>
+                    </p>
+                  </div>
+                  <div style={{ marginTop: '10px' }}>
+                    <p><strong>3. Statutory Deductions Synthesis (Phase 6):</strong></p>
+                    <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
+                      Add the SSS deductions and the PhilHealth deductions together.
+                      <br />
+                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Final Statutory Deductions = Total SSS Deduction + PhilHealth Deduction</code>
+                    </p>
+                  </div>
+                </>
+              ) : activePhaseIndex === 7 ? (
+                <>
+                  <div style={{ marginTop: '10px' }}>
+                    <p><strong>1. Total Gross Earnings:</strong></p>
+                    <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
+                      Sum of Basic Gross Pay, Overtime Pay, and Holiday Pay.
+                      <br />
+                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Gross = (Daily Rate × Days Present) + OT Pay + Holiday Pay</code>
+                      <br />
+                      <code>OT Pay = Hourly Rate × (OT Hours - Unpaid Lunch) × 1.25</code>
+                      <br />
+                      <code>Holiday Pay = Daily Rate × 2.0 (if worked holiday)</code>
+                    </p>
+                  </div>
+                  <div style={{ marginTop: '10px' }}>
+                    <p><strong>2. Total Deductions:</strong></p>
+                    <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
+                      Sum of Tardiness deductions, SSS deductions, and PhilHealth deductions.
+                      <br />
+                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Deductions = Tardiness + SSS Deduction + PhilHealth Deduction</code>
+                      <br />
+                      <code>Tardiness = (Hourly Rate / 60) × Late Minutes</code>
+                      <br />
+                      <code>SSS Deduction = SSS EE Share + Personal Salary Loan</code>
+                      <br />
+                      <code>PhilHealth Deduction = Basic Salary × 0.025</code>
+                    </p>
+                  </div>
+                  <div style={{ marginTop: '10px' }}>
+                    <p><strong>3. Final Net Pay:</strong></p>
+                    <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
+                      Subtract Total Deductions from Total Gross.
+                      <br />
+                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Net Pay = Total Gross - Total Deductions</code>
+                    </p>
+                  </div>
+                </>
               ) : (
                 <>
                   <div style={{ marginTop: '10px' }}>
@@ -468,7 +897,7 @@ export default function Popups({
             </div>
           </div>
         );
-
+ 
       case 'DOOR':
         return (
           <div className="popup-content">
@@ -484,6 +913,9 @@ export default function Popups({
                     {activePhaseIndex === 2 && "Congratulations! Your Tardiness Deduction calculations match Philippine auditing frameworks perfectly."}
                     {activePhaseIndex === 3 && "Congratulations! Your Overtime Premium calculations match Philippine auditing frameworks perfectly."}
                     {activePhaseIndex === 4 && "Congratulations! Your Regular Holiday Pay calculations match Philippine auditing frameworks perfectly."}
+                    {activePhaseIndex === 5 && "Congratulations! Your SSS Deduction calculations match Philippine auditing frameworks perfectly."}
+                    {activePhaseIndex === 6 && "Congratulations! Your PhilHealth Deduction calculations match Philippine auditing frameworks perfectly."}
+                    {activePhaseIndex === 7 && "Congratulations! You have completed all audit procedures and mastered payroll simulation!"}
                   </p>
                   <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
                     <button 
@@ -501,7 +933,10 @@ export default function Popups({
                       {activePhaseIndex === 1 && 'PROCEED TO PHASE 2 >'}
                       {activePhaseIndex === 2 && 'PROCEED TO PHASE 3 >'}
                       {activePhaseIndex === 3 && 'PROCEED TO PHASE 4 >'}
-                      {activePhaseIndex === 4 && 'PROCEED TO DASHBOARD >'}
+                      {activePhaseIndex === 4 && 'PROCEED TO PHASE 5 >'}
+                      {activePhaseIndex === 5 && 'PROCEED TO PHASE 6 >'}
+                      {activePhaseIndex === 6 && 'PROCEED TO PHASE 7 >'}
+                      {activePhaseIndex === 7 && 'PROCEED TO DASHBOARD >'}
                     </button>
                   </div>
                 </div>
@@ -514,7 +949,10 @@ export default function Popups({
                 </div>
                 <div className="data-box herring-data text-center" style={{ padding: '20px', textAlign: 'center' }}>
                   <p style={{ color: '#fca5a5' }}>
-                    Warning: Complete the 4-step Cognitive Task calculations on the right-side Mission Log to unlock this doorway.
+                    {activePhaseIndex === 7 
+                      ? "Warning: Complete the Net Payroll Audit on the right-side Tribunal Audit panel to unlock the exit."
+                      : "Warning: Complete the 4-step Cognitive Task calculations on the right-side Mission Log to unlock this doorway."
+                    }
                   </p>
                 </div>
               </>

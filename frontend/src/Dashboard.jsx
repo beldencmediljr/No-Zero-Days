@@ -145,7 +145,9 @@ export default function Dashboard({ onSelectPhase }) {
                         <span style={{ color: isCompleted ? '#10b981' : '#fbbf24', fontSize: '0.8rem', fontWeight: 'bold' }}>
                           {isCompleted ? '✓ COMPLETED' : '▶ AVAILABLE'}
                         </span>
-                        {isCompleted && <span style={{ color: '#10b981', fontWeight: 'bold' }}>{p.bestScore}%</span>}
+                        <span style={{ color: isCompleted ? '#10b981' : '#fbbf24', fontWeight: 'bold' }}>
+                          {(p.completionPercentage !== undefined ? p.completionPercentage : (isCompleted ? 100 : 0))}%
+                        </span>
                       </div>
                       <h3 className="card-title" style={{ fontSize: '1.05rem', color: '#fff', border: 'none', padding: 0, margin: '5px 0' }}>
                         {p.title}

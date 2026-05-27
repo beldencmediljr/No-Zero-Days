@@ -386,9 +386,21 @@ public class ValidationService {
                     } else {
                         message = "Arithmetic Error! Sum SSS EE (₱" + sssEe + ") and Personal Loan (₱" + personalLoan + ") carefully.";
                     }
+                } else if ("SYNTHESIS".equalsIgnoreCase(step)) {
+                    double result = request.getSubmittedResult() != null ? request.getSubmittedResult() : 0.0;
+                    double expected = sssEe + personalLoan;
+                    if (Math.abs(result - expected) < epsilon) {
+                        success = true;
+                        message = "Phase 5 Complete! Total Statutory Deductions So Far verified successfully at ₱" + String.format("%.2f", expected);
+                        updateProgress(student, "M3_BUREAUCRACY", 1);
+                    } else {
+                        message = "Arithmetic Error! Total Statutory Deductions So Far should be equal to the SSS Deductions (₱" + String.format("%.2f", expected) + ").";
+                    }
                 }
             } else if (phase == 2) { // Phase 2: PhilHealth Deductions
                 double basicSalary = request.getBasicSalary() != null ? request.getBasicSalary() : 0.0;
+                double sssEe = request.getSssEeShare() != null ? request.getSssEeShare() : 0.0;
+                double personalLoan = request.getPersonalSalaryLoan() != null ? request.getPersonalSalaryLoan() : 0.0;
 
                 if ("EXTRACT".equalsIgnoreCase(step)) {
                     double valA = request.getSubmittedValueA() != null ? request.getSubmittedValueA() : 0.0;
@@ -416,6 +428,18 @@ public class ValidationService {
                         message = "PhilHealth Deduction verified successfully at ₱" + String.format("%.2f", expected);
                     } else {
                         message = "Arithmetic Error! Calculate Basic Salary (₱" + basicSalary + ") × 0.025.";
+                    }
+                } else if ("SYNTHESIS".equalsIgnoreCase(step)) {
+                    double result = request.getSubmittedResult() != null ? request.getSubmittedResult() : 0.0;
+                    double expectedSss = sssEe + personalLoan;
+                    double expectedPh = basicSalary * 0.025;
+                    double expected = expectedSss + expectedPh;
+                    if (Math.abs(result - expected) < epsilon) {
+                        success = true;
+                        message = "Phase 6 Complete! Final Statutory Deductions verified successfully at ₱" + String.format("%.2f", expected);
+                        updateProgress(student, "M3_BUREAUCRACY", 2);
+                    } else {
+                        message = "Arithmetic Error! Final Statutory Deductions = SSS Deductions (₱" + String.format("%.2f", expectedSss) + ") + PhilHealth Deduction (₱" + String.format("%.2f", expectedPh) + ") again.";
                     }
                 }
             }
@@ -457,6 +481,7 @@ public class ValidationService {
             if (grossMatch && deductionsMatch && netMatch) {
                 success = true;
                 message = "CONGRATULATIONS AUDITOR! Net Payroll audit is clean and 100% correct. You are a payroll champion!";
+                updateProgress(student, "M4_TRIBUNAL", 1);
             } else {
                 // Determine diagnostic remediation routing
                 if (!grossMatch) {

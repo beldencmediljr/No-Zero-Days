@@ -3,6 +3,15 @@ import Phase1Room from './Phase1Room';
 import Popups from './Popups'; 
 import Login from './Login';
 import Dashboard from './Dashboard';
+import MissionLog from './MissionLog';
+import { 
+  generatePhase2Scenario, 
+  generatePhase3Scenario, 
+  generatePhase4Scenario, 
+  generatePhase5Scenario, 
+  generatePhase6Scenario, 
+  generatePhase7Scenario 
+} from './utils/scenarioGen';
 import './App.css'; 
 
 function App() {
@@ -45,6 +54,12 @@ function App() {
   const [netPayValue, setNetPayValue] = useState('');
   const [step4Status, setStep4Status] = useState('LOCKED'); // LOCKED, ACTIVE, SUCCESS, ERROR
 
+  // Phase 7 (Tribunal) Inputs & Status
+  const [tribunalGross, setTribunalGross] = useState('');
+  const [tribunalDeductions, setTribunalDeductions] = useState('');
+  const [tribunalNet, setTribunalNet] = useState('');
+  const [tribunalStatus, setTribunalStatus] = useState('ACTIVE'); // ACTIVE, SUCCESS, ERROR
+
   // Reroll toast notification
   const [rerollToast, setRerollToast] = useState(null); // null | 'MAX_STRIKES' | 'RED_HERRING'
 
@@ -83,58 +98,45 @@ function App() {
     const phaseToUse = targetPhase !== null ? targetPhase : activePhaseIndex;
     setActivePhaseIndex(phaseToUse);
 
-    const employees = ['Juan Dela Cruz', 'Maria Santos', 'Pedro Penduko', 'Anna Mangahas', 'Jose Rizal'];
-    const companies = ['Apex Industrial Works', 'TechGear Solutions Inc.', 'Starlight Garments Corp.', 'Cebu Logistics Ltd.'];
-    const rates = [500, 600, 750, 800, 900, 1000];
-    const shifts = [7, 8, 9, 10, 11, 12, 13, 14, 15];
+    let newScenario;
+    if (phaseToUse === 1) {
+      const employees = ['Juan Dela Cruz', 'Maria Santos', 'Pedro Penduko', 'Anna Mangahas', 'Jose Rizal'];
+      const companies = ['Apex Industrial Works', 'TechGear Solutions Inc.', 'Starlight Garments Corp.', 'Cebu Logistics Ltd.'];
+      const rates = [500, 600, 750, 800, 900, 1000];
+      const shifts = [7, 8, 9, 10, 11, 12, 13, 14, 15];
+      const newEmployee = employees[Math.floor(Math.random() * employees.length)];
+      const newCompany = companies[Math.floor(Math.random() * companies.length)];
+      const newDaily = rates[Math.floor(Math.random() * rates.length)];
+      const newDays = shifts[Math.floor(Math.random() * shifts.length)];
+      const newGrid = generateCalendarDays(newDays);
+      newScenario = {
+        employeeName: newEmployee,
+        companyName: newCompany,
+        dailyRate: newDaily,
+        daysPresent: newDays,
+        riceSubsidy: 1200,
+        uniformAllowance: 1500,
+        hourlyRate: newDaily / 8.0,
+        lateMinutes: 0,
+        earlyClockInMinutes: 0,
+        calendarGrid: newGrid,
+        biometricLogs: []
+      };
+    } else if (phaseToUse === 2) {
+      newScenario = generatePhase2Scenario();
+    } else if (phaseToUse === 3) {
+      newScenario = generatePhase3Scenario();
+    } else if (phaseToUse === 4) {
+      newScenario = generatePhase4Scenario();
+    } else if (phaseToUse === 5) {
+      newScenario = generatePhase5Scenario();
+    } else if (phaseToUse === 6) {
+      newScenario = generatePhase6Scenario();
+    } else if (phaseToUse === 7) {
+      newScenario = generatePhase7Scenario();
+    }
 
-    const newEmployee = employees[Math.floor(Math.random() * employees.length)];
-    const newCompany = companies[Math.floor(Math.random() * companies.length)];
-    const newDaily = rates[Math.floor(Math.random() * rates.length)];
-    const newDays = shifts[Math.floor(Math.random() * shifts.length)];
-
-    const newGrid = generateCalendarDays(newDays);
-
-    const newHourly = newDaily / 8.0;
-    const lateMinutesList = [15, 20, 30, 45, 60, 75, 90];
-    const newLate = lateMinutesList[Math.floor(Math.random() * lateMinutesList.length)];
-    const earlyInList = [5, 10, 15, 20, 25];
-    const newEarly = earlyInList[Math.floor(Math.random() * earlyInList.length)];
-
-    const biometricLogs = phaseToUse === 4 ? [
-      { day: 'MON (June 8)', timeIn: '08:00 AM', timeOut: '05:00 PM', late: 0, early: 0, status: 'ON-TIME' },
-      { day: 'TUE (June 9)', timeIn: '08:00 AM', timeOut: '05:00 PM', late: 0, early: 0, status: 'ON-TIME' },
-      { day: 'WED (June 10)', timeIn: '08:00 AM', timeOut: '05:00 PM', late: 0, early: 0, status: 'ON-TIME' },
-      { day: 'THU (June 11)', timeIn: '08:00 AM', timeOut: '05:00 PM', late: 0, early: 0, status: 'ON-TIME' },
-      { day: 'FRI (June 12)', timeIn: '08:00 AM', timeOut: '05:00 PM', late: 0, early: 0, status: 'HOLIDAY' }
-    ] : [
-      { day: 'MON (June 8)', timeIn: `08:${newLate < 10 ? '0' + newLate : newLate} AM`, timeOut: '05:00 PM', late: newLate, early: 0, status: 'LATE' },
-      { day: 'TUE (June 9)', timeIn: `07:${60 - newEarly} AM`, timeOut: '05:00 PM', late: 0, early: newEarly, status: 'EARLY IN' },
-      { day: 'WED (June 10)', timeIn: '08:00 AM', timeOut: '05:00 PM', late: 0, early: 0, status: 'ON-TIME' },
-      { day: 'THU (June 11)', timeIn: '08:00 AM', timeOut: '05:00 PM', late: 0, early: 0, status: 'ON-TIME' },
-      { day: 'FRI (June 12)', timeIn: 'HOLIDAY', timeOut: 'HOLIDAY', late: 0, early: 0, status: 'HOLIDAY' }
-    ];
-
-    // Overtime hours parameters for Phase 3
-    const otHoursList = [3, 4, 5, 6, 7, 8];
-    const newOtHours = otHoursList[Math.floor(Math.random() * otHoursList.length)];
-    const newUnpaidLunch = 1.0;
-
-    setScenario({
-      employeeName: newEmployee,
-      companyName: newCompany,
-      dailyRate: newDaily,
-      daysPresent: newDays,
-      riceSubsidy: 1200,
-      uniformAllowance: 1500,
-      hourlyRate: newHourly,
-      lateMinutes: newLate,
-      earlyClockInMinutes: newEarly,
-      calendarGrid: newGrid,
-      biometricLogs: biometricLogs,
-      otHours: newOtHours,
-      unpaidLunchHours: newUnpaidLunch
-    });
+    setScenario(newScenario);
 
     // Reset simulator inputs
     setExtractedA('');
@@ -142,6 +144,12 @@ function App() {
     setSelectedRule('');
     setCalculatedValue('');
     setNetPayValue('');
+
+    // Reset Tribunal inputs
+    setTribunalGross('');
+    setTribunalDeductions('');
+    setTribunalNet('');
+    setTribunalStatus('ACTIVE');
 
     // Reset step levels
     setStep1Status('ACTIVE');
@@ -159,15 +167,7 @@ function App() {
     }
   };
 
-  const handleStartPhase1 = () => {
-    if (!scenario.employeeName) {
-      handleRerollScenario(true, 1);
-    } else {
-      setActivePhaseIndex(1);
-    }
-    setCurrentView('PHASE1');
-    setFeedback('Simulator Room 1 entered. Scan HR Contract desk and June Calendar wall to extract variables.');
-  };
+
 
   const handleTransitionToNextPhase = () => {
     if (activePhaseIndex === 1) {
@@ -179,6 +179,15 @@ function App() {
     } else if (activePhaseIndex === 3) {
       handleRerollScenario(true, 4);
       setFeedback('Factory Breakroom entered. Scan the Corkboard Corporate Memos and Timesheet Terminal to audit Regular Holiday Pay.');
+    } else if (activePhaseIndex === 4) {
+      handleRerollScenario(true, 5);
+      setFeedback('PC Lab / Bureaucracy Room entered. Scan the SSS contribution table and employee loan statement on the monitor to audit SSS deductions.');
+    } else if (activePhaseIndex === 5) {
+      handleRerollScenario(true, 6);
+      setFeedback('PC Lab / Bureaucracy Room entered. Scan the PhilHealth table and HR salary database to audit PhilHealth premium deductions.');
+    } else if (activePhaseIndex === 6) {
+      handleRerollScenario(true, 7);
+      setFeedback('Executive Boardroom entered. Scan the Master Case File in the Audit Folder on the table to perform the final payroll run.');
     } else {
       setCurrentView('DASHBOARD');
       setFeedback('All completed phases Mastered! Returned to Dashboard Command Center.');
@@ -188,6 +197,23 @@ function App() {
 
   // --- 5. SECURE BACKEND API SUBMISSIONS ---
   
+  // Helper to compute module and phase dynamically
+  const getModuleAndPhase = () => {
+    let module = 'M1_MATH';
+    let phase = activePhaseIndex;
+    if (activePhaseIndex === 3 || activePhaseIndex === 4) {
+      module = 'M2_MULTIPLIERS';
+      phase = activePhaseIndex === 3 ? 1 : 2;
+    } else if (activePhaseIndex === 5 || activePhaseIndex === 6) {
+      module = 'M3_BUREAUCRACY';
+      phase = activePhaseIndex === 5 ? 1 : 2;
+    } else if (activePhaseIndex === 7) {
+      module = 'M4_TRIBUNAL';
+      phase = 1;
+    }
+    return { module, phase };
+  };
+
   // Trigger a toast notification and auto-dismiss it after 3 seconds
   const triggerRerollToast = (type) => {
     setRerollToast(type);
@@ -206,13 +232,14 @@ function App() {
 
     try {
       console.log(`[DEBUG EXTRACTION] Entered A: ${extractedA} | Entered B: ${extractedB}`);
+      const { module: mod, phase: ph } = getModuleAndPhase();
       const response = await fetch('http://localhost:8080/api/validation/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           studentNumber: student?.studentNumber || 'STU-UNKNOWN',
-          module: (activePhaseIndex === 3 || activePhaseIndex === 4) ? 'M2_MULTIPLIERS' : 'M1_MATH',
-          phase: (activePhaseIndex === 3 || activePhaseIndex === 4) ? (activePhaseIndex === 3 ? 1 : 2) : activePhaseIndex,
+          module: mod,
+          phase: ph,
           step: 'EXTRACT',
           dailyRate: scenario.dailyRate,
           daysPresent: scenario.daysPresent,
@@ -223,6 +250,12 @@ function App() {
           earlyClockInMinutes: scenario.earlyClockInMinutes,
           otHours: scenario.otHours,
           unpaidLunchHours: scenario.unpaidLunchHours,
+          basicSalary: scenario.basicSalary,
+          sssEeShare: scenario.sssEeShare,
+          sssErShare: scenario.sssErShare,
+          personalSalaryLoan: scenario.personalSalaryLoan,
+          spouseLoan: scenario.spouseLoan,
+          workedOnHoliday: scenario.workedOnHoliday,
           submittedValueA: extractedA ? parseFloat(extractedA) : 0.0,
           submittedValueB: extractedB ? parseFloat(extractedB) : 0.0
         })
@@ -281,13 +314,14 @@ function App() {
     setFeedback('Validating formula syntax with standard accounting laws...');
 
     try {
+      const { module: mod, phase: ph } = getModuleAndPhase();
       const response = await fetch('http://localhost:8080/api/validation/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           studentNumber: student?.studentNumber || 'STU-UNKNOWN',
-          module: (activePhaseIndex === 3 || activePhaseIndex === 4) ? 'M2_MULTIPLIERS' : 'M1_MATH',
-          phase: (activePhaseIndex === 3 || activePhaseIndex === 4) ? (activePhaseIndex === 3 ? 1 : 2) : activePhaseIndex,
+          module: mod,
+          phase: ph,
           step: 'IDENTIFY_RULE',
           dailyRate: scenario.dailyRate,
           daysPresent: scenario.daysPresent,
@@ -296,6 +330,12 @@ function App() {
           earlyClockInMinutes: scenario.earlyClockInMinutes,
           otHours: scenario.otHours,
           unpaidLunchHours: scenario.unpaidLunchHours,
+          basicSalary: scenario.basicSalary,
+          sssEeShare: scenario.sssEeShare,
+          sssErShare: scenario.sssErShare,
+          personalSalaryLoan: scenario.personalSalaryLoan,
+          spouseLoan: scenario.spouseLoan,
+          workedOnHoliday: scenario.workedOnHoliday,
           submittedRule: selectedRule
         })
       });
@@ -333,10 +373,11 @@ function App() {
     setFeedback('Auditing final arithmetic ledger pay calculations...');
 
     try {
+      const { module: mod, phase: ph } = getModuleAndPhase();
       const requestPayload = {
         studentNumber: student?.studentNumber || 'STU-UNKNOWN',
-        module: (activePhaseIndex === 3 || activePhaseIndex === 4) ? 'M2_MULTIPLIERS' : 'M1_MATH',
-        phase: (activePhaseIndex === 3 || activePhaseIndex === 4) ? (activePhaseIndex === 3 ? 1 : 2) : activePhaseIndex,
+        module: mod,
+        phase: ph,
         step: 'EXECUTE',
         dailyRate: scenario.dailyRate,
         daysPresent: scenario.daysPresent,
@@ -345,6 +386,12 @@ function App() {
         earlyClockInMinutes: scenario.earlyClockInMinutes,
         otHours: scenario.otHours,
         unpaidLunchHours: scenario.unpaidLunchHours,
+        basicSalary: scenario.basicSalary,
+        sssEeShare: scenario.sssEeShare,
+        sssErShare: scenario.sssErShare,
+        personalSalaryLoan: scenario.personalSalaryLoan,
+        spouseLoan: scenario.spouseLoan,
+        workedOnHoliday: scenario.workedOnHoliday,
         submittedResult: calculatedValue ? parseFloat(calculatedValue) : 0.0
       };
 
@@ -361,7 +408,7 @@ function App() {
 
       if (data.success) {
         setStep3Status('SUCCESS');
-        if (activePhaseIndex === 2 || activePhaseIndex === 3 || activePhaseIndex === 4) {
+        if (activePhaseIndex >= 2 && activePhaseIndex <= 6) {
           setStep4Status('ACTIVE');
         }
         setFeedback(data.message);
@@ -395,10 +442,11 @@ function App() {
       const grossPay = parseFloat((scenario.dailyRate * scenario.daysPresent).toFixed(2));
       const tardinessDeduction = calculatedValue ? parseFloat(parseFloat(calculatedValue).toFixed(2)) : parseFloat(((scenario.hourlyRate / 60) * scenario.lateMinutes).toFixed(2));
 
+      const { module: mod, phase: ph } = getModuleAndPhase();
       const requestPayload = {
         studentNumber: student?.studentNumber || 'STU-UNKNOWN',
-        module: (activePhaseIndex === 3 || activePhaseIndex === 4) ? 'M2_MULTIPLIERS' : 'M1_MATH',
-        phase: (activePhaseIndex === 3 || activePhaseIndex === 4) ? (activePhaseIndex === 3 ? 1 : 2) : activePhaseIndex,
+        module: mod,
+        phase: ph,
         step: 'SYNTHESIS',
         dailyRate: scenario.dailyRate,
         daysPresent: scenario.daysPresent,
@@ -407,6 +455,12 @@ function App() {
         earlyClockInMinutes: scenario.earlyClockInMinutes,
         otHours: scenario.otHours,
         unpaidLunchHours: scenario.unpaidLunchHours,
+        basicSalary: scenario.basicSalary,
+        sssEeShare: scenario.sssEeShare,
+        sssErShare: scenario.sssErShare,
+        personalSalaryLoan: scenario.personalSalaryLoan,
+        spouseLoan: scenario.spouseLoan,
+        workedOnHoliday: scenario.workedOnHoliday,
         grossPay: grossPay,
         tardinessDeduction: tardinessDeduction,
         submittedResult: netPayValue ? parseFloat(netPayValue) : 0.0
@@ -441,6 +495,63 @@ function App() {
     } catch (err) {
       console.error(err);
       setFeedback('Network Error: Synthesis payroll audit failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Submit Phase 7 (Tribunal Final Boss)
+  const handleValidateTribunal = async () => {
+    if (!tribunalGross || !tribunalDeductions || !tribunalNet) {
+      setFeedback('Missing variables! Please enter all three audit values.');
+      return;
+    }
+
+    setLoading(true);
+    setFeedback('Submitting final Net Payroll audit to Board of Trustees...');
+
+    try {
+      const response = await fetch('http://localhost:8080/api/validation/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentNumber: student?.studentNumber || 'STU-UNKNOWN',
+          module: 'M4_TRIBUNAL',
+          phase: 1,
+          step: 'SUBMIT',
+          dailyRate: scenario.dailyRate,
+          daysPresent: scenario.daysPresent,
+          hourlyRate: scenario.hourlyRate,
+          lateMinutes: scenario.lateMinutes,
+          earlyClockInMinutes: 0,
+          otHours: scenario.otHours,
+          unpaidLunchHours: scenario.unpaidLunchHours,
+          workedOnHoliday: scenario.workedOnHoliday,
+          basicSalary: scenario.basicSalary,
+          sssEeShare: scenario.sssEeShare,
+          personalSalaryLoan: scenario.personalSalaryLoan,
+          submittedValueA: tribunalGross ? parseFloat(tribunalGross) : 0.0,
+          submittedValueB: tribunalDeductions ? parseFloat(tribunalDeductions) : 0.0,
+          submittedResult: tribunalNet ? parseFloat(tribunalNet) : 0.0
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('API connection lost.');
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        setTribunalStatus('SUCCESS');
+        setFeedback(data.message);
+      } else {
+        setTribunalStatus('ERROR');
+        setFeedback(data.message);
+      }
+    } catch (err) {
+      console.error(err);
+      setFeedback('Network Error: Cannot connect to the compliance validation server.');
     } finally {
       setLoading(false);
     }
@@ -485,7 +596,13 @@ function App() {
                   ? 'ROOM 2: SECURITY & BIOMETRICS [PHASE 2]' 
                   : activePhaseIndex === 3
                     ? 'ROOM 3: THE FACTORY FLOOR [PHASE 3]'
-                    : 'ROOM 4: THE FACTORY BREAKROOM [PHASE 4]'
+                    : activePhaseIndex === 4
+                      ? 'ROOM 4: THE FACTORY BREAKROOM [PHASE 4]'
+                      : activePhaseIndex === 5
+                        ? 'ROOM 5: THE PC LAB / BUREAUCRACY [PHASE 5]'
+                        : activePhaseIndex === 6
+                          ? 'ROOM 6: THE PC LAB / BUREAUCRACY [PHASE 6]'
+                          : 'ROOM 7: THE EXECUTIVE BOARDROOM [PHASE 7]'
               }
             </h2>
             <p className="room-subtitle">
@@ -495,7 +612,13 @@ function App() {
                   ? `${scenario.employeeName} Payroll - Tardiness & Log Audit` 
                   : activePhaseIndex === 3
                     ? `${scenario.employeeName} Payroll - Overtime Premiums Audit`
-                    : `${scenario.employeeName} Payroll - Regular Holiday Pay Audit`
+                    : activePhaseIndex === 4
+                      ? `${scenario.employeeName} Payroll - Regular Holiday Pay Audit`
+                      : activePhaseIndex === 5
+                        ? `${scenario.employeeName} Payroll - SSS Deductions Audit`
+                        : activePhaseIndex === 6
+                          ? `${scenario.employeeName} Payroll - PhilHealth Premiums Audit`
+                          : `${scenario.employeeName} Payroll - Final Net Payroll Audit`
               }
             </p>
           </div>
@@ -505,340 +628,60 @@ function App() {
           </div>
 
           <div className="panel-footer">
-            <span className="intel-icon">💬</span> {activePhaseIndex === 1 
-              ? 'Click office objects (Desk, Calendar, Whiteboard) to inspect details.' 
-              : activePhaseIndex === 2 
-                ? 'Click office objects (Biometrics, DOLE Poster, Exit Door) to inspect details.' 
-                : activePhaseIndex === 3
-                  ? 'Click office objects (Time Card, DOLE Overtime Poster, Exit Door) to inspect details.'
-                  : 'Click breakroom objects (Corkboard Memos, Timesheet Terminal, DOLE Holiday Poster, Exit Door) to inspect details.'
+            <span className="intel-icon">💬</span> {
+              activePhaseIndex === 1 
+                ? 'Click office objects (Desk, Calendar, Whiteboard) to inspect details.' 
+                : activePhaseIndex === 2 
+                  ? 'Click office objects (Biometrics, DOLE Poster, Exit Door) to inspect details.' 
+                  : activePhaseIndex === 3
+                    ? 'Click office objects (Time Card, DOLE Overtime Poster, Exit Door) to inspect details.'
+                    : activePhaseIndex === 4
+                      ? 'Click breakroom objects (Corkboard Memos, Timesheet Terminal, DOLE Holiday Poster, Exit Door) to inspect details.'
+                      : activePhaseIndex === 5 || activePhaseIndex === 6
+                        ? 'Click PC Lab objects (Notice Board, PC Monitor, Company Manual, Exit Door) to inspect details.'
+                        : 'Click boardroom objects (Executive Audit Folder, Exit Door) to inspect details.'
             }
           </div>
         </div>
 
-        {/* RIGHT PANEL: The Mission Task Log */}
-        <div className="right-panel">
-          <div className="mission-header">
-            <h3>⚡ COGNITIVE AUDIT LOG</h3>
-            <span className="timer" style={{ color: step3Status === 'SUCCESS' ? '#10b981' : '#f59e0b' }}>
-              {step3Status === 'SUCCESS' ? '🟢 UNLOCKED' : '🔴 IN PROGRESS'}
-            </span>
-          </div>
-
-          <div className="tracker-steps" style={{ overflowY: 'auto' }}>
-            
-            {/* STEP 1: EXTRACTION */}
-            <div className={`step-card ${step1Status === 'ACTIVE' ? 'active-step' : ''} ${step1Status === 'SUCCESS' ? 'success-step' : ''} ${step1Status === 'ERROR' ? 'error-step' : ''}`}>
-              <div className="step-title">
-                <h4>① STEP 1: VARIABLE EXTRACTION</h4>
-                <span className="badge" style={{ backgroundColor: step1Status === 'SUCCESS' ? '#10b981' : '#f59e0b', color: '#000' }}>
-                  {step1Status}
-                </span>
-              </div>
-              
-              <div className="inputs-container">
-                <label>
-                  {(activePhaseIndex === 1 || activePhaseIndex === 4) ? 'VARIABLE COMPONENT A (Daily Rate)' : 'VARIABLE COMPONENT A (Hourly Rate)'}
-                </label>
-                <input 
-                  type="number" 
-                  placeholder={(activePhaseIndex === 1 || activePhaseIndex === 4) ? "₱ Enter base Daily Rate" : "₱ Enter base Hourly Rate"} 
-                  className="tech-input"
-                  value={extractedA}
-                  onChange={(e) => setExtractedA(e.target.value)}
-                  disabled={step1Status === 'SUCCESS' || loading}
-                />
-                
-                <label>
-                  {activePhaseIndex === 1 
-                    ? 'VARIABLE COMPONENT B (Days Present)' 
-                    : activePhaseIndex === 2 
-                      ? 'VARIABLE COMPONENT B (Late Minutes)' 
-                      : activePhaseIndex === 3
-                        ? 'VARIABLE COMPONENT B (Actual OT Hours)'
-                        : 'VARIABLE COMPONENT B (Holiday Multiplier)'}
-                </label>
-                <input 
-                  type="number" 
-                  placeholder={activePhaseIndex === 1 
-                    ? "Enter shifts worked" 
-                    : activePhaseIndex === 2 
-                      ? "Enter late minutes" 
-                      : activePhaseIndex === 3
-                        ? "Enter actual OT hours"
-                        : "Enter holiday multiplier (e.g. 2.0)"} 
-                  className="tech-input"
-                  value={extractedB}
-                  onChange={(e) => setExtractedB(e.target.value)}
-                  disabled={step1Status === 'SUCCESS' || loading}
-                />
-
-                {/* 3-Strike Warning Banner */}
-                {step1Status === 'ERROR' && extractionAttempts > 0 && extractionAttempts < 3 && (
-                  <div style={{
-                    marginTop: '8px',
-                    padding: '8px 12px',
-                    borderRadius: '4px',
-                    backgroundColor: extractionAttempts === 2 ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.10)',
-                    border: `1px solid ${extractionAttempts === 2 ? '#ef4444' : '#f59e0b'}`,
-                    color: extractionAttempts === 2 ? '#f87171' : '#fbbf24',
-                    fontFamily: 'monospace',
-                    fontSize: '0.8rem',
-                    letterSpacing: '0.5px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}>
-                    <span>{extractionAttempts === 2 ? '🚨' : '⚠️'}</span>
-                    <span>
-                      {extractionAttempts === 2
-                        ? `CRITICAL WARNING: Final attempt remaining. One more failure will force a full scenario reroll.`
-                        : `Extraction Failed. You have ${3 - extractionAttempts} attempt${3 - extractionAttempts === 1 ? '' : 's'} remaining before the scenario resets.`
-                      }
-                    </span>
-                  </div>
-                )}
-                
-                {step1Status !== 'SUCCESS' && (
-                  <button className="run-btn" onClick={handleValidateExtraction} disabled={loading}>
-                    {loading ? 'AUDITING...' : 'RUN EXTRACTION UNIT >'}
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* STEP 2: RULE IDENTIFICATION */}
-            <div className={`step-card ${step2Status === 'ACTIVE' ? 'active-step' : ''} ${step2Status === 'SUCCESS' ? 'success-step' : ''} ${step2Status === 'ERROR' ? 'error-step' : ''} ${step2Status === 'LOCKED' ? 'locked-step' : ''}`}>
-              <div className="step-title">
-                <h4>② STEP 2: IDENTIFY CORE EQUATION</h4>
-                <span className="badge" style={{ backgroundColor: step2Status === 'SUCCESS' ? '#10b981' : '#475569', color: '#fff' }}>
-                  {step2Status}
-                </span>
-              </div>
-              
-              {step2Status !== 'LOCKED' && (
-                <div className="inputs-container">
-                  <label>
-                    {activePhaseIndex === 1 
-                      ? 'Gross Basic Pay Equation Formula:' 
-                      : activePhaseIndex === 2 
-                        ? 'Tardiness Deduction Equation Formula:' 
-                        : activePhaseIndex === 3
-                          ? 'Overtime Premium Equation Formula:'
-                          : 'Regular Holiday Pay Equation Formula:'}
-                  </label>
-                  <select 
-                    value={selectedRule}
-                    onChange={(e) => setSelectedRule(e.target.value)}
-                    disabled={step2Status === 'SUCCESS' || loading}
-                    className="tech-input"
-                    style={{ backgroundColor: '#0b1120', color: '#fff' }}
-                  >
-                    <option value="">-- SELECT FORMULA --</option>
-                    {activePhaseIndex === 1 ? (
-                      <>
-                        <option value="ADDITION">Daily Rate + Days Present</option>
-                        <option value="MULTIPLICATION">Daily Rate × Days Present (Multiplication)</option>
-                        <option value="DIVISION">Daily Rate ÷ Days Present</option>
-                      </>
-                    ) : activePhaseIndex === 2 ? (
-                      <>
-                        <option value="TARDINESS_FORMULA">(Hourly Rate / 60) × Late Minutes</option>
-                        <option value="OFFSET_FORMULA">(Hourly Rate / 60) × (Late Minutes - Early Clock-in)</option>
-                        <option value="DAILY_RATE_DIV_60">(Daily Rate / 60) × Late Minutes</option>
-                      </>
-                    ) : activePhaseIndex === 3 ? (
-                      <>
-                        <option value="OT_FORMULA">Hourly Rate × OT Hours × 1.25</option>
-                        <option value="OT_ADDITION">Hourly Rate + OT Hours + 1.25</option>
-                        <option value="OT_DAILY">Daily Rate × OT Hours × 1.25</option>
-                      </>
-                    ) : (
-                      <>
-                        <option value="HOLIDAY_FORMULA">Daily Rate × 2.0 (Regular Holiday Pay)</option>
-                        <option value="DAILY_RATE_X_1.3">Daily Rate × 1.3 (Special Non-Working Holiday)</option>
-                        <option value="HOURLY_RATE_X_8">Hourly Rate × 8 (Standard Shift)</option>
-                      </>
-                    )}
-                  </select>
-                  
-                  {step2Status !== 'SUCCESS' && (
-                    <button className="run-btn" onClick={handleValidateRule} disabled={loading}>
-                      {loading ? 'COMPLYING...' : 'SUBMIT RULES THEORY >'}
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* STEP 3: ARITHMETIC EXECUTION */}
-            <div className={`step-card ${step3Status === 'ACTIVE' ? 'active-step' : ''} ${step3Status === 'SUCCESS' ? 'success-step' : ''} ${step3Status === 'ERROR' ? 'error-step' : ''} ${step3Status === 'LOCKED' ? 'locked-step' : ''}`}>
-              <div className="step-title">
-                <h4>③ STEP 3: EXECUTE ARITHMETIC</h4>
-                <span className="badge" style={{ backgroundColor: step3Status === 'SUCCESS' ? '#10b981' : '#475569', color: '#fff' }}>
-                  {step3Status}
-                </span>
-              </div>
-              
-              {step3Status !== 'LOCKED' && (
-                <div className="inputs-container">
-                  <label>
-                    {activePhaseIndex === 1 
-                      ? 'FINAL GROSS BASIC EARNINGS (₱)' 
-                      : activePhaseIndex === 2 
-                        ? 'TOTAL TARDINESS DEDUCTIONS (₱)' 
-                        : activePhaseIndex === 3
-                          ? 'FINAL OVERTIME PREMIUM PAY (₱)'
-                          : 'FINAL REGULAR HOLIDAY PAY (₱)'}
-                  </label>
-                  <input 
-                    type="number" 
-                    placeholder={activePhaseIndex === 1 
-                      ? "₱ Enter calculated amount" 
-                      : activePhaseIndex === 2 
-                        ? "₱ Enter calculated deductions" 
-                        : activePhaseIndex === 3
-                          ? "₱ Enter calculated overtime pay"
-                          : "₱ Enter calculated holiday pay"} 
-                    className="tech-input"
-                    value={calculatedValue}
-                    onChange={(e) => setCalculatedValue(e.target.value)}
-                    disabled={step3Status === 'SUCCESS' || loading}
-                  />
-                  
-                  {step3Status !== 'SUCCESS' && (
-                    <button className="run-btn" onClick={handleValidateExecution} disabled={loading}>
-                      {loading ? 'AUDITING LEDGER...' : 'RUN FINAL LEDGER AUDIT >'}
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* STEP 4: SYNTHESIS COMPUTE NET PAY / TOTAL EARNINGS */}
-            {(activePhaseIndex === 2 || activePhaseIndex === 3 || activePhaseIndex === 4) && (
-              <div className={`step-card ${step4Status === 'ACTIVE' ? 'active-step' : ''} ${step4Status === 'SUCCESS' ? 'success-step' : ''} ${step4Status === 'ERROR' ? 'error-step' : ''} ${step4Status === 'LOCKED' ? 'locked-step' : ''}`} style={{ border: '2px solid #3b82f6', boxShadow: '0 0 10px rgba(59, 130, 246, 0.2)' }}>
-                <div className="step-title">
-                  <h4 style={{ color: '#60a5fa' }}>
-                    {activePhaseIndex === 2 ? '④ STEP 4: COMPUTE NET PAY' : '④ STEP 4: COMPUTE TOTAL EARNINGS'}
-                  </h4>
-                  <span className="badge" style={{ backgroundColor: step4Status === 'SUCCESS' ? '#10b981' : '#475569', color: '#fff' }}>
-                    {step4Status}
-                  </span>
-                </div>
-                
-                {step4Status !== 'LOCKED' && (
-                  <div className="inputs-container">
-                    <label>
-                      {activePhaseIndex === 2 
-                        ? 'FINAL TOTAL TAKE-HOME NET PAY (₱)' 
-                        : activePhaseIndex === 4
-                          ? 'FINAL HOLIDAY-ADJUSTED TOTAL EARNINGS (₱)'
-                          : 'FINAL OVERTIME-ADJUSTED TOTAL EARNINGS (₱)'}
-                    </label>
-                    <input 
-                      type="number" 
-                      placeholder={activePhaseIndex === 2 ? "₱ Enter calculated Net Pay" : "₱ Enter calculated Total Earnings"} 
-                      className="tech-input"
-                      value={netPayValue}
-                      onChange={(e) => setNetPayValue(e.target.value)}
-                      disabled={step4Status === 'SUCCESS' || loading}
-                      style={{ border: '1px solid #3b82f6', color: '#fff' }}
-                    />
-                    <button 
-                      className="tech-link"
-                      onClick={() => setActivePopup('HANDBOOK')}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#60a5fa',
-                        cursor: 'pointer',
-                        textDecoration: 'underline',
-                        fontFamily: 'monospace',
-                        fontSize: '0.8rem',
-                        padding: 0,
-                        textAlign: 'left',
-                        marginTop: '5px',
-                        display: 'block'
-                      }}
-                    >
-                      {activePhaseIndex === 2 
-                        ? '💡 Need the Net Pay formula? Check the Company Payroll Manual' 
-                        : '💡 Need the Total Earnings formula? Check the Company Payroll Manual'}
-                    </button>
-                    
-                    {step4Status !== 'SUCCESS' && (
-                      <button className="run-btn" onClick={handleValidateSynthesis} disabled={loading} style={{ backgroundColor: '#1d4ed8', borderColor: '#3b82f6' }}>
-                        {loading ? 'SYNTHESIZING...' : activePhaseIndex === 2 ? 'RUN FINAL SYNTHESIS NET AUDIT >' : activePhaseIndex === 4 ? 'RUN FINAL SYNTHESIS HOLIDAY AUDIT >' : 'RUN FINAL SYNTHESIS OT AUDIT >'}
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Pulsing Amber CTA for Phase Completion */}
-            {((activePhaseIndex === 1 && step3Status === 'SUCCESS') || 
-              (activePhaseIndex === 2 && step4Status === 'SUCCESS') ||
-              (activePhaseIndex === 3 && step4Status === 'SUCCESS') ||
-              (activePhaseIndex === 4 && step4Status === 'SUCCESS')) && (
-              <div className="text-amber-400 animate-pulse" style={{
-                textAlign: 'center',
-                fontWeight: 'bold',
-                fontSize: '1rem',
-                border: '2px dashed #fbbf24',
-                padding: '12px',
-                borderRadius: '6px',
-                backgroundColor: 'rgba(251, 191, 36, 0.08)',
-                marginTop: '15px',
-                letterSpacing: '1px'
-              }}>
-                {activePhaseIndex === 1 
-                  ? "MISSION PHASE 1 COMPLETE. [PROCEED TO ROOM DOOR]" 
-                  : activePhaseIndex === 2
-                    ? "MISSION PHASE 2 COMPLETE. [PROCEED TO ROOM DOOR]"
-                    : activePhaseIndex === 3
-                      ? "MISSION PHASE 3 COMPLETE. [PROCEED TO ROOM DOOR]"
-                      : "MISSION PHASE 4 COMPLETE. [PROCEED TO ROOM DOOR]"
-                }
-              </div>
-            )}
-
-            {/* General Feedback display terminal */}
-            <div className="feedback-terminal" style={{
-              background: '#070a13',
-              border: '1px solid #1e293b',
-              padding: '10px 15px',
-              fontFamily: 'monospace',
-              fontSize: '0.85rem',
-              borderRadius: '4px',
-              color: feedback.includes('ERROR') || feedback.includes('Failed') ? '#ef4444' : '#60a5fa',
-              marginTop: '10px'
-            }}>
-              <span style={{ color: '#10b981' }}>SYS_LOG&gt;&gt;</span> {feedback}
-            </div>
-
-          </div>
-          
-          <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-            <button 
-              className="run-btn" 
-              onClick={() => handleRerollScenario(true)} 
-              disabled={loading}
-              style={{ flex: 1, backgroundColor: '#1e293b', border: '1px solid #60a5fa', color: '#60a5fa', margin: 0, padding: '12px' }}
-            >
-              🔄 REROLL SCENARIO
-            </button>
-            <button 
-              className="escalate-btn" 
-              onClick={() => setCurrentView('DASHBOARD')}
-              style={{ flex: 1, margin: 0, padding: '12px' }}
-            >
-              [ RETURN TO DASHBOARD ]
-            </button>
-          </div>
-
-        </div>
+        {/* RIGHT PANEL: The Mission Task Log Component */}
+        <MissionLog
+          activePhaseIndex={activePhaseIndex}
+          scenario={scenario}
+          loading={loading}
+          feedback={feedback}
+          setActivePopup={setActivePopup}
+          handleRerollScenario={handleRerollScenario}
+          setCurrentView={setCurrentView}
+          student={student}
+          extractedA={extractedA}
+          setExtractedA={setExtractedA}
+          extractedB={extractedB}
+          setExtractedB={setExtractedB}
+          step1Status={step1Status}
+          extractionAttempts={extractionAttempts}
+          handleValidateExtraction={handleValidateExtraction}
+          selectedRule={selectedRule}
+          setSelectedRule={setSelectedRule}
+          step2Status={step2Status}
+          handleValidateRule={handleValidateRule}
+          calculatedValue={calculatedValue}
+          setCalculatedValue={setCalculatedValue}
+          step3Status={step3Status}
+          handleValidateExecution={handleValidateExecution}
+          netPayValue={netPayValue}
+          setNetPayValue={setNetPayValue}
+          step4Status={step4Status}
+          handleValidateSynthesis={handleValidateSynthesis}
+          tribunalGross={tribunalGross}
+          setTribunalGross={setTribunalGross}
+          tribunalDeductions={tribunalDeductions}
+          setTribunalDeductions={setTribunalDeductions}
+          tribunalNet={tribunalNet}
+          setTribunalNet={setTribunalNet}
+          handleValidateTribunal={handleValidateTribunal}
+          tribunalStatus={tribunalStatus}
+        />
 
       </div>
 
@@ -886,10 +729,16 @@ function App() {
           setActivePopup(null);
         }} 
         scenario={scenario} 
-        isPhaseComplete={activePhaseIndex === 1 ? step3Status === 'SUCCESS' : step4Status === 'SUCCESS'}
+        isPhaseComplete={
+          activePhaseIndex === 1 
+            ? step3Status === 'SUCCESS' 
+            : activePhaseIndex === 7
+              ? tribunalStatus === 'SUCCESS'
+              : step4Status === 'SUCCESS'
+        }
         onProceed={() => {
           setActivePopup(null);
-          if (activePhaseIndex === 1 || activePhaseIndex === 2 || activePhaseIndex === 3) {
+          if (activePhaseIndex >= 1 && activePhaseIndex <= 6) {
             handleTransitionToNextPhase();
           } else {
             setCurrentView('DASHBOARD');

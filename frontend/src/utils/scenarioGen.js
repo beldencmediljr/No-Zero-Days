@@ -1,39 +1,8 @@
-export interface BiometricLog {
-  day: string;
-  timeIn: string;
-  timeOut: string;
-  late: number;
-  early: number;
-  status: 'LATE' | 'EARLY IN' | 'ON-TIME' | 'HOLIDAY';
-}
-
-export interface ScenarioData {
-  employeeName: string;
-  companyName: string;
-  dailyRate: number;
-  daysPresent: number;
-  riceSubsidy: number;
-  uniformAllowance: number;
-  hourlyRate: number;
-  lateMinutes: number;
-  earlyClockInMinutes: number;
-  calendarGrid: Record<number, 'P' | 'A'>;
-  biometricLogs: BiometricLog[];
-  otHours?: number;
-  unpaidLunchHours?: number;
-  workedOnHoliday?: boolean;
-  sssEeShare?: number;
-  sssErShare?: number;
-  personalSalaryLoan?: number;
-  spouseLoan?: number;
-  basicSalary?: number;
-}
-
 /**
  * Generates a randomized scenario payload specifically suited for Module 1, Phase 2.
  * Includes standard Daily/Hourly rates and dynamic biometric logs containing Red Herring values.
  */
-export function generatePhase2Scenario(): ScenarioData {
+export function generatePhase2Scenario() {
   const employees = ['Juan Dela Cruz', 'Maria Santos', 'Pedro Penduko', 'Anna Mangahas', 'Jose Rizal'];
   const companies = ['Apex Industrial Works', 'TechGear Solutions Inc.', 'Starlight Garments Corp.', 'Cebu Logistics Ltd.'];
   
@@ -57,7 +26,7 @@ export function generatePhase2Scenario(): ScenarioData {
   const earlyClockInMinutes = earlyInList[Math.floor(Math.random() * earlyInList.length)];
 
   // Dynamic 5-day biometric logs list with status mapping
-  const biometricLogs: BiometricLog[] = [
+  const biometricLogs = [
     {
       day: 'MON (June 8)',
       timeIn: `08:${lateMinutes < 10 ? '0' + lateMinutes : lateMinutes} AM`,
@@ -101,7 +70,7 @@ export function generatePhase2Scenario(): ScenarioData {
   ];
 
   // Dummy calendar grid for Lobby compatibility
-  const calendarGrid: Record<number, 'P' | 'A'> = {};
+  const calendarGrid = {};
   const weekdaysList = [8, 9, 10, 11, 12, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26];
   weekdaysList.forEach((day, index) => {
     calendarGrid[day] = index < daysPresent ? 'P' : 'A';
@@ -126,7 +95,7 @@ export function generatePhase2Scenario(): ScenarioData {
  * Generates a randomized scenario payload specifically suited for Module 2, Phase 1 (Overtime Premiums).
  * Includes raw OT hours and unpaid lunch breaks for Red Herring validation.
  */
-export function generatePhase3Scenario(): ScenarioData {
+export function generatePhase3Scenario() {
   const employees = ['Juan Dela Cruz', 'Maria Santos', 'Pedro Penduko', 'Anna Mangahas', 'Jose Rizal'];
   const companies = ['Apex Industrial Works', 'TechGear Solutions Inc.', 'Starlight Garments Corp.', 'Cebu Logistics Ltd.'];
   const rates = [500, 600, 750, 800, 900, 1000];
@@ -144,7 +113,7 @@ export function generatePhase3Scenario(): ScenarioData {
   const unpaidLunchHours = 1.0; // 1 hour unpaid break
 
   // Dummy calendar grid for Lobby compatibility
-  const calendarGrid: Record<number, 'P' | 'A'> = {};
+  const calendarGrid = {};
   const weekdaysList = [8, 9, 10, 11, 12, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26];
   weekdaysList.forEach((day, index) => {
     calendarGrid[day] = index < daysPresent ? 'P' : 'A';
@@ -171,7 +140,7 @@ export function generatePhase3Scenario(): ScenarioData {
  * Generates a randomized scenario payload specifically suited for Module 2, Phase 2 (Regular Holiday Pay).
  * Dictates that the employee worked on the Regular Holiday (June 12).
  */
-export function generatePhase4Scenario(): ScenarioData {
+export function generatePhase4Scenario() {
   const employees = ['Juan Dela Cruz', 'Maria Santos', 'Pedro Penduko', 'Anna Mangahas', 'Jose Rizal'];
   const companies = ['Apex Industrial Works', 'TechGear Solutions Inc.', 'Starlight Garments Corp.', 'Cebu Logistics Ltd.'];
   const rates = [500, 600, 750, 800, 900, 1000];
@@ -184,7 +153,7 @@ export function generatePhase4Scenario(): ScenarioData {
   const hourlyRate = dailyRate / 8.0;
 
   // Biometric logs show employee worked on regular holiday June 12
-  const biometricLogs: BiometricLog[] = [
+  const biometricLogs = [
     {
       day: 'MON (June 8)',
       timeIn: '08:00 AM',
@@ -228,7 +197,7 @@ export function generatePhase4Scenario(): ScenarioData {
   ];
 
   // Dummy calendar grid for Lobby compatibility
-  const calendarGrid: Record<number, 'P' | 'A'> = {};
+  const calendarGrid = {};
   const weekdaysList = [8, 9, 10, 11, 12, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26];
   weekdaysList.forEach((day, index) => {
     calendarGrid[day] = index < daysPresent ? 'P' : 'A';
@@ -252,7 +221,7 @@ export function generatePhase4Scenario(): ScenarioData {
 /**
  * Generates a randomized scenario payload specifically suited for Module 3, Phase 5 (SSS Deductions).
  */
-export function generatePhase5Scenario(): ScenarioData {
+export function generatePhase5Scenario() {
   const employees = ['Juan Dela Cruz', 'Maria Santos', 'Pedro Penduko', 'Anna Mangahas', 'Jose Rizal'];
   const companies = ['Apex Industrial Works', 'TechGear Solutions Inc.', 'Starlight Garments Corp.', 'Cebu Logistics Ltd.'];
   const rates = [500, 600, 750, 800, 900, 1000];
@@ -295,14 +264,14 @@ export function generatePhase5Scenario(): ScenarioData {
 /**
  * Generates a randomized scenario payload specifically suited for Module 3, Phase 6 (PhilHealth Premiums).
  */
-export function generatePhase6Scenario(): ScenarioData {
+export function generatePhase6Scenario() {
   return generatePhase5Scenario();
 }
 
 /**
  * Generates a randomized scenario payload specifically suited for Module 4, Phase 7 (The Tribunal Final Boss).
  */
-export function generatePhase7Scenario(): ScenarioData {
+export function generatePhase7Scenario() {
   const employees = ['Juan Dela Cruz', 'Maria Santos', 'Pedro Penduko', 'Anna Mangahas', 'Jose Rizal'];
   const companies = ['Apex Industrial Works', 'TechGear Solutions Inc.', 'Starlight Garments Corp.', 'Cebu Logistics Ltd.'];
   const rates = [500, 600, 750, 800, 900, 1000];
@@ -359,4 +328,3 @@ export function generatePhase7Scenario(): ScenarioData {
     basicSalary
   };
 }
-
