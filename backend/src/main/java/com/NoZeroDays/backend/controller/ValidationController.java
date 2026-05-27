@@ -111,13 +111,30 @@ public class ValidationController {
         java.util.List<PhaseProgress> list = new java.util.ArrayList<>();
         boolean previousCompleted = true;
 
+        List<GameSession> activeSessions = gameSessionRepository.findByStudentProfileAndStatus(student, "ACTIVE");
+        GameSession activeSession = activeSessions.isEmpty() ? null : activeSessions.get(0);
+        java.time.LocalDateTime sessionStartTime = activeSession != null ? activeSession.getStartTime() : null;
+        if (sessionStartTime != null) {
+            long currentSessionAttempts = attemptLogRepository.countAttemptsSince(student, sessionStartTime);
+            if (currentSessionAttempts == 0) {
+                sessionStartTime = null; // fallback to include historical attempts if no active attempts in current session
+            }
+        }
+        int currentPhase = activeSession != null ? activeSession.getCurrentPhase() : 1;
+        boolean isSessionCompleted = activeSession != null && "COMPLETED".equalsIgnoreCase(activeSession.getStatus());
+
         for (int i = 0; i < 7; i++) {
             int phaseId = i + 1;
             String module = modules[i];
             int phaseIndex = phases[i];
             
-            boolean completed = isPhaseCompleted(student, module, phaseIndex);
+            boolean completed = isPhaseCompleted(student, module, phaseIndex, sessionStartTime);
             
+            // Also completed if GameSession has progressed past it or is complete
+            if (isSessionCompleted || phaseId < currentPhase) {
+                completed = true;
+            }
+
             String status = "LOCKED";
             if (completed) {
                 status = "COMPLETED";
@@ -125,12 +142,14 @@ public class ValidationController {
                 status = "ACTIVE";
             }
             
-            int completionPercentage = calculateCompletionPercentage(student, module, phaseIndex);
+            int completionPercentage = completed ? 100 : calculateCompletionPercentage(student, module, phaseIndex, sessionStartTime);
 
             // Calculate best attempt score
             int bestScore = 0;
             if (completed) {
-                List<AttemptLog> attempts = attemptLogRepository.findLatestAttempts(student, module, phaseIndex);
+                List<AttemptLog> attempts = (sessionStartTime != null)
+                    ? attemptLogRepository.findAttemptsSince(student, module, phaseIndex, sessionStartTime)
+                    : attemptLogRepository.findLatestAttempts(student, module, phaseIndex);
                 int failures = 0;
                 for (AttemptLog log : attempts) {
                     if (!log.isSuccessful()) {
@@ -162,12 +181,15 @@ public class ValidationController {
         return Collections.emptyList();
     }
 
-    private int calculateCompletionPercentage(StudentProfile student, String module, int phase) {
+    private int calculateCompletionPercentage(StudentProfile student, String module, int phase, java.time.LocalDateTime sessionStartTime) {
         List<String> requiredSteps = getRequiredStepsForPhase(module, phase);
         if (requiredSteps.isEmpty()) {
             return 0;
         }
-        List<AttemptLog> attempts = attemptLogRepository.findLatestAttempts(student, module, phase);
+        List<AttemptLog> attempts = (sessionStartTime != null)
+            ? attemptLogRepository.findAttemptsSince(student, module, phase, sessionStartTime)
+            : attemptLogRepository.findLatestAttempts(student, module, phase);
+            
         java.util.Set<String> successfulSteps = new java.util.HashSet<>();
         for (AttemptLog log : attempts) {
             if (log.isSuccessful()) {
@@ -184,8 +206,8 @@ public class ValidationController {
         return (int) Math.round(((double) completedRequiredSteps / requiredSteps.size()) * 100);
     }
 
-    private boolean isPhaseCompleted(StudentProfile student, String module, int phase) {
-        return calculateCompletionPercentage(student, module, phase) == 100;
+    private boolean isPhaseCompleted(StudentProfile student, String module, int phase, java.time.LocalDateTime sessionStartTime) {
+        return calculateCompletionPercentage(student, module, phase, sessionStartTime) == 100;
     }
 
     public static class PhaseProgress {

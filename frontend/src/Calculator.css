@@ -1,0 +1,425 @@
+/* ==========================================
+   SCIENTIFIC CALCULATOR — SLIDE-IN PANEL
+   Theme: No Zero Days! (Share Tech Mono)
+   ========================================== */
+
+/* ── Toggle Button (fixed, left-center of screen) ── */
+.calc-toggle-btn {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 8000;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border: 1px solid #334155;
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  padding: 14px 10px;
+  cursor: pointer;
+
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  color: #64748b;
+
+  transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1), background 0.25s, border 0.25s, color 0.25s, box-shadow 0.25s;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.4);
+}
+
+.calc-toggle-btn:hover {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  border-color: #facc15;
+  color: #facc15;
+  box-shadow: 4px 0 24px rgba(250, 204, 21, 0.15);
+}
+
+.calc-toggle-active {
+  border-color: #fbbf24;
+  color: #fbbf24;
+  background: linear-gradient(135deg, #1a1400 0%, #2d2000 100%);
+}
+
+.calc-toggle-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.calc-toggle-label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-size: 0.55rem;
+  letter-spacing: 2px;
+}
+
+/* ── Calculator Slide-in Panel ── */
+.calc-panel {
+  position: fixed;
+  left: -360px; /* hidden off-screen (adjusted for wider panel) */
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 7999;
+
+  width: 330px; /* slightly wider for 5 columns */
+  max-height: 95vh;
+  overflow-y: auto;
+
+  background: linear-gradient(160deg, #0b1120 0%, #0f172a 100%);
+  border: 2px solid #334155;
+  border-top: 3px solid #facc15;
+  border-radius: 0 12px 12px 0;
+  border-left: none;
+  box-shadow: 8px 0 40px rgba(0, 0, 0, 0.7), inset 0 0 60px rgba(250, 204, 21, 0.02);
+
+  font-family: 'Share Tech Mono', monospace;
+  color: #e2e8f0;
+
+  transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.calc-panel-visible {
+  left: 0;
+}
+
+/* Pushes the toggle button to the right of the panel when visible */
+.calc-panel-visible + .calc-toggle-btn {
+  left: 330px;
+}
+
+/* Scrollbar styling */
+.calc-panel::-webkit-scrollbar { width: 4px; }
+.calc-panel::-webkit-scrollbar-track { background: #0b1120; }
+.calc-panel::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+
+/* ── Header ── */
+.calc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px 10px;
+  border-bottom: 1px dashed #1e293b;
+  background: rgba(250, 204, 21, 0.04);
+}
+
+.calc-title {
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  color: #facc15;
+  font-weight: bold;
+}
+
+.calc-close-btn {
+  background: none;
+  border: 1px solid #334155;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'Share Tech Mono', monospace;
+  transition: all 0.2s;
+}
+
+.calc-close-btn:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #fff;
+}
+
+/* ── Display ── */
+.calc-display-wrapper {
+  padding: 12px 14px 8px;
+  position: relative;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid #1e293b;
+}
+
+.calc-expression {
+  font-size: 0.72rem;
+  color: #64748b;
+  min-height: 18px;
+  text-align: right;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+
+.calc-display {
+  font-size: 1.6rem; /* slightly smaller to fit longer expression paths */
+  font-weight: bold;
+  text-align: right;
+  color: #fbbf24;
+  letter-spacing: 1px;
+  cursor: pointer;
+  padding: 6px 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  word-break: break-all;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  text-shadow: 0 0 16px rgba(251, 191, 36, 0.4);
+}
+
+.calc-display:hover {
+  background: rgba(251, 191, 36, 0.06);
+}
+
+.calc-copy-hint {
+  text-align: right;
+  font-size: 0.6rem;
+  color: #334155;
+  margin-top: 2px;
+}
+
+.calc-error-banner {
+  text-align: right;
+  font-size: 0.65rem;
+  color: #f87171;
+  margin-top: 2px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+/* ── Button Grid ── */
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 columns for scientific layout */
+  gap: 5px;
+  padding: 10px;
+}
+
+.calc-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.82rem; /* compact font for text keys */
+  padding: 10px 2px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  letter-spacing: 0.5px;
+  font-weight: bold;
+}
+
+/* Number buttons */
+.btn-num {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+.btn-num:hover {
+  background: #334155;
+  border-color: #475569;
+  color: #fff;
+}
+
+.btn-num:active {
+  background: #475569;
+  transform: scale(0.96);
+}
+
+/* Double width number (0 key) */
+.btn-num-double {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+  grid-column: span 2; /* takes 2 columns */
+}
+
+.btn-num-double:hover {
+  background: #334155;
+  border-color: #475569;
+  color: #fff;
+}
+
+.btn-num-double:active {
+  transform: scale(0.96);
+}
+
+/* Operator buttons (+, -, *, /) */
+.btn-op {
+  background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+  border-color: #3e3e3e;
+  color: #fbbf24;
+  font-size: 0.95rem;
+}
+
+.btn-op:hover {
+  background: #3e3e3e;
+  border-color: #fbbf24;
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.2);
+}
+
+.btn-op:active {
+  transform: scale(0.96);
+}
+
+/* Scientific functions (sin, cos, log...) */
+.btn-sci {
+  background: #0f172a;
+  border-color: #1e293b;
+  color: #60a5fa;
+}
+
+.btn-sci:hover {
+  background: #1e293b;
+  border-color: #60a5fa;
+  color: #fff;
+}
+
+.btn-sci:active {
+  transform: scale(0.96);
+}
+
+/* Mode toggler (DEG/RAD) */
+.btn-mode {
+  background: #1e1b4b;
+  border-color: #312e81;
+  color: #a78bfa;
+}
+
+.btn-mode:hover {
+  background: #312e81;
+  border-color: #a78bfa;
+  color: #fff;
+}
+
+.btn-mode:active {
+  transform: scale(0.96);
+}
+
+/* Constants (pi, e) */
+.btn-const {
+  background: #064e3b;
+  border-color: #065f46;
+  color: #34d399;
+}
+
+.btn-const:hover {
+  background: #065f46;
+  border-color: #34d399;
+  color: #fff;
+}
+
+.btn-const:active {
+  transform: scale(0.96);
+}
+
+/* Clear buttons */
+.btn-clear {
+  background: rgba(127, 29, 29, 0.3);
+  border-color: #7f1d1d;
+  color: #f87171;
+}
+
+.btn-clear:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: #ef4444;
+  color: #fff;
+}
+
+.btn-clear:active {
+  transform: scale(0.96);
+}
+
+/* Tall equals button */
+.btn-equals {
+  background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+  border-color: #10b981;
+  color: #fff;
+  font-size: 1.2rem;
+  grid-row: span 2; /* tall key spanning two rows */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+}
+
+.btn-equals:hover {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
+  border-color: #34d399;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.45);
+}
+
+.btn-equals:active {
+  transform: scale(0.96);
+  box-shadow: none;
+}
+
+/* ── History Log ── */
+.calc-history {
+  border-top: 1px dashed #1e293b;
+  padding: 8px 12px;
+}
+
+.calc-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 0.65rem;
+  color: #475569;
+  letter-spacing: 1px;
+}
+
+.calc-clear-history {
+  background: none;
+  border: 1px solid #1e293b;
+  color: #475569;
+  cursor: pointer;
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Share Tech Mono', monospace;
+  transition: all 0.2s;
+}
+
+.calc-clear-history:hover {
+  border-color: #ef4444;
+  color: #f87171;
+}
+
+.calc-history-list {
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.calc-history-list::-webkit-scrollbar { width: 2px; }
+.calc-history-list::-webkit-scrollbar-thumb { background: #1e293b; }
+
+.calc-history-entry {
+  font-size: 0.7rem;
+  color: #64748b;
+  padding: 4px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: right;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+  letter-spacing: 0.5px;
+}
+
+.calc-history-entry:hover {
+  background: rgba(251, 191, 36, 0.06);
+  color: #fbbf24;
+  border-color: #334155;
+}
+
+.calc-history-entry:first-child {
+  color: #94a3b8;
+}
+
+/* ── Quick Formulas ── */
+.calc-payroll-hint {
+  border-top: 1px dashed #1e293b;
+  padding: 10px 12px 14px;
+  background: rgba(0, 0, 0, 0.2);
+}

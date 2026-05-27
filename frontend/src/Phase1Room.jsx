@@ -1,23 +1,23 @@
 import React from 'react';
-import lobbyImage from './assets/phase1-lobby.png'; 
-import securityImage from './assets/phase2-biometrics.png'; 
+import lobbyImage from './assets/phase1-lobby.png';
+import securityImage from './assets/phase2-biometrics.png';
 import overtimeImage from './assets/phase3-overtime.png';
 import breakroomImage from './assets/phase4-breakroom.png';
 import pclabImage from './assets/phase5-6-pclab.png';
 import boardroomImage from './assets/phase7-boardroom.png';
-import './Room.css'; 
+import './Room.css';
 
 export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
-  
+
   if (activePhaseIndex === 4) {
     return (
       <div className="room-container">
         <img src={breakroomImage} alt="Employee Notice Board & Breakroom" className="background-image" />
 
         {/* Phase 4 hotspots */}
-        <button 
-          className="hotspot corkboard-hotspot" 
-          title="📌 Corkboard Memos" 
+        <button
+          className="hotspot corkboard-hotspot"
+          title="📌 Corkboard Memos"
           onClick={() => setActivePopup('MEMOS')}
           style={{
             position: 'absolute',
@@ -28,9 +28,9 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
             cursor: 'pointer',
           }}
         ></button>
-        <button 
-          className="hotspot timesheet-hotspot" 
-          title="📟 Timesheet Terminal" 
+        <button
+          className="hotspot timesheet-hotspot"
+          title="📟 Timesheet Terminal"
           onClick={() => setActivePopup('TIMESHEET_TERMINAL')}
           style={{
             position: 'absolute',
@@ -41,9 +41,9 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
             cursor: 'pointer',
           }}
         ></button>
-        <button 
-          className="hotspot poster-hotspot" 
-          title="📋 DOLE Holiday Poster" 
+        <button
+          className="hotspot poster-hotspot"
+          title="📋 DOLE Holiday Poster"
           onClick={() => setActivePopup('DOLE_HOLIDAY')}
           style={{
             position: 'absolute',
@@ -54,9 +54,9 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
             cursor: 'pointer',
           }}
         ></button>
-        <button 
-          className="hotspot door-hotspot" 
-          title="🚪 Breakroom Exit Door" 
+        <button
+          className="hotspot door-hotspot"
+          title="🚪 Breakroom Exit Door"
           onClick={() => setActivePopup('DOOR')}
           style={{
             position: 'absolute',
@@ -67,9 +67,9 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
             cursor: 'pointer',
           }}
         ></button>
-        <button 
-          className="hotspot handbook-hotspot" 
-          title="📘 Company Payroll Manual" 
+        <button
+          className="hotspot handbook-hotspot"
+          title="📘 Company Payroll Manual"
           onClick={() => setActivePopup('HANDBOOK')}
           style={{
             position: 'absolute',
@@ -90,9 +90,9 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
         <img src={overtimeImage} alt="Supervisor Office & Assembly Line" className="background-image" />
 
         {/* Phase 3 hotspots */}
-        <button 
-          className="hotspot timecard-hotspot" 
-          title="Production Time Card" 
+        <button
+          className="hotspot timecard-hotspot"
+          title="Production Time Card"
           onClick={() => setActivePopup('TIMECARD')}
           style={{
             position: 'absolute',
@@ -103,9 +103,9 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
             cursor: 'pointer',
           }}
         ></button>
-        <button 
-          className="hotspot poster-hotspot" 
-          title="DOLE Overtime Poster" 
+        <button
+          className="hotspot poster-hotspot"
+          title="DOLE Overtime Poster"
           onClick={() => setActivePopup('DOLE_OVERTIME')}
           style={{
             position: 'absolute',
@@ -116,9 +116,9 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
             cursor: 'pointer',
           }}
         ></button>
-        <button 
-          className="hotspot handbook-hotspot" 
-          title="Company Payroll Manual" 
+        <button
+          className="hotspot handbook-hotspot"
+          title="Company Payroll Manual"
           onClick={() => setActivePopup('HANDBOOK')}
           style={{
             position: 'absolute',
@@ -129,9 +129,9 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
             cursor: 'pointer',
           }}
         ></button>
-        <button 
-          className="hotspot door-hotspot" 
-          title="Supervisor Exit Door" 
+        <button
+          className="hotspot door-hotspot"
+          title="Supervisor Exit Door"
           onClick={() => setActivePopup('DOOR')}
           style={{
             position: 'absolute',
@@ -151,9 +151,9 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
       <div className="room-container">
         <img src={pclabImage} alt="PC Lab / Bureaucracy Department" className="background-image" />
         {/* Hotspot 1: Notice Board Corkboard Memos */}
-        <button 
-          className="hotspot corkboard-hotspot" 
-          title={activePhaseIndex === 5 ? "📌 SSS Contribution Table" : "📌 PhilHealth Premium Table"} 
+        <button
+          className="hotspot corkboard-hotspot"
+          title={activePhaseIndex === 5 ? "📌 SSS Contribution Table" : "📌 PhilHealth Premium Table"}
           onClick={() => setActivePopup(activePhaseIndex === 5 ? 'SSS_TABLE' : 'PHILHEALTH_TABLE')}
           style={{
             position: 'absolute',
@@ -167,9 +167,9 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
         ></button>
 
         {/* Hotspot 2: PC Monitor (Loan Statement / HR Database) */}
-        <button 
-          className="hotspot monitor-hotspot" 
-          title={activePhaseIndex === 5 ? "🖥️ Employee Loan Statement" : "🖥️ HR Salary Database"} 
+        <button
+          className="hotspot monitor-hotspot"
+          title={activePhaseIndex === 5 ? "🖥️ Employee Loan Statement" : "🖥️ HR Salary Database"}
           onClick={() => setActivePopup(activePhaseIndex === 5 ? 'LOAN_STATEMENT' : 'SALARY_DATABASE')}
           style={{
             position: 'absolute',
@@ -183,9 +183,9 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
         ></button>
 
         {/* Hotspot 3: Exit Door */}
-        <button 
-          className="hotspot door-hotspot" 
-          title="🚪 PC Lab Exit Door" 
+        <button
+          className="hotspot door-hotspot"
+          title="🚪 PC Lab Exit Door"
           onClick={() => setActivePopup('DOOR')}
           style={{
             position: 'absolute',
@@ -199,9 +199,9 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
         ></button>
 
         {/* Hotspot 4: Company Payroll Manual */}
-        <button 
-          className="hotspot handbook-hotspot" 
-          title="📘 Company Payroll Manual" 
+        <button
+          className="hotspot handbook-hotspot"
+          title="📘 Company Payroll Manual"
           onClick={() => setActivePopup('HANDBOOK')}
           style={{
             position: 'absolute',
@@ -222,9 +222,9 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
       <div className="room-container">
         <img src={boardroomImage} alt="Executive Boardroom" className="background-image" />
         {/* Hotspot 1: Executive Audit Folder */}
-        <button 
-          className="hotspot folder-hotspot" 
-          title="📁 Executive Audit Folder" 
+        <button
+          className="hotspot folder-hotspot"
+          title="📁 Executive Audit Folder"
           onClick={() => setActivePopup('AUDIT_FOLDER')}
           style={{
             position: 'absolute',
@@ -238,9 +238,9 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
         ></button>
 
         {/* Hotspot 2: Executive Exit Door */}
-        <button 
-          className="hotspot door-hotspot" 
-          title="🚪 Boardroom Exit Door" 
+        <button
+          className="hotspot door-hotspot"
+          title="🚪 Boardroom Exit Door"
           onClick={() => setActivePopup('DOOR')}
           style={{
             position: 'absolute',
@@ -265,7 +265,7 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
         <button className="hotspot biometrics-hotspot" title="Biometrics Swipe Logs" onClick={() => setActivePopup('BIOMETRICS')}></button>
         <button className="hotspot poster-hotspot" title="DOLE Compliance Poster" onClick={() => setActivePopup('DOLE_POSTER')}></button>
         <button className="hotspot handbook-hotspot" title="Company Payroll Manual" onClick={() => setActivePopup('HANDBOOK')}></button>
-        <button className="hotspot door-hotspot" title="Exit Doorway Gate" onClick={() => setActivePopup('DOOR')}></button>
+        <button className="hotspot phase2-door-hotspot" title="Exit Doorway Gate" onClick={() => setActivePopup('DOOR')}></button>
       </div>
     );
   }
@@ -283,4 +283,4 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
       <button className="hotspot door-hotspot" title="Exit Doorway Gate" onClick={() => setActivePopup('DOOR')}></button>
     </div>
   );
-}
+}

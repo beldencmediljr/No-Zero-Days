@@ -4,6 +4,7 @@ import Popups from './Popups';
 import Login from './Login';
 import Dashboard from './Dashboard';
 import MissionLog from './MissionLog';
+import Calculator from './Calculator';
 import { 
   generatePhase2Scenario, 
   generatePhase3Scenario, 
@@ -18,6 +19,7 @@ function App() {
   // --- 1. NAVIGATION & SESSION STATE ---
   const [currentView, setCurrentView] = useState('LOGIN'); 
   const [student, setStudent] = useState(null);
+  const [showCalculator, setShowCalculator] = useState(false);
 
   // --- 2. GAMEPLAY SCENARIO STATE ---
   // NOTE: All fields used by any phase/popup must have safe defaults here to prevent
@@ -764,6 +766,13 @@ function App() {
         activePhaseIndex={activePhaseIndex}
       />
 
+      {/* Floating Calculator Component */}
+      {currentView !== 'LOGIN' && (
+        <Calculator 
+          isVisible={showCalculator} 
+          onToggle={() => setShowCalculator(prev => !prev)} 
+        />
+      )}
 
     </div>
   );
