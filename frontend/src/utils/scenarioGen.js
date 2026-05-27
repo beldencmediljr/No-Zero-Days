@@ -214,7 +214,8 @@ export function generatePhase4Scenario() {
     lateMinutes: 0,
     earlyClockInMinutes: 0,
     calendarGrid,
-    biometricLogs
+    biometricLogs,
+    workedOnHoliday: true // Phase 4 always has employee working on the holiday
   };
 }
 

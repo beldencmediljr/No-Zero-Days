@@ -20,14 +20,28 @@ function App() {
   const [student, setStudent] = useState(null);
 
   // --- 2. GAMEPLAY SCENARIO STATE ---
+  // NOTE: All fields used by any phase/popup must have safe defaults here to prevent
+  // crashes when popups open before the first setScenario() call resolves.
   const [scenario, setScenario] = useState({
+    employeeName: 'Loading...',
+    companyName: 'Loading...',
     dailyRate: 800,
     daysPresent: 14,
     riceSubsidy: 1200,
     uniformAllowance: 1500,
     hourlyRate: 100,
     lateMinutes: 45,
-    earlyClockInMinutes: 15
+    earlyClockInMinutes: 15,
+    calendarGrid: {},
+    biometricLogs: [],
+    otHours: 0,
+    unpaidLunchHours: 1.0,
+    workedOnHoliday: false,
+    sssEeShare: 0,
+    sssErShare: 0,
+    personalSalaryLoan: 0,
+    spouseLoan: 0,
+    basicSalary: 0
   });
 
   const [hasSeenIntro, setHasSeenIntro] = useState(false);

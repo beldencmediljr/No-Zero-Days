@@ -21,11 +21,109 @@
   border-radius: 12px;
   width: 90%;
   max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
   position: relative;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
   color: #e2e8f0;
   margin: auto;
 }
+
+/* Popup content wrapper */
+.popup-content {
+  padding: 20px;
+  color: #e2e8f0;
+}
+
+/* Popup section header */
+.popup-header {
+  margin-bottom: 15px;
+  border-bottom: 1px dashed #334155;
+  padding-bottom: 10px;
+}
+
+.popup-header h4 {
+  margin: 0 0 5px 0;
+  color: #facc15;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+}
+
+.popup-header p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* Data display box */
+.data-box {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 0.9rem;
+}
+
+/* Authentic data highlighted box */
+.authentic-data {
+  border-color: #1e3a5f;
+  background: rgba(15, 23, 42, 0.9);
+}
+
+/* Red herring / warning data box */
+.herring-data {
+  border-color: #7f1d1d;
+  background: rgba(127, 29, 29, 0.1);
+}
+
+/* Data row flex layout */
+.data-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 0.88rem;
+}
+
+.data-row:last-child {
+  margin-bottom: 0;
+}
+
+.data-row span {
+  color: #94a3b8;
+}
+
+.data-row strong {
+  color: #e2e8f0;
+}
+
+/* Formula display box */
+.formula-box {
+  background: #0b1120;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: 12px;
+  text-align: center;
+  color: #fbbf24;
+  font-weight: bold;
+  font-family: 'Share Tech Mono', monospace;
+  margin: 10px 0;
+}
+
+/* Whiteboard-style box */
+.whiteboard-box {
+  padding: 20px;
+  background: #1e293b;
+  border: 2px solid #64748b;
+  border-radius: 8px;
+  margin-top: 15px;
+  text-align: center;
+}
+
+/* Highlight colors */
+.highlight-green { color: #10b981; }
+.warning-label { color: #f87171; font-weight: bold; }
+.herring-note { font-size: 0.8rem; color: #94a3b8; font-style: italic; }
 
 
 .close-btn {
@@ -97,4 +195,5 @@
   border: 2px solid #dc2626 !important; 
   background-color: rgba(220, 38, 38, 0.1) !important; 
 }
-.a-mark { color: #ef4444; font-weight: bold; font-size: 1.1rem; line-height: 1; }
+.a-mark { color: #ef4444; font-weight: bold; font-size: 1.1rem; line-height: 1; }
+

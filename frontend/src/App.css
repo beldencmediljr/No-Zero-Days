@@ -210,4 +210,11 @@ body {
 .error-step {
   border-color: #ef4444;
   background-color: rgba(239, 68, 68, 0.05);
-}
+}
+
+/* Success step highlight */
+.success-step {
+  border-color: #10b981;
+  background-color: rgba(16, 185, 129, 0.05);
+}
+
