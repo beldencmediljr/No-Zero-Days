@@ -48,7 +48,7 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
           style={{
             position: 'absolute',
             top: '15%',
-            left: '70%',
+            left: '40%',
             width: '18%',
             height: '32%',
             cursor: 'pointer',
@@ -86,7 +86,7 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
 
   if (activePhaseIndex === 3) {
     return (
-      <div className="room-container">
+      <div className="room-container phase3-room">
         <img src={overtimeImage} alt="Supervisor Office & Assembly Line" className="background-image" />
 
         {/* Phase 3 hotspots */}
@@ -94,53 +94,21 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
           className="hotspot timecard-hotspot"
           title="Production Time Card"
           onClick={() => setActivePopup('TIMECARD')}
-          style={{
-            position: 'absolute',
-            top: '55%',
-            left: '20%',
-            width: '18%',
-            height: '18%',
-            cursor: 'pointer',
-          }}
         ></button>
         <button
           className="hotspot poster-hotspot"
           title="DOLE Overtime Poster"
           onClick={() => setActivePopup('DOLE_OVERTIME')}
-          style={{
-            position: 'absolute',
-            top: '12%',
-            left: '72%',
-            width: '15%',
-            height: '30%',
-            cursor: 'pointer',
-          }}
         ></button>
         <button
           className="hotspot handbook-hotspot"
           title="Company Payroll Manual"
           onClick={() => setActivePopup('HANDBOOK')}
-          style={{
-            position: 'absolute',
-            top: '52%',
-            left: '5%',
-            width: '9%',
-            height: '10%',
-            cursor: 'pointer',
-          }}
         ></button>
         <button
           className="hotspot door-hotspot"
           title="Supervisor Exit Door"
           onClick={() => setActivePopup('DOOR')}
-          style={{
-            position: 'absolute',
-            top: '10%',
-            left: '44%',
-            width: '12%',
-            height: '35%',
-            cursor: 'pointer',
-          }}
         ></button>
       </div>
     );
