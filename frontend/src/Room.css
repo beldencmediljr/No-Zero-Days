@@ -17,13 +17,16 @@
 .hotspot {
   position: absolute;
   background-color: transparent; 
-  border: 2px solid red; /* DEBUG MODE: LEAVE RED UNTIL POSITIONED */
+  border: 1px dashed rgba(250, 204, 21, 0.45); /* High-tech glowing border */
   cursor: pointer;
   z-index: 10;
+  border-radius: 4px;
 }
 
 .hotspot:hover {
-  background-color: rgba(255, 255, 255, 0.15); 
+  background-color: rgba(250, 204, 21, 0.12); 
+  border-color: #facc15;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.35);
 }
 
 /* --- HOTSPOT POSITIONS --- */
@@ -57,3 +60,26 @@
   width: 12%;
   height: 22%;
 }
+
+/* --- PHASE 2 SECURITY ROOM POSITIONS --- */
+
+.biometrics-hotspot {
+  top: 18%;
+  left: 14%;
+  width: 15%;
+  height: 25%;
+}
+
+.poster-hotspot {
+  top: 15%;
+  left: 70%;
+  width: 16%;
+  height: 28%;
+}
+
+.handbook-hotspot {
+  top: 52%;
+  left: 31%;
+  width: 9%;
+  height: 10%;
+}
