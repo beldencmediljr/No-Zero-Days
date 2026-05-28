@@ -327,22 +327,18 @@ export default function Popups({
                     <th style={{ padding: '8px' }}>TIME IN</th>
                     <th style={{ padding: '8px' }}>TIME OUT</th>
                     <th style={{ padding: '8px' }}>LATE (MINS)</th>
-                    <th style={{ padding: '8px' }}>EARLY IN (MINS)</th>
                   </tr>
                 </thead>
                 <tbody>
                   {scenario.biometricLogs.map((log, idx) => (
                     <tr key={idx} style={{ borderBottom: '1px solid #1e293b' }}>
                       <td style={{ padding: '8px' }}>{log.day}</td>
-                      <td style={{ padding: '8px', color: log.status === 'LATE' ? '#ef4444' : log.status === 'EARLY IN' ? '#34d399' : log.status === 'HOLIDAY' ? '#facc15' : '#e2e8f0' }}>
+                      <td style={{ padding: '8px', color: log.status === 'LATE' ? '#ef4444' : log.status === 'HOLIDAY' ? '#facc15' : '#e2e8f0' }}>
                         {log.timeIn}
                       </td>
                       <td style={{ padding: '8px', color: log.status === 'HOLIDAY' ? '#facc15' : '#e2e8f0' }}>{log.timeOut}</td>
                       <td style={{ padding: '8px', color: log.late > 0 ? '#ef4444' : '#e2e8f0', fontWeight: log.late > 0 ? 'bold' : 'normal' }}>
                         {log.late} mins
-                      </td>
-                      <td style={{ padding: '8px', color: log.early > 0 ? '#34d399' : '#e2e8f0', fontWeight: log.early > 0 ? 'bold' : 'normal' }}>
-                        {log.early} mins
                       </td>
                     </tr>
                   ))}

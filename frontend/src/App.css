@@ -217,4 +217,29 @@ body {
   border-color: #10b981;
   background-color: rgba(16, 185, 129, 0.05);
 }
+
+/* Input with info tooltip */
+.input-hint-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.input-hint-wrapper .tech-input {
+  flex: 1;
+}
+
+.input-info-icon {
+  cursor: pointer;
+  color: #60a5fa;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* .input-tooltip styles are defined exclusively in Popups.css — do NOT duplicate here */
 

@@ -256,11 +256,13 @@ input[type="number"] {
   position: absolute;
   bottom: calc(100% + 10px);
   right: -6px;
-  width: 245px;
-  background: #0f172a;
-  border: 1px solid #f59e0b;
-  border-radius: 6px;
-  padding: 10px 13px;
+  height: auto;
+  width: max-content;
+  max-width: 250px;
+  background-color: #1a1a2e;
+  border: 1px solid #4a4a6a;
+  border-radius: 4px;
+  padding: 8px 12px;
   font-size: 0.78rem;
   font-style: normal;
   font-weight: normal;
@@ -273,6 +275,8 @@ input[type="number"] {
   text-align: left;
   letter-spacing: 0.2px;
   white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Downward caret arrow */
@@ -282,7 +286,7 @@ input[type="number"] {
   top: 100%;
   right: 10px;
   border: 6px solid transparent;
-  border-top-color: #f59e0b;
+  border-top-color: #4a4a6a;
 }
 
 /* Show on hover */

@@ -27,7 +27,7 @@ export default function Popups({
   onReroll,
   activePhaseIndex = 1
 }: PopupsProps) {
-  
+
   if (!activeHotspot || !scenario) return null;
 
   const renderContent = () => {
@@ -47,7 +47,7 @@ export default function Popups({
               </h4>
               <p>Assigned Auditor Case File // Cebu Institute of Technology - University</p>
             </div>
-            
+
             <div className="data-box authentic-data" style={{ padding: '15px', lineHeight: '1.5', fontSize: '0.9rem' }}>
               {activePhaseIndex === 1 ? (
                 <>
@@ -61,9 +61,9 @@ export default function Popups({
                     Your Mission Objectives:
                   </p>
                   <ul style={{ paddingLeft: '20px', margin: '5px 0' }}>
-                     <li>Search the room for the HR employee contract to identify their contracted <strong>Daily Rate</strong>.</li>
-                     <li>Analyze the official wall calendar and count the <strong>Present (P) weekday shifts</strong> to find their worked days.</li>
-                     <li>Deduct any allowance noise (Rice/Uniform) to calculate the authentic **Gross Basic Pay**.</li>
+                    <li>Search the room for the HR employee contract to identify their contracted <strong>Daily Rate</strong>.</li>
+                    <li>Analyze the official wall calendar and count the <strong>Present (P) weekday shifts</strong> to find their worked days.</li>
+                    <li>Deduct any allowance noise (Rice/Uniform) to calculate the authentic **Gross Basic Pay**.</li>
                   </ul>
                 </>
               ) : activePhaseIndex === 2 ? (
@@ -78,9 +78,9 @@ export default function Popups({
                     Your Mission Objectives:
                   </p>
                   <ul style={{ paddingLeft: '20px', margin: '5px 0' }}>
-                     <li>Scan the <strong>Biometrics Terminal</strong> to review clock-in logs and extract the contracted <strong>Hourly Rate</strong> and <strong>Late Minutes</strong>.</li>
-                     <li>Read the <strong>DOLE Compliance Poster</strong> to understand standard tardiness subtraction formulas.</li>
-                     <li>Filter out early clock-in noise to compute the exact **Tardiness Deduction**.</li>
+                    <li>Scan the <strong>Biometrics Terminal</strong> to review clock-in logs and extract the contracted <strong>Hourly Rate</strong> and <strong>Late Minutes</strong>.</li>
+                    <li>Read the <strong>DOLE Compliance Poster</strong> to understand standard tardiness subtraction formulas.</li>
+                    <li>Filter out early clock-in noise to compute the exact **Tardiness Deduction**.</li>
                   </ul>
                 </>
               ) : activePhaseIndex === 3 ? (
@@ -95,9 +95,9 @@ export default function Popups({
                     Your Mission Objectives:
                   </p>
                   <ul style={{ paddingLeft: '20px', margin: '5px 0' }}>
-                     <li>Inspect the **Production Time Card** to extract the raw Overtime Hours and Hourly Rate.</li>
-                     <li>Consult the **DOLE Overtime Policy Poster** to identify the standard Overtime Premium multiplier.</li>
-                     <li>Ignore the **Unpaid Lunch break** noise to calculate the **Actual OT hours** and compute the correct **Overtime Premium Pay**.</li>
+                    <li>Inspect the **Production Time Card** to extract the raw Overtime Hours and Hourly Rate.</li>
+                    <li>Consult the **DOLE Overtime Policy Poster** to identify the standard Overtime Premium multiplier.</li>
+                    <li>Ignore the **Unpaid Lunch break** noise to calculate the **Actual OT hours** and compute the correct **Overtime Premium Pay**.</li>
                   </ul>
                 </>
               ) : activePhaseIndex === 4 ? (
@@ -112,10 +112,10 @@ export default function Popups({
                     Your Mission Objectives:
                   </p>
                   <ul style={{ paddingLeft: '20px', margin: '5px 0' }}>
-                     <li>Inspect the **Notice Board Corkboard** memos to identify the standard Regular Holiday vs decoy Special Holidays.</li>
-                     <li>Scan the **Timesheet Terminal** to verify the hours worked and extract the standard **Daily Rate**.</li>
-                     <li>Consult the **DOLE Holiday Policy Poster** to identify the correct multiplier and compute the **Holiday Pay**.</li>
-                     <li>Synthesize their new running **Total Earnings** by adding the Holiday Pay to their basic gross pay.</li>
+                    <li>Inspect the **Notice Board Corkboard** memos to identify the standard Regular Holiday vs decoy Special Holidays.</li>
+                    <li>Scan the **Timesheet Terminal** to verify the hours worked and extract the standard **Daily Rate**.</li>
+                    <li>Consult the **DOLE Holiday Policy Poster** to identify the correct multiplier and compute the **Holiday Pay**.</li>
+                    <li>Synthesize their new running **Total Earnings** by adding the Holiday Pay to their basic gross pay.</li>
                   </ul>
                 </>
               ) : activePhaseIndex === 5 ? (
@@ -130,9 +130,9 @@ export default function Popups({
                     Your Mission Objectives:
                   </p>
                   <ul style={{ paddingLeft: '20px', margin: '5px 0' }}>
-                     <li>Scan the **Notice Board Corkboard** to check the **SSS Contribution Table** and extract the Employee EE Share. (Ignore Employer ER share decoy).</li>
-                     <li>Review the **Employee Loan Statement** on the PC Monitor to extract the **Personal Salary Loan**. (Ignore Spouse loan decoy).</li>
-                     <li>Calculate the **Total SSS Deduction** by adding the Employee EE Share and the Personal Salary Loan.</li>
+                    <li>Scan the **Notice Board Corkboard** to check the **SSS Contribution Table** and extract the Employee EE Share. (Ignore Employer ER share decoy).</li>
+                    <li>Review the **Employee Loan Statement** on the PC Monitor to extract the **Personal Salary Loan**. (Ignore Spouse loan decoy).</li>
+                    <li>Calculate the **Total SSS Deduction** by adding the Employee EE Share and the Personal Salary Loan.</li>
                   </ul>
                 </>
               ) : activePhaseIndex === 6 ? (
@@ -147,9 +147,9 @@ export default function Popups({
                     Your Mission Objectives:
                   </p>
                   <ul style={{ paddingLeft: '20px', margin: '5px 0' }}>
-                     <li>Review the **PhilHealth Premium Table** on the notice board to extract the employee PhilHealth rate (2.5% or 0.025).</li>
-                     <li>Read the **HR Salary Database PC** to extract the **Basic Salary**.</li>
-                     <li>Compute the **PhilHealth Deduction** (Basic Salary × 0.025) and calculate the final statutory deductions (SSS Deductions + PhilHealth Deduction).</li>
+                    <li>Review the **PhilHealth Premium Table** on the notice board to extract the employee PhilHealth rate (2.5% or 0.025).</li>
+                    <li>Read the **HR Salary Database PC** to extract the **Basic Salary**.</li>
+                    <li>Compute the **PhilHealth Deduction** (Basic Salary × 0.025) and calculate the final statutory deductions (SSS Deductions + PhilHealth Deduction).</li>
                   </ul>
                 </>
               ) : (
@@ -164,10 +164,10 @@ export default function Popups({
                     Your Mission Objectives:
                   </p>
                   <ul style={{ paddingLeft: '20px', margin: '5px 0' }}>
-                     <li>Open the **Executive Audit Folder** and carefully note all 11 variables.</li>
-                     <li>Calculate the **Total Gross Earnings** (Basic Gross + OT Pay + Holiday Pay).</li>
-                     <li>Calculate the **Total Deductions** (Tardiness + SSS Deductions + PhilHealth Deductions).</li>
-                     <li>Compute the **Final Net Pay** (Total Gross - Total Deductions) and submit your audit.</li>
+                    <li>Open the **Executive Audit Folder** and carefully note all 11 variables.</li>
+                    <li>Calculate the **Total Gross Earnings** (Basic Gross + OT Pay + Holiday Pay).</li>
+                    <li>Calculate the **Total Deductions** (Tardiness + SSS Deductions + PhilHealth Deductions).</li>
+                    <li>Compute the **Final Net Pay** (Total Gross - Total Deductions) and submit your audit.</li>
                   </ul>
                 </>
               )}
@@ -185,7 +185,7 @@ export default function Popups({
               <h4>📁 Employee Profile & Contract</h4>
               <p>Classified HR Document // Form 109-A</p>
             </div>
-            
+
             <div className="data-box authentic-data" style={{ padding: '15px', lineHeight: '1.5' }}>
               <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}><span>Employee Name:</span> <strong>{scenario.employeeName}</strong></div>
               <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}><span>Position Grade:</span> <strong>ABM Core Level 12</strong></div>
@@ -221,15 +221,15 @@ export default function Popups({
               const isPresent = status === 'P';
               const isHoliday = d === 12;
               cells.push(
-                <div 
-                  key={`d-${d}`} 
+                <div
+                  key={`d-${d}`}
                   className={`cal-cell ${isPresent ? 'present' : 'absent'} ${isHoliday ? 'holiday' : ''}`}
-                  style={{ 
-                    display: 'flex', 
+                  style={{
+                    display: 'flex',
                     flexDirection: 'column',
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    minHeight: '35px', 
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: '35px',
                     border: '1px solid #1e293b',
                     background: isHoliday ? '#451a03' : (isPresent ? '#064e3b' : '#7f1d1d'),
                     color: isHoliday ? '#fbbf24' : (isPresent ? '#34d399' : '#f87171'),
@@ -245,15 +245,15 @@ export default function Popups({
               );
             } else {
               cells.push(
-                <div 
-                  key={`d-${d}`} 
-                  className="cal-cell empty" 
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    minHeight: '35px', 
-                    border: '1px solid #1e293b', 
+                <div
+                  key={`d-${d}`}
+                  className="cal-cell empty"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: '35px',
+                    border: '1px solid #1e293b',
                     color: isWeekend ? '#ef4444' : '#475569',
                     background: isWeekend ? 'rgba(239, 68, 68, 0.05)' : 'transparent'
                   }}
@@ -272,7 +272,7 @@ export default function Popups({
               <h4>📅 Official Wall Calendar - June 2026</h4>
               <p>Total verified present shifts: <strong className="highlight-green" style={{ color: '#10b981' }}>{scenario.daysPresent} Days</strong></p>
             </div>
-            
+
             {/* The Visual Calendar Grid */}
             <div className="calendar-ui-box" style={{ padding: '15px', background: '#0b1120', border: '1px solid #1e293b', borderRadius: '8px', marginTop: '15px' }}>
               <div className="cal-header-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', textAlign: 'center', fontWeight: 'bold', color: '#60a5fa', marginBottom: '8px', fontSize: '0.85rem' }}>
@@ -318,7 +318,7 @@ export default function Popups({
               <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
                 <span>Contracted Hourly Rate:</span> <strong className="highlight-green">₱{scenario.hourlyRate.toFixed(2)} / Hour</strong>
               </div>
-              
+
               {/* Monthly Work Summary */}
               <div style={{ borderTop: '1px dashed #334155', marginTop: '8px', paddingTop: '8px' }}>
                 <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>📊 MONTHLY AUDIT WORK SUMMARY:</span>
@@ -339,22 +339,18 @@ export default function Popups({
                     <th style={{ padding: '8px' }}>TIME IN</th>
                     <th style={{ padding: '8px' }}>TIME OUT</th>
                     <th style={{ padding: '8px' }}>LATE (MINS)</th>
-                    <th style={{ padding: '8px' }}>EARLY IN (MINS)</th>
                   </tr>
                 </thead>
                 <tbody>
                   {scenario.biometricLogs.map((log, idx) => (
                     <tr key={idx} style={{ borderBottom: '1px solid #1e293b' }}>
                       <td style={{ padding: '8px' }}>{log.day}</td>
-                      <td style={{ padding: '8px', color: log.status === 'LATE' ? '#ef4444' : log.status === 'EARLY IN' ? '#34d399' : log.status === 'HOLIDAY' ? '#facc15' : '#e2e8f0' }}>
+                      <td style={{ padding: '8px', color: log.status === 'LATE' ? '#ef4444' : log.status === 'HOLIDAY' ? '#facc15' : '#e2e8f0' }}>
                         {log.timeIn}
                       </td>
                       <td style={{ padding: '8px', color: log.status === 'HOLIDAY' ? '#facc15' : '#e2e8f0' }}>{log.timeOut}</td>
                       <td style={{ padding: '8px', color: log.late > 0 ? '#ef4444' : '#e2e8f0', fontWeight: log.late > 0 ? 'bold' : 'normal' }}>
                         {log.late} mins
-                      </td>
-                      <td style={{ padding: '8px', color: log.early > 0 ? '#34d399' : '#e2e8f0', fontWeight: log.early > 0 ? 'bold' : 'normal' }}>
-                        {log.early} mins
                       </td>
                     </tr>
                   ))}
@@ -382,7 +378,7 @@ export default function Popups({
               <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
                 <span>Contracted Hourly Rate:</span> <strong className="highlight-green">₱{scenario.hourlyRate.toFixed(2)} / Hour</strong>
               </div>
-              
+
               <div style={{ borderTop: '1px dashed #334155', marginTop: '8px', paddingTop: '8px' }}>
                 <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>📊 OVERTIME SHIFT LOGS SUMMARY:</span>
                 <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
@@ -410,7 +406,7 @@ export default function Popups({
               <h4>📋 DOLE Compliance - Tardiness Regulations</h4>
               <p>Philippine Labor Advisory No. 12-B</p>
             </div>
-            
+
             <div className="data-box authentic-data" style={{ fontSize: '0.9rem', lineHeight: '1.5' }}>
               <p><strong>1. STANDARD TARDINESS DEDUCTION RULE:</strong></p>
               <div className="formula-box" style={{ margin: '10px 0', padding: '10px', background: '#0b1120', border: '1px solid #1e293b', textAlign: 'center', color: '#fbbf24', fontWeight: 'bold' }}>
@@ -431,7 +427,7 @@ export default function Popups({
               <h4>📋 DOLE Compliance - Overtime Premiums</h4>
               <p>Philippine Labour Code Article 87</p>
             </div>
-            
+
             <div className="data-box authentic-data" style={{ fontSize: '0.9rem', lineHeight: '1.5' }}>
               <p><strong>1. STANDARD OVERTIME PREMIUM MULTIPLIER:</strong></p>
               <div className="formula-box" style={{ margin: '10px 0', padding: '10px', background: '#0b1120', border: '1px solid #1e293b', textAlign: 'center', color: '#fbbf24', fontWeight: 'bold' }}>
@@ -452,7 +448,7 @@ export default function Popups({
               <h4>📋 DOLE Compliance - Holiday Pay Multipliers</h4>
               <p>Philippine Labor Code Article 94</p>
             </div>
-            
+
             <div className="data-box authentic-data" style={{ fontSize: '0.85rem', lineHeight: '1.5' }}>
               <p><strong>1. REGULAR HOLIDAY WORKED PREMIUM:</strong></p>
               <div className="formula-box" style={{ margin: '8px 0', padding: '8px', background: '#0b1120', border: '1px solid #1e293b', textAlign: 'center', color: '#fbbf24', fontWeight: 'bold' }}>
@@ -476,7 +472,7 @@ export default function Popups({
               <h4>📌 Corporate Notice Board Memos</h4>
               <p>Apex Industrial Works // HR Notice Bulletin</p>
             </div>
-            
+
             <div style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
               <div className="data-box authentic-data" style={{ flex: 1, padding: '10px', border: '1px solid #3b82f6', background: 'rgba(59, 130, 246, 0.05)' }}>
                 <span style={{ color: '#60a5fa', fontWeight: 'bold', fontSize: '0.8rem' }}>📌 MEMO A: JUNE HOLIDAY</span>
@@ -508,7 +504,7 @@ export default function Popups({
               <h4>📟 Digital punch-clock Timesheet Terminal</h4>
               <p>Biometric Punch Audit // Case: {scenario.employeeName}</p>
             </div>
-            
+
             <div className="data-box authentic-data" style={{ padding: '12px' }}>
               <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                 <span>Employee Name:</span> <strong>{scenario.employeeName}</strong>
@@ -519,7 +515,7 @@ export default function Popups({
               <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Daily Shift Hours:</span> <strong>8.0 Hours / Shift</strong>
               </div>
-              
+
               {/* Monthly Work Summary */}
               <div style={{ borderTop: '1px dashed #334155', marginTop: '8px', paddingTop: '8px' }}>
                 <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>📊 MONTHLY AUDIT WORK SUMMARY:</span>
@@ -527,7 +523,7 @@ export default function Popups({
                   <span>Shifts Worked (Days Present):</span> <strong>{scenario.daysPresent} Days</strong>
                 </div>
               </div>
-              
+
               <div style={{ borderTop: '1px dashed #334155', marginTop: '10px', paddingTop: '10px' }}>
                 <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>📅 HOLIDAY ATTENDANCE RECORD:</span>
                 <table style={{ width: '100%', marginTop: '6px', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
@@ -640,10 +636,10 @@ export default function Popups({
             <div className="data-box authentic-data" style={{ padding: '15px', fontSize: '0.9rem', lineHeight: '1.6' }}>
               <p><strong>1. TOTAL PREMIUM RATE:</strong></p>
               <p>For June 2026, the total PhilHealth premium is <strong>5.0%</strong> of the employee's basic salary.</p>
-              
+
               <p style={{ marginTop: '10px' }}><strong>2. EMPLOYEE VS EMPLOYER SPLIT:</strong></p>
               <p>The premium is split equally: 50% paid by the Employer, 50% paid by the Employee.</p>
-              
+
               <div className="formula-box" style={{ margin: '12px 0', padding: '10px', background: '#0b1120', border: '1px solid #1e293b', textAlign: 'center', color: '#fbbf24', fontWeight: 'bold' }}>
                 Employee Premium Rate = 5.0% × 50% = 2.5% (Multiplier: 0.025)
               </div>
@@ -747,10 +743,10 @@ export default function Popups({
               <h4>📘 Audit Procedure Guide</h4>
               <p>{scenario.companyName} / Standard Operating Guidelines</p>
             </div>
-            
+
             <div className="data-box authentic-data" style={{ fontSize: '0.85rem', lineHeight: '1.5' }}>
               <p><strong style={{ color: '#fbbf24' }}>STEP-BY-STEP PAYROLL AUDIT PROCEDURE:</strong></p>
-              
+
               {activePhaseIndex === 3 ? (
                 <>
                   <div style={{ marginTop: '10px' }}>
@@ -897,7 +893,7 @@ export default function Popups({
             </div>
           </div>
         );
- 
+
       case 'DOOR':
         return (
           <div className="popup-content">
@@ -918,14 +914,14 @@ export default function Popups({
                     {activePhaseIndex === 7 && "Congratulations! You have completed all audit procedures and mastered payroll simulation!"}
                   </p>
                   <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                    <button 
+                    <button
                       onClick={onReroll}
                       className="login-btn"
                       style={{ flex: 1, border: '1px solid #facc15', color: '#facc15', margin: 0, padding: '12px' }}
                     >
                       TRY AGAIN 🔄
                     </button>
-                    <button 
+                    <button
                       onClick={onProceed}
                       className="login-btn"
                       style={{ flex: 1, border: '1px solid #10b981', color: '#10b981', margin: 0, padding: '12px' }}
@@ -949,7 +945,7 @@ export default function Popups({
                 </div>
                 <div className="data-box herring-data text-center" style={{ padding: '20px', textAlign: 'center' }}>
                   <p style={{ color: '#fca5a5' }}>
-                    {activePhaseIndex === 7 
+                    {activePhaseIndex === 7
                       ? "Warning: Complete the Net Payroll Audit on the right-side Tribunal Audit panel to unlock the exit."
                       : "Warning: Complete the 4-step Cognitive Task calculations on the right-side Mission Log to unlock this doorway."
                     }

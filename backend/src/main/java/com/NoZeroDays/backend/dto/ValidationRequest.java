@@ -11,6 +11,7 @@ public class ValidationRequest {
     private Integer daysPresent;
     private Double hourlyRate;
     private Integer lateMinutes;
+    private Integer redHerringLateMinutes;
     private Integer earlyClockInMinutes;
     private Double otHours;
     private Double unpaidLunchHours;
@@ -55,6 +56,9 @@ public class ValidationRequest {
 
     public Integer getLateMinutes() { return lateMinutes; }
     public void setLateMinutes(Integer lateMinutes) { this.lateMinutes = lateMinutes; }
+
+    public Integer getRedHerringLateMinutes() { return redHerringLateMinutes; }
+    public void setRedHerringLateMinutes(Integer redHerringLateMinutes) { this.redHerringLateMinutes = redHerringLateMinutes; }
 
     public Integer getEarlyClockInMinutes() { return earlyClockInMinutes; }
     public void setEarlyClockInMinutes(Integer earlyClockInMinutes) { this.earlyClockInMinutes = earlyClockInMinutes; }

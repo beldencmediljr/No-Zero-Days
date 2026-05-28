@@ -1,12 +1,51 @@
+// Helper: convert baseHour + lateMins into a Base-60 formatted time string
+function formatTimeIn(baseHour, lateMins) {
+  const totalMins = (baseHour * 60) + lateMins;
+  let h = Math.floor(totalMins / 60);
+  let m = totalMins % 60;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12; // Convert to 12-hour format
+  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')} ${ampm}`;
+}
+
+// Helper: distribute totalLateMinutes across 2-4 random non-holiday weekday slots
+function distributeLateMinutes(totalLateMinutes, dayCount, holidayIndices) {
+  const result = new Array(dayCount).fill(0);
+  const eligible = [];
+  for (let i = 0; i < dayCount; i++) {
+    if (!holidayIndices.has(i)) eligible.push(i);
+  }
+  if (eligible.length === 0 || totalLateMinutes === 0) return result;
+
+  const chunkCount = Math.min(eligible.length, 2 + Math.floor(Math.random() * 3));
+  const shuffled = [...eligible].sort(() => Math.random() - 0.5);
+  const chosenDays = shuffled.slice(0, chunkCount);
+
+  const chunks = [];
+  let remaining = totalLateMinutes;
+  for (let i = 0; i < chunkCount - 1; i++) {
+    const maxSlice = remaining - (chunkCount - i - 1);
+    const slice = Math.max(5, Math.round((Math.random() * maxSlice) / 5) * 5);
+    const safeSlice = Math.min(slice, maxSlice);
+    chunks.push(safeSlice);
+    remaining -= safeSlice;
+  }
+  chunks.push(remaining);
+
+  chosenDays.forEach((dayIdx, i) => {
+    result[dayIdx] = chunks[i];
+  });
+  return result;
+}
+
 /**
  * Generates a randomized scenario payload specifically suited for Module 1, Phase 2.
- * Includes standard Daily/Hourly rates and dynamic biometric logs containing Red Herring values.
+ * Late minutes are distributed across Mon-Fri (skipping Friday holiday) with proper Base-60 time formatting.
  */
 export function generatePhase2Scenario() {
   const employees = ['Juan Dela Cruz', 'Maria Santos', 'Pedro Penduko', 'Anna Mangahas', 'Jose Rizal'];
   const companies = ['Apex Industrial Works', 'TechGear Solutions Inc.', 'Starlight Garments Corp.', 'Cebu Logistics Ltd.'];
-  
-  // Philippine Standard Rates & Days Worked
+
   const rates = [500, 600, 750, 800, 900, 1000];
   const shifts = [7, 8, 9, 10, 11, 12, 13, 14, 15];
 
@@ -14,60 +53,43 @@ export function generatePhase2Scenario() {
   const companyName = companies[Math.floor(Math.random() * companies.length)];
   const dailyRate = rates[Math.floor(Math.random() * rates.length)];
   const daysPresent = shifts[Math.floor(Math.random() * shifts.length)];
-
-  // Derived variables
   const hourlyRate = dailyRate / 8.0;
-  
-  // Generate randomized tardiness components
+
+  // Total late minutes for the week
   const lateMinutesList = [15, 20, 30, 45, 60, 75, 90];
   const lateMinutes = lateMinutesList[Math.floor(Math.random() * lateMinutesList.length)];
-  
-  const earlyInList = [5, 10, 15, 20, 25];
-  const earlyClockInMinutes = earlyInList[Math.floor(Math.random() * earlyInList.length)];
 
-  // Dynamic 5-day biometric logs list with status mapping
-  const biometricLogs = [
-    {
-      day: 'MON (June 8)',
-      timeIn: `08:${lateMinutes < 10 ? '0' + lateMinutes : lateMinutes} AM`,
-      timeOut: '05:00 PM',
-      late: lateMinutes,
-      early: 0,
-      status: 'LATE'
-    },
-    {
-      day: 'TUE (June 9)',
-      timeIn: `07:${60 - earlyClockInMinutes} AM`,
-      timeOut: '05:00 PM',
-      late: 0,
-      early: earlyClockInMinutes,
-      status: 'EARLY IN'
-    },
-    {
-      day: 'WED (June 10)',
-      timeIn: '08:00 AM',
-      timeOut: '05:00 PM',
-      late: 0,
-      early: 0,
-      status: 'ON-TIME'
-    },
-    {
-      day: 'THU (June 11)',
-      timeIn: '08:00 AM',
-      timeOut: '05:00 PM',
-      late: 0,
-      early: 0,
-      status: 'ON-TIME'
-    },
-    {
-      day: 'FRI (June 12)',
-      timeIn: 'HOLIDAY',
-      timeOut: 'HOLIDAY',
-      late: 0,
-      early: 0,
-      status: 'HOLIDAY'
-    }
+  // FRI (June 12) is a Holiday — index 4 is off-limits for late minutes
+  const HOLIDAY_INDEX = 4;
+  const holidayIndices = new Set([HOLIDAY_INDEX]);
+  const dayLabels = [
+    'MON (June 8)',
+    'TUE (June 9)',
+    'WED (June 10)',
+    'THU (June 11)',
+    'FRI (June 12)',
   ];
+
+  const latePerDay = distributeLateMinutes(lateMinutes, dayLabels.length, holidayIndices);
+
+  // Red Herring trap: add a fake "grace period" of 15 mins to create a plausible but wrong total
+  let redHerringLateMinutes = lateMinutes + 15;
+  // Safety: if the trap accidentally equals the real total, offset further
+  if (redHerringLateMinutes === lateMinutes) redHerringLateMinutes += 10;
+
+  const biometricLogs = dayLabels.map((day, idx) => {
+    if (holidayIndices.has(idx)) {
+      return { day, timeIn: 'HOLIDAY', timeOut: 'HOLIDAY', late: 0, status: 'HOLIDAY' };
+    }
+    const dayLate = latePerDay[idx];
+    return {
+      day,
+      timeIn: formatTimeIn(8, dayLate),
+      timeOut: '05:00 PM',
+      late: dayLate,
+      status: dayLate > 0 ? 'LATE' : 'ON-TIME',
+    };
+  });
 
   // Dummy calendar grid for Lobby compatibility
   const calendarGrid = {};
@@ -85,9 +107,10 @@ export function generatePhase2Scenario() {
     uniformAllowance: 1500,
     hourlyRate,
     lateMinutes,
-    earlyClockInMinutes,
+    redHerringLateMinutes,
+    earlyClockInMinutes: 0,
     calendarGrid,
-    biometricLogs
+    biometricLogs,
   };
 }
 

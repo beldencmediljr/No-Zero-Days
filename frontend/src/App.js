@@ -33,7 +33,8 @@ function App() {
     uniformAllowance: 1500,
     hourlyRate: 100,
     lateMinutes: 45,
-    earlyClockInMinutes: 15,
+    redHerringLateMinutes: 60,
+    earlyClockInMinutes: 0,
     calendarGrid: {},
     biometricLogs: [],
     otHours: 0,
@@ -69,6 +70,25 @@ function App() {
   // Step 4: Synthesis Net Pay Inputs
   const [netPayValue, setNetPayValue] = useState('');
   const [step4Status, setStep4Status] = useState('LOCKED'); // LOCKED, ACTIVE, SUCCESS, ERROR
+
+  // Phase 2 exclusive: Step 4 (Gross Pay), Step 5 (Net Pay Formula)
+  const [grossPayValue, setGrossPayValue] = useState('');
+  const [grossPayStatus, setGrossPayStatus] = useState('LOCKED'); // LOCKED, ACTIVE, SUCCESS, ERROR
+  const [netPayFormula, setNetPayFormula] = useState('');
+  const [netFormulaStatus, setNetFormulaStatus] = useState('LOCKED'); // LOCKED, ACTIVE, SUCCESS, ERROR
+
+  // Phase 3 and 4 exclusive scaffolding states
+  const [trueOtHoursValue, setTrueOtHoursValue] = useState('');
+  const [trueOtHoursStatus, setTrueOtHoursStatus] = useState('LOCKED');
+  const [otMultiplierValue, setOtMultiplierValue] = useState('');
+  const [otMultiplierStatus, setOtMultiplierStatus] = useState('LOCKED');
+  const [otFormulaValue, setOtFormulaValue] = useState('');
+  const [otFormulaStatus, setOtFormulaStatus] = useState('LOCKED');
+
+  const [holidayTypeValue, setHolidayTypeValue] = useState('');
+  const [holidayMultiplierValue, setHolidayMultiplierValue] = useState('');
+  const [holidayFormulaValue, setHolidayFormulaValue] = useState('');
+  const [holidayFormulaStatus, setHolidayFormulaStatus] = useState('LOCKED');
 
   // Phase 7 (Tribunal) Inputs & Status
   const [tribunalGross, setTribunalGross] = useState('');
@@ -160,6 +180,8 @@ function App() {
     setSelectedRule('');
     setCalculatedValue('');
     setNetPayValue('');
+    setGrossPayValue('');
+    setNetPayFormula('');
 
     // Reset Tribunal inputs
     setTribunalGross('');
@@ -172,6 +194,21 @@ function App() {
     setStep2Status('LOCKED');
     setStep3Status('LOCKED');
     setStep4Status('LOCKED');
+    setGrossPayStatus('LOCKED');
+    setNetFormulaStatus('LOCKED');
+
+    // Reset Phase 3 & 4 scaffolding states
+    setTrueOtHoursValue('');
+    setTrueOtHoursStatus('LOCKED');
+    setOtMultiplierValue('');
+    setOtMultiplierStatus('LOCKED');
+    setOtFormulaValue('');
+    setOtFormulaStatus('LOCKED');
+
+    setHolidayTypeValue('');
+    setHolidayMultiplierValue('');
+    setHolidayFormulaValue('');
+    setHolidayFormulaStatus('LOCKED');
 
     // Reset 3-strike counter on every reroll
     setExtractionAttempts(0);
@@ -238,43 +275,57 @@ function App() {
 
   // Submit Step 1: Extraction
   const handleValidateExtraction = async () => {
-    if (!extractedA || !extractedB) {
-      setFeedback('Missing variables! Please extract and enter both values.');
-      return;
+    if (activePhaseIndex === 4) {
+      if (!holidayTypeValue) {
+        setFeedback('Please select a Holiday Type.');
+        return;
+      }
+    } else {
+      if (!extractedA || !extractedB) {
+        setFeedback('Missing variables! Please extract and enter both values.');
+        return;
+      }
     }
 
     setLoading(true);
     setFeedback('Verifying extraction parameters with DOLE compliance...');
 
     try {
-      console.log(`[DEBUG EXTRACTION] Entered A: ${extractedA} | Entered B: ${extractedB}`);
       const { module: mod, phase: ph } = getModuleAndPhase();
+      const bodyPayload = {
+        studentNumber: student?.studentNumber || 'STU-UNKNOWN',
+        module: mod,
+        phase: ph,
+        step: 'EXTRACT',
+        dailyRate: scenario.dailyRate,
+        daysPresent: scenario.daysPresent,
+        riceSubsidy: scenario.riceSubsidy,
+        uniformAllowance: scenario.uniformAllowance,
+        hourlyRate: scenario.hourlyRate,
+        lateMinutes: scenario.lateMinutes,
+        redHerringLateMinutes: scenario.redHerringLateMinutes ?? 0,
+        earlyClockInMinutes: scenario.earlyClockInMinutes ?? 0,
+        otHours: scenario.otHours,
+        unpaidLunchHours: scenario.unpaidLunchHours,
+        basicSalary: scenario.basicSalary,
+        sssEeShare: scenario.sssEeShare,
+        sssErShare: scenario.sssErShare,
+        personalSalaryLoan: scenario.personalSalaryLoan,
+        spouseLoan: scenario.spouseLoan,
+        workedOnHoliday: scenario.workedOnHoliday,
+      };
+
+      if (activePhaseIndex === 4) {
+        bodyPayload.submittedRule = holidayTypeValue;
+      } else {
+        bodyPayload.submittedValueA = extractedA ? parseFloat(extractedA) : 0.0;
+        bodyPayload.submittedValueB = extractedB ? parseFloat(extractedB) : 0.0;
+      }
+
       const response = await fetch('http://localhost:8080/api/validation/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studentNumber: student?.studentNumber || 'STU-UNKNOWN',
-          module: mod,
-          phase: ph,
-          step: 'EXTRACT',
-          dailyRate: scenario.dailyRate,
-          daysPresent: scenario.daysPresent,
-          riceSubsidy: scenario.riceSubsidy,
-          uniformAllowance: scenario.uniformAllowance,
-          hourlyRate: scenario.hourlyRate,
-          lateMinutes: scenario.lateMinutes,
-          earlyClockInMinutes: scenario.earlyClockInMinutes,
-          otHours: scenario.otHours,
-          unpaidLunchHours: scenario.unpaidLunchHours,
-          basicSalary: scenario.basicSalary,
-          sssEeShare: scenario.sssEeShare,
-          sssErShare: scenario.sssErShare,
-          personalSalaryLoan: scenario.personalSalaryLoan,
-          spouseLoan: scenario.spouseLoan,
-          workedOnHoliday: scenario.workedOnHoliday,
-          submittedValueA: extractedA ? parseFloat(extractedA) : 0.0,
-          submittedValueB: extractedB ? parseFloat(extractedB) : 0.0
-        })
+        body: JSON.stringify(bodyPayload)
       });
 
       if (!response.ok) {
@@ -286,7 +337,11 @@ function App() {
       if (data.success) {
         setExtractionAttempts(0); // Clear counter on success
         setStep1Status('SUCCESS');
-        setStep2Status('ACTIVE');
+        if (activePhaseIndex === 3) {
+          setTrueOtHoursStatus('ACTIVE');
+        } else {
+          setStep2Status('ACTIVE');
+        }
         setFeedback(data.message);
       } else {
         setStep1Status('ERROR');
@@ -296,6 +351,7 @@ function App() {
         if (data.redHerring) {
           setExtractedA('');
           setExtractedB('');
+          setHolidayTypeValue('');
           triggerRerollToast('RED_HERRING');
           handleRerollScenario(false); // skip intro re-pop for seamless reset
           return;
@@ -314,6 +370,272 @@ function App() {
     } catch (err) {
       console.error(err);
       setFeedback('Network Error: Cannot connect to the compliance validation server.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Phase 3 Step 2: FILTER UNPAID LUNCH
+  const handleValidateTrueOtHours = async () => {
+    if (!trueOtHoursValue) {
+      setFeedback('Please enter the calculated True OT Hours.');
+      return;
+    }
+    setLoading(true);
+    setFeedback('Filtering unpaid lunch hours...');
+    try {
+      const { module: mod, phase: ph } = getModuleAndPhase();
+      const response = await fetch('http://localhost:8080/api/validation/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentNumber: student?.studentNumber || 'STU-UNKNOWN',
+          module: mod,
+          phase: ph,
+          step: 'FILTER_LUNCH',
+          dailyRate: scenario.dailyRate,
+          daysPresent: scenario.daysPresent,
+          hourlyRate: scenario.hourlyRate,
+          lateMinutes: scenario.lateMinutes,
+          earlyClockInMinutes: scenario.earlyClockInMinutes,
+          otHours: scenario.otHours,
+          unpaidLunchHours: scenario.unpaidLunchHours,
+          basicSalary: scenario.basicSalary,
+          sssEeShare: scenario.sssEeShare,
+          sssErShare: scenario.sssErShare,
+          personalSalaryLoan: scenario.personalSalaryLoan,
+          spouseLoan: scenario.spouseLoan,
+          workedOnHoliday: scenario.workedOnHoliday,
+          submittedResult: Number(trueOtHoursValue) || 0.0
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setTrueOtHoursStatus('SUCCESS');
+        setOtMultiplierStatus('ACTIVE');
+        setFeedback(data.message);
+      } else {
+        setTrueOtHoursStatus('ERROR');
+        setFeedback(data.message);
+        if (data.redHerring) {
+          setTrueOtHoursValue('');
+          triggerRerollToast('RED_HERRING');
+          handleRerollScenario(false);
+        } else if (data.drillTriggered) {
+          handleRerollScenario();
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      setFeedback('Network Error: Unpaid lunch filter validation failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Phase 3 Step 3: ESTABLISH DOLE PREMIUM
+  const handleValidateOtMultiplier = async () => {
+    if (!otMultiplierValue) {
+      setFeedback('Please select a DOLE premium multiplier.');
+      return;
+    }
+    setLoading(true);
+    setFeedback('Validating DOLE overtime premium multiplier...');
+    try {
+      const { module: mod, phase: ph } = getModuleAndPhase();
+      const response = await fetch('http://localhost:8080/api/validation/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentNumber: student?.studentNumber || 'STU-UNKNOWN',
+          module: mod,
+          phase: ph,
+          step: 'ESTABLISH_PREMIUM',
+          dailyRate: scenario.dailyRate,
+          daysPresent: scenario.daysPresent,
+          hourlyRate: scenario.hourlyRate,
+          lateMinutes: scenario.lateMinutes,
+          earlyClockInMinutes: scenario.earlyClockInMinutes,
+          otHours: scenario.otHours,
+          unpaidLunchHours: scenario.unpaidLunchHours,
+          basicSalary: scenario.basicSalary,
+          sssEeShare: scenario.sssEeShare,
+          sssErShare: scenario.sssErShare,
+          personalSalaryLoan: scenario.personalSalaryLoan,
+          spouseLoan: scenario.spouseLoan,
+          workedOnHoliday: scenario.workedOnHoliday,
+          submittedValueA: Number(otMultiplierValue) || 0.0
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setOtMultiplierStatus('SUCCESS');
+        setOtFormulaStatus('ACTIVE');
+        setFeedback(data.message);
+      } else {
+        setOtMultiplierStatus('ERROR');
+        setFeedback(data.message);
+        if (data.drillTriggered) handleRerollScenario();
+      }
+    } catch (err) {
+      console.error(err);
+      setFeedback('Network Error: Overtime premium validation failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Phase 3 Step 4: ESTABLISH OT FORMULA
+  const handleValidateOtFormula = async () => {
+    if (!otFormulaValue) {
+      setFeedback('Please select an Overtime formula.');
+      return;
+    }
+    setLoading(true);
+    setFeedback('Validating Overtime formula...');
+    try {
+      const { module: mod, phase: ph } = getModuleAndPhase();
+      const response = await fetch('http://localhost:8080/api/validation/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentNumber: student?.studentNumber || 'STU-UNKNOWN',
+          module: mod,
+          phase: ph,
+          step: 'ESTABLISH_FORMULA',
+          dailyRate: scenario.dailyRate,
+          daysPresent: scenario.daysPresent,
+          hourlyRate: scenario.hourlyRate,
+          lateMinutes: scenario.lateMinutes,
+          earlyClockInMinutes: scenario.earlyClockInMinutes,
+          otHours: scenario.otHours,
+          unpaidLunchHours: scenario.unpaidLunchHours,
+          basicSalary: scenario.basicSalary,
+          sssEeShare: scenario.sssEeShare,
+          sssErShare: scenario.sssErShare,
+          personalSalaryLoan: scenario.personalSalaryLoan,
+          spouseLoan: scenario.spouseLoan,
+          workedOnHoliday: scenario.workedOnHoliday,
+          submittedRule: otFormulaValue
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setOtFormulaStatus('SUCCESS');
+        setStep3Status('ACTIVE');
+        setFeedback(data.message);
+      } else {
+        setOtFormulaStatus('ERROR');
+        setFeedback(data.message);
+        if (data.drillTriggered) handleRerollScenario();
+      }
+    } catch (err) {
+      console.error(err);
+      setFeedback('Network Error: Formula validation failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Phase 4 Step 2: ESTABLISH DOLE PREMIUM (Holiday Multiplier)
+  const handleValidateHolidayMultiplier = async () => {
+    if (!holidayMultiplierValue) {
+      setFeedback('Please select a Holiday multiplier.');
+      return;
+    }
+    setLoading(true);
+    setFeedback('Validating DOLE holiday premium multiplier...');
+    try {
+      const { module: mod, phase: ph } = getModuleAndPhase();
+      const response = await fetch('http://localhost:8080/api/validation/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentNumber: student?.studentNumber || 'STU-UNKNOWN',
+          module: mod,
+          phase: ph,
+          step: 'ESTABLISH_PREMIUM',
+          dailyRate: scenario.dailyRate,
+          daysPresent: scenario.daysPresent,
+          hourlyRate: scenario.hourlyRate,
+          lateMinutes: scenario.lateMinutes,
+          earlyClockInMinutes: scenario.earlyClockInMinutes,
+          otHours: scenario.otHours,
+          unpaidLunchHours: scenario.unpaidLunchHours,
+          basicSalary: scenario.basicSalary,
+          sssEeShare: scenario.sssEeShare,
+          sssErShare: scenario.sssErShare,
+          personalSalaryLoan: scenario.personalSalaryLoan,
+          spouseLoan: scenario.spouseLoan,
+          workedOnHoliday: scenario.workedOnHoliday,
+          submittedValueA: Number(holidayMultiplierValue) || 0.0
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setStep2Status('SUCCESS');
+        setHolidayFormulaStatus('ACTIVE');
+        setFeedback(data.message);
+      } else {
+        setStep2Status('ERROR');
+        setFeedback(data.message);
+        if (data.drillTriggered) handleRerollScenario();
+      }
+    } catch (err) {
+      console.error(err);
+      setFeedback('Network Error: Holiday multiplier validation failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Phase 4 Step 3: ESTABLISH HOLIDAY FORMULA
+  const handleValidateHolidayFormula = async () => {
+    if (!holidayFormulaValue) {
+      setFeedback('Please select a Holiday Pay formula.');
+      return;
+    }
+    setLoading(true);
+    setFeedback('Validating Holiday formula logic...');
+    try {
+      const { module: mod, phase: ph } = getModuleAndPhase();
+      const response = await fetch('http://localhost:8080/api/validation/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentNumber: student?.studentNumber || 'STU-UNKNOWN',
+          module: mod,
+          phase: ph,
+          step: 'ESTABLISH_FORMULA',
+          dailyRate: scenario.dailyRate,
+          daysPresent: scenario.daysPresent,
+          hourlyRate: scenario.hourlyRate,
+          lateMinutes: scenario.lateMinutes,
+          earlyClockInMinutes: scenario.earlyClockInMinutes,
+          otHours: scenario.otHours,
+          unpaidLunchHours: scenario.unpaidLunchHours,
+          basicSalary: scenario.basicSalary,
+          sssEeShare: scenario.sssEeShare,
+          sssErShare: scenario.sssErShare,
+          personalSalaryLoan: scenario.personalSalaryLoan,
+          spouseLoan: scenario.spouseLoan,
+          workedOnHoliday: scenario.workedOnHoliday,
+          submittedRule: holidayFormulaValue
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setHolidayFormulaStatus('SUCCESS');
+        setStep3Status('ACTIVE');
+        setFeedback(data.message);
+      } else {
+        setHolidayFormulaStatus('ERROR');
+        setFeedback(data.message);
+        if (data.drillTriggered) handleRerollScenario();
+      }
+    } catch (err) {
+      console.error(err);
+      setFeedback('Network Error: Formula validation failed.');
     } finally {
       setLoading(false);
     }
@@ -424,7 +746,10 @@ function App() {
 
       if (data.success) {
         setStep3Status('SUCCESS');
-        if (activePhaseIndex >= 2 && activePhaseIndex <= 6) {
+        // Phase 2, 3, and 4 chain to Gross Pay step; all others chain to synthesis
+        if (activePhaseIndex === 2 || activePhaseIndex === 3 || activePhaseIndex === 4) {
+          setGrossPayStatus('ACTIVE');
+        } else if (activePhaseIndex >= 5 && activePhaseIndex <= 6) {
           setStep4Status('ACTIVE');
         }
         setFeedback(data.message);
@@ -444,7 +769,96 @@ function App() {
     }
   };
 
-  // Submit Step 4: Synthesis
+  // Submit Phase 2 Step 4: Verify Gross Basic Pay
+  const handleValidateGrossPay = async () => {
+    if (!grossPayValue) {
+      setFeedback('Please enter the computed Gross Basic Pay.');
+      return;
+    }
+    setLoading(true);
+    setFeedback('Verifying Gross Basic Pay computation...');
+    try {
+      const { module: mod, phase: ph } = getModuleAndPhase();
+      const response = await fetch('http://localhost:8080/api/validation/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentNumber: student?.studentNumber || 'STU-UNKNOWN',
+          module: mod,
+          phase: ph,
+          step: 'COMPUTE_GROSS',
+          dailyRate: scenario.dailyRate,
+          hourlyRate: scenario.hourlyRate,
+          daysPresent: scenario.daysPresent,
+          lateMinutes: scenario.lateMinutes,
+          grossPay: Number(grossPayValue) || 0.0,
+          submittedResult: Number(grossPayValue) || 0.0
+        })
+      });
+      const data = await response.json();
+      console.log('[DEBUG COMPUTE_GROSS RESPONSE]:', data);
+      if (data.success) {
+        setGrossPayStatus('SUCCESS');
+        setNetFormulaStatus('ACTIVE');
+        setFeedback(data.message);
+      } else {
+        setGrossPayStatus('ERROR');
+        let feedbackMsg = data.message;
+        if (data.expected !== undefined && data.expected !== null) {
+          feedbackMsg += ` | Expected: ₱${data.expected.toFixed(2)}, Received: ₱${data.received !== null ? parseFloat(data.received).toFixed(2) : '0.00'}`;
+        }
+        setFeedback(feedbackMsg);
+        if (data.drillTriggered) handleRerollScenario();
+      }
+    } catch (err) {
+      console.error(err);
+      setFeedback('Network Error: Gross Pay verification failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Submit Phase 2 Step 5: Verify Net Pay Formula
+  const handleValidateNetPayFormula = async () => {
+    if (!netPayFormula) {
+      setFeedback('Please select a Net Pay formula from the dropdown.');
+      return;
+    }
+    setLoading(true);
+    setFeedback('Validating Net Pay formula logic...');
+    try {
+      const { module: mod, phase: ph } = getModuleAndPhase();
+      const response = await fetch('http://localhost:8080/api/validation/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentNumber: student?.studentNumber || 'STU-UNKNOWN',
+          module: mod,
+          phase: ph,
+          step: 'NET_PAY_FORMULA',
+          submittedRule: netPayFormula
+        })
+      });
+      const data = await response.json();
+      console.log('[DEBUG NET_PAY_FORMULA RESPONSE]:', data);
+      if (data.success) {
+        setNetFormulaStatus('SUCCESS');
+        setStep4Status('ACTIVE'); // Unlock final net pay (Step 6)
+        setFeedback(data.message);
+      } else {
+        setNetFormulaStatus('ERROR');
+        setFeedback(data.message);
+        if (data.drillTriggered) handleRerollScenario();
+      }
+    } catch (err) {
+      console.error(err);
+      setFeedback('Network Error: Formula validation failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Submit Step 4 (phases 3-6) / Step 6 (phase 2): Final Synthesis
   const handleValidateSynthesis = async () => {
     if (!netPayValue) {
       setFeedback((activePhaseIndex === 3 || activePhaseIndex === 4) ? 'Please enter the final calculated Total Earnings.' : 'Please enter the final calculated Net Take-Home Pay.');
@@ -452,13 +866,21 @@ function App() {
     }
 
     setLoading(true);
-    setFeedback(activePhaseIndex === 2 ? 'Auditing final synthesis ledger Net Pay calculations...' : activePhaseIndex === 4 ? 'Auditing final synthesis ledger Holiday Total Earnings calculations...' : 'Auditing final synthesis ledger Overtime Total Earnings calculations...');
+    setFeedback(activePhaseIndex === 2 ? 'Running final Net Pay synthesis audit...' : activePhaseIndex === 4 ? 'Auditing Holiday Total Earnings...' : 'Auditing Overtime Total Earnings...');
 
     try {
-      const grossPay = parseFloat((scenario.dailyRate * scenario.daysPresent).toFixed(2));
-      const tardinessDeduction = calculatedValue ? parseFloat(parseFloat(calculatedValue).toFixed(2)) : parseFloat(((scenario.hourlyRate / 60) * scenario.lateMinutes).toFixed(2));
-
       const { module: mod, phase: ph } = getModuleAndPhase();
+
+      // Pass the student's verified gross pay if present, otherwise calculate default
+      const grossPay = grossPayValue
+        ? parseFloat(grossPayValue)
+        : (activePhaseIndex === 2
+            ? parseFloat((scenario.hourlyRate * 8 * scenario.daysPresent).toFixed(2))
+            : parseFloat((scenario.dailyRate * scenario.daysPresent).toFixed(2)));
+      const tardinessDeduction = calculatedValue
+        ? parseFloat(parseFloat(calculatedValue).toFixed(2))
+        : parseFloat(((scenario.hourlyRate / 60) * scenario.lateMinutes).toFixed(2));
+
       const requestPayload = {
         studentNumber: student?.studentNumber || 'STU-UNKNOWN',
         module: mod,
@@ -482,7 +904,7 @@ function App() {
         submittedResult: netPayValue ? parseFloat(netPayValue) : 0.0
       };
 
-      console.log("[DEBUG SYNTHESIS PAYLOAD SENT]:", requestPayload);
+      console.log('[DEBUG SYNTHESIS PAYLOAD SENT]:', requestPayload);
 
       const response = await fetch('http://localhost:8080/api/validation/submit', {
         method: 'POST',
@@ -491,7 +913,7 @@ function App() {
       });
 
       const data = await response.json();
-      console.log("[DEBUG SYNTHESIS BACKEND RESPONSE]:", data);
+      console.log('[DEBUG SYNTHESIS BACKEND RESPONSE]:', data);
 
       if (data.success) {
         setStep4Status('SUCCESS');
@@ -500,13 +922,10 @@ function App() {
         setStep4Status('ERROR');
         let feedbackMsg = data.message;
         if (data.expected !== undefined && data.expected !== null) {
-          feedbackMsg += ` | Backend Validation Audit: Expected ₱${data.expected.toFixed(2)}, Received ₱${data.received !== null ? data.received.toFixed(10) : '0.00'}. Arithmetic mismatch detected.`;
+          feedbackMsg += ` | Backend Audit: Expected ₱${data.expected.toFixed(2)}, Received ₱${data.received !== null ? data.received.toFixed(2) : '0.00'}.`;
         }
         setFeedback(feedbackMsg);
-
-        if (data.drillTriggered) {
-          handleRerollScenario();
-        }
+        if (data.drillTriggered) handleRerollScenario();
       }
     } catch (err) {
       console.error(err);
@@ -648,7 +1067,7 @@ function App() {
               activePhaseIndex === 1 
                 ? 'Click office objects (Desk, Calendar, Whiteboard) to inspect details.' 
                 : activePhaseIndex === 2 
-                  ? 'Click office objects (Biometrics, DOLE Poster, Exit Door) to inspect details.' 
+                  ? 'Click objects (Biometrics Terminal, HR Filing Cabinet, DOLE Poster, Exit Door) to inspect details.' 
                   : activePhaseIndex === 3
                     ? 'Click office objects (Time Card, DOLE Overtime Poster, Exit Door) to inspect details.'
                     : activePhaseIndex === 4
@@ -685,6 +1104,14 @@ function App() {
           setCalculatedValue={setCalculatedValue}
           step3Status={step3Status}
           handleValidateExecution={handleValidateExecution}
+          grossPayValue={grossPayValue}
+          setGrossPayValue={setGrossPayValue}
+          grossPayStatus={grossPayStatus}
+          handleValidateGrossPay={handleValidateGrossPay}
+          netPayFormula={netPayFormula}
+          setNetPayFormula={setNetPayFormula}
+          netFormulaStatus={netFormulaStatus}
+          handleValidateNetPayFormula={handleValidateNetPayFormula}
           netPayValue={netPayValue}
           setNetPayValue={setNetPayValue}
           step4Status={step4Status}
@@ -697,6 +1124,27 @@ function App() {
           setTribunalNet={setTribunalNet}
           handleValidateTribunal={handleValidateTribunal}
           tribunalStatus={tribunalStatus}
+          trueOtHoursValue={trueOtHoursValue}
+          setTrueOtHoursValue={setTrueOtHoursValue}
+          trueOtHoursStatus={trueOtHoursStatus}
+          handleValidateTrueOtHours={handleValidateTrueOtHours}
+          otMultiplierValue={otMultiplierValue}
+          setOtMultiplierValue={setOtMultiplierValue}
+          otMultiplierStatus={otMultiplierStatus}
+          handleValidateOtMultiplier={handleValidateOtMultiplier}
+          otFormulaValue={otFormulaValue}
+          setOtFormulaValue={setOtFormulaValue}
+          otFormulaStatus={otFormulaStatus}
+          handleValidateOtFormula={handleValidateOtFormula}
+          holidayTypeValue={holidayTypeValue}
+          setHolidayTypeValue={setHolidayTypeValue}
+          holidayMultiplierValue={holidayMultiplierValue}
+          setHolidayMultiplierValue={setHolidayMultiplierValue}
+          holidayFormulaValue={holidayFormulaValue}
+          setHolidayFormulaValue={setHolidayFormulaValue}
+          holidayFormulaStatus={holidayFormulaStatus}
+          handleValidateHolidayMultiplier={handleValidateHolidayMultiplier}
+          handleValidateHolidayFormula={handleValidateHolidayFormula}
         />
 
       </div>

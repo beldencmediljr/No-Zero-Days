@@ -3,8 +3,7 @@ export interface BiometricLog {
   timeIn: string;
   timeOut: string;
   late: number;
-  early: number;
-  status: 'LATE' | 'EARLY IN' | 'ON-TIME' | 'HOLIDAY';
+  status: 'LATE' | 'ON-TIME' | 'HOLIDAY';
 }
 
 export interface ScenarioData {
@@ -16,7 +15,6 @@ export interface ScenarioData {
   uniformAllowance: number;
   hourlyRate: number;
   lateMinutes: number;
-  earlyClockInMinutes: number;
   calendarGrid: Record<number, 'P' | 'A'>;
   biometricLogs: BiometricLog[];
   otHours?: number;
@@ -30,8 +28,71 @@ export interface ScenarioData {
 }
 
 /**
+ * Converts a total-minutes-from-midnight value into a formatted "HH:MM AM/PM" string.
+ * Example: 555 minutes → "09:15 AM", 780 minutes → "01:00 PM"
+ */
+function minutesToTimeString(totalMinutes: number): string {
+  const hours24 = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
+  const period = hours24 < 12 ? 'AM' : 'PM';
+  const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
+  const hh = hours12.toString().padStart(2, '0');
+  const mm = mins.toString().padStart(2, '0');
+  return `${hh}:${mm} ${period}`;
+}
+
+/**
+ * Distributes `totalLateMinutes` randomly across 2–4 of the available non-holiday weekdays.
+ * Returns an array of minute values (one per day, same length as `dayCount`).
+ * Days designated as holidays receive 0 late minutes.
+ */
+function distributeLateMinutes(
+  totalLateMinutes: number,
+  dayCount: number,
+  holidayIndices: Set<number>
+): number[] {
+  const result: number[] = new Array(dayCount).fill(0);
+  // Collect eligible (non-holiday) day indices
+  const eligible: number[] = [];
+  for (let i = 0; i < dayCount; i++) {
+    if (!holidayIndices.has(i)) eligible.push(i);
+  }
+  if (eligible.length === 0 || totalLateMinutes === 0) return result;
+
+  // Choose 2–4 random days (but no more than available eligible days)
+  const chunkCount = Math.min(
+    eligible.length,
+    2 + Math.floor(Math.random() * 3) // random int in [2, 4]
+  );
+  // Shuffle eligible and pick first chunkCount
+  const shuffled = [...eligible].sort(() => Math.random() - 0.5);
+  const chosenDays = shuffled.slice(0, chunkCount);
+
+  // Distribute totalLateMinutes into chunkCount slices
+  // Ensure each slice is at least 1 minute and a multiple of 5 for realism
+  const chunks: number[] = [];
+  let remaining = totalLateMinutes;
+  for (let i = 0; i < chunkCount - 1; i++) {
+    // Random share between 1 and remaining − (chunkCount − i − 1)
+    const maxSlice = remaining - (chunkCount - i - 1);
+    const slice = Math.max(5, Math.round((Math.random() * maxSlice) / 5) * 5);
+    const safeSlice = Math.min(slice, maxSlice);
+    chunks.push(safeSlice);
+    remaining -= safeSlice;
+  }
+  chunks.push(remaining); // last chunk gets the rest
+
+  // Assign chunks to chosen days
+  chosenDays.forEach((dayIdx, i) => {
+    result[dayIdx] = chunks[i];
+  });
+  return result;
+}
+
+/**
  * Generates a randomized scenario payload specifically suited for Module 1, Phase 2.
  * Includes standard Daily/Hourly rates and dynamic biometric logs containing Red Herring values.
+ * Late minutes are distributed across Mon–Fri (skipping holidays) with proper time formatting.
  */
 export function generatePhase2Scenario(): ScenarioData {
   const employees = ['Juan Dela Cruz', 'Maria Santos', 'Pedro Penduko', 'Anna Mangahas', 'Jose Rizal'];
@@ -49,56 +110,48 @@ export function generatePhase2Scenario(): ScenarioData {
   // Derived variables
   const hourlyRate = dailyRate / 8.0;
   
-  // Generate randomized tardiness components
+  // Generate randomized total tardiness (in minutes)
   const lateMinutesList = [15, 20, 30, 45, 60, 75, 90];
   const lateMinutes = lateMinutesList[Math.floor(Math.random() * lateMinutesList.length)];
-  
-  const earlyInList = [5, 10, 15, 20, 25];
-  const earlyClockInMinutes = earlyInList[Math.floor(Math.random() * earlyInList.length)];
 
-  // Dynamic 5-day biometric logs list with status mapping
-  const biometricLogs: BiometricLog[] = [
-    {
-      day: 'MON (June 8)',
-      timeIn: `08:${lateMinutes < 10 ? '0' + lateMinutes : lateMinutes} AM`,
-      timeOut: '05:00 PM',
-      late: lateMinutes,
-      early: 0,
-      status: 'LATE'
-    },
-    {
-      day: 'TUE (June 9)',
-      timeIn: `07:${60 - earlyClockInMinutes} AM`,
-      timeOut: '05:00 PM',
-      late: 0,
-      early: earlyClockInMinutes,
-      status: 'EARLY IN'
-    },
-    {
-      day: 'WED (June 10)',
-      timeIn: '08:00 AM',
-      timeOut: '05:00 PM',
-      late: 0,
-      early: 0,
-      status: 'ON-TIME'
-    },
-    {
-      day: 'THU (June 11)',
-      timeIn: '08:00 AM',
-      timeOut: '05:00 PM',
-      late: 0,
-      early: 0,
-      status: 'ON-TIME'
-    },
-    {
-      day: 'FRI (June 12)',
-      timeIn: 'HOLIDAY',
-      timeOut: 'HOLIDAY',
-      late: 0,
-      early: 0,
-      status: 'HOLIDAY'
-    }
+  // Define the 5-day work week structure for June 2026 Week 2
+  // FRI (June 12) is a Regular Holiday — index 4
+  const STANDARD_START_MINS = 8 * 60; // 08:00 AM = 480 minutes from midnight
+  const HOLIDAY_INDEX = 4; // Friday = index 4
+  const holidayIndices = new Set<number>([HOLIDAY_INDEX]);
+
+  const dayLabels = [
+    'MON (June 8)',
+    'TUE (June 9)',
+    'WED (June 10)',
+    'THU (June 11)',
+    'FRI (June 12)',
   ];
+
+  // Distribute late minutes across non-holiday days
+  const latePerDay = distributeLateMinutes(lateMinutes, dayLabels.length, holidayIndices);
+
+  // Build biometric log entries
+  const biometricLogs: BiometricLog[] = dayLabels.map((day, idx) => {
+    if (holidayIndices.has(idx)) {
+      return {
+        day,
+        timeIn: 'HOLIDAY',
+        timeOut: 'HOLIDAY',
+        late: 0,
+        status: 'HOLIDAY',
+      };
+    }
+    const dayLate = latePerDay[idx];
+    const timeInMins = STANDARD_START_MINS + dayLate;
+    return {
+      day,
+      timeIn: minutesToTimeString(timeInMins),
+      timeOut: '05:00 PM',
+      late: dayLate,
+      status: dayLate > 0 ? 'LATE' : 'ON-TIME',
+    };
+  });
 
   // Dummy calendar grid for Lobby compatibility
   const calendarGrid: Record<number, 'P' | 'A'> = {};
@@ -116,9 +169,8 @@ export function generatePhase2Scenario(): ScenarioData {
     uniformAllowance: 1500,
     hourlyRate,
     lateMinutes,
-    earlyClockInMinutes,
     calendarGrid,
-    biometricLogs
+    biometricLogs,
   };
 }
 
@@ -159,11 +211,10 @@ export function generatePhase3Scenario(): ScenarioData {
     uniformAllowance: 1500,
     hourlyRate,
     lateMinutes: 0,
-    earlyClockInMinutes: 0,
     calendarGrid,
     biometricLogs: [],
     otHours,
-    unpaidLunchHours
+    unpaidLunchHours,
   };
 }
 
@@ -243,9 +294,8 @@ export function generatePhase4Scenario(): ScenarioData {
     uniformAllowance: 1500,
     hourlyRate,
     lateMinutes: 0,
-    earlyClockInMinutes: 0,
     calendarGrid,
-    biometricLogs
+    biometricLogs,
   };
 }
 
@@ -281,14 +331,13 @@ export function generatePhase5Scenario(): ScenarioData {
     uniformAllowance: 1500,
     hourlyRate,
     lateMinutes: 0,
-    earlyClockInMinutes: 0,
     calendarGrid: {},
     biometricLogs: [],
     sssEeShare,
     sssErShare,
     personalSalaryLoan,
     spouseLoan,
-    basicSalary: dailyRate * daysPresent
+    basicSalary: dailyRate * daysPresent,
   };
 }
 
@@ -346,7 +395,6 @@ export function generatePhase7Scenario(): ScenarioData {
     uniformAllowance: 1500,
     hourlyRate,
     lateMinutes,
-    earlyClockInMinutes: 0,
     calendarGrid: {},
     biometricLogs: [],
     otHours,
@@ -356,7 +404,7 @@ export function generatePhase7Scenario(): ScenarioData {
     sssErShare,
     personalSalaryLoan,
     spouseLoan,
-    basicSalary
+    basicSalary,
   };
 }
 
