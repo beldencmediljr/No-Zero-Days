@@ -196,4 +196,98 @@
   background-color: rgba(220, 38, 38, 0.1) !important; 
 }
 .a-mark { color: #ef4444; font-weight: bold; font-size: 1.1rem; line-height: 1; }
+
+/* ─── NUMERIC INPUT ENHANCEMENTS ─────────────────────────────── */
+
+/* Remove spinner arrows (up/down controls) from all number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Flex row: input + info icon side by side */
+.input-hint-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+/* Make the input fill available space; clear any bottom margin it may have */
+.input-hint-wrapper .tech-input {
+  flex: 1;
+  margin-bottom: 0 !important;
+}
+
+/* Circular ⓘ amber info icon */
+.input-info-icon {
+  flex-shrink: 0;
+  position: relative;
+  width: 20px;
+  height: 20px;
+  background: #1e293b;
+  border: 1px solid #f59e0b;
+  color: #f59e0b;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+  font-style: italic;
+  cursor: help;
+  user-select: none;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.input-info-icon:hover {
+  background: rgba(245, 158, 11, 0.15);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}
+
+/* Tooltip card — hidden until icon is hovered */
+.input-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: -6px;
+  width: 245px;
+  background: #0f172a;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  padding: 10px 13px;
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: normal;
+  color: #cbd5e1;
+  font-family: 'Share Tech Mono', monospace;
+  line-height: 1.6;
+  z-index: 9998;
+  pointer-events: none;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.65);
+  text-align: left;
+  letter-spacing: 0.2px;
+  white-space: normal;
+}
+
+/* Downward caret arrow */
+.input-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 10px;
+  border: 6px solid transparent;
+  border-top-color: #f59e0b;
+}
+
+/* Show on hover */
+.input-info-icon:hover .input-tooltip {
+  display: block;
+}
+
 

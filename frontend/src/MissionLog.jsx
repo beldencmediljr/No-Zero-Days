@@ -68,41 +68,56 @@ export default function MissionLog({
               <label style={{ color: '#e2e8f0', fontSize: '0.85rem' }}>
                 1. TOTAL GROSS EARNINGS (₱)
               </label>
-              <input 
-                type="number" 
-                placeholder="Basic Gross + OT Pay + Holiday Pay" 
-                className="tech-input"
-                value={tribunalGross}
-                onChange={(e) => setTribunalGross(e.target.value)}
-                disabled={tribunalStatus === 'SUCCESS' || loading}
-                style={{ border: '1px solid #ef4444', color: '#fff', marginBottom: '12px' }}
-              />
+              <div className="input-hint-wrapper">
+                <input 
+                  type="number" 
+                  placeholder="Basic Gross + OT Pay + Holiday Pay" 
+                  className="tech-input"
+                  value={tribunalGross}
+                  onChange={(e) => setTribunalGross(e.target.value)}
+                  disabled={tribunalStatus === 'SUCCESS' || loading}
+                  style={{ border: '1px solid #ef4444', color: '#fff' }}
+                />
+                <span className="input-info-icon">ⓘ
+                  <div className="input-tooltip">Sum all earnings across prior rooms: Gross Basic Pay (Phase 1) + Overtime Premium (Phase 3) + Holiday Pay (Phase 4). Each amount was calculated and validated during the respective room audit steps.</div>
+                </span>
+              </div>
 
               <label style={{ color: '#e2e8f0', fontSize: '0.85rem' }}>
                 2. TOTAL DEDUCTIONS (₱)
               </label>
-              <input 
-                type="number" 
-                placeholder="Tardiness + SSS + PhilHealth" 
-                className="tech-input"
-                value={tribunalDeductions}
-                onChange={(e) => setTribunalDeductions(e.target.value)}
-                disabled={tribunalStatus === 'SUCCESS' || loading}
-                style={{ border: '1px solid #ef4444', color: '#fff', marginBottom: '12px' }}
-              />
+              <div className="input-hint-wrapper">
+                <input 
+                  type="number" 
+                  placeholder="Tardiness + SSS + PhilHealth" 
+                  className="tech-input"
+                  value={tribunalDeductions}
+                  onChange={(e) => setTribunalDeductions(e.target.value)}
+                  disabled={tribunalStatus === 'SUCCESS' || loading}
+                  style={{ border: '1px solid #ef4444', color: '#fff' }}
+                />
+                <span className="input-info-icon">ⓘ
+                  <div className="input-tooltip">Add all deductions validated across prior rooms: Tardiness Deduction (Phase 2) + SSS Total (Phase 5) + PhilHealth Premium (Phase 6). Each value was confirmed during the respective room audit.</div>
+                </span>
+              </div>
 
               <label style={{ color: '#e2e8f0', fontSize: '0.85rem' }}>
                 3. FINAL NET PAY (₱)
               </label>
-              <input 
-                type="number" 
-                placeholder="Gross Earnings - Total Deductions" 
-                className="tech-input"
-                value={tribunalNet}
-                onChange={(e) => setTribunalNet(e.target.value)}
-                disabled={tribunalStatus === 'SUCCESS' || loading}
-                style={{ border: '1px solid #ef4444', color: '#fff', marginBottom: '12px' }}
-              />
+              <div className="input-hint-wrapper">
+                <input 
+                  type="number" 
+                  placeholder="Gross Earnings - Total Deductions" 
+                  className="tech-input"
+                  value={tribunalNet}
+                  onChange={(e) => setTribunalNet(e.target.value)}
+                  disabled={tribunalStatus === 'SUCCESS' || loading}
+                  style={{ border: '1px solid #ef4444', color: '#fff' }}
+                />
+                <span className="input-info-icon">ⓘ
+                  <div className="input-tooltip">Subtract the total deductions from total gross earnings. This is the employee's final take-home net pay for the entire audit period. Both values come from the two fields entered just above.</div>
+                </span>
+              </div>
 
               <button 
                 className="tech-link"
@@ -225,22 +240,36 @@ export default function MissionLog({
                     : 'VARIABLE COMPONENT A (Basic Salary)'
               }
             </label>
-            <input 
-              type="number" 
-              placeholder={
-                activePhaseIndex === 1 || activePhaseIndex === 4 
-                  ? "₱ Enter base Daily Rate" 
-                  : activePhaseIndex === 2 || activePhaseIndex === 3
-                    ? "₱ Enter base Hourly Rate"
-                    : activePhaseIndex === 5
-                      ? "₱ Enter SSS EE share"
-                      : "₱ Enter Basic Salary"
-              } 
-              className="tech-input"
-              value={extractedA}
-              onChange={(e) => setExtractedA(e.target.value)}
-              disabled={step1Status === 'SUCCESS' || loading}
-            />
+            <div className="input-hint-wrapper">
+              <input 
+                type="number" 
+                placeholder={
+                  activePhaseIndex === 1 || activePhaseIndex === 4 
+                    ? "₱ Enter base Daily Rate" 
+                    : activePhaseIndex === 2 || activePhaseIndex === 3
+                      ? "₱ Enter base Hourly Rate"
+                      : activePhaseIndex === 5
+                        ? "₱ Enter SSS EE share"
+                        : "₱ Enter Basic Salary"
+                } 
+                className="tech-input"
+                value={extractedA}
+                onChange={(e) => setExtractedA(e.target.value)}
+                disabled={step1Status === 'SUCCESS' || loading}
+              />
+              <span className="input-info-icon">ⓘ
+                <div className="input-tooltip">
+                  {(activePhaseIndex === 1 || activePhaseIndex === 4)
+                    ? 'Open the HR desk contract folder on the left side of the room. The employee\'s base daily rate is printed on the employment contract inside.'
+                    : (activePhaseIndex === 2 || activePhaseIndex === 3)
+                      ? 'Check the supervisor\'s clipboard or the timecard terminal near the assembly line. The base hourly rate is listed on the employee\'s shift agreement.'
+                      : activePhaseIndex === 5
+                        ? 'Click the SSS deduction table posted on the office corkboard. Find the employee\'s gross salary bracket and read the Employee Share (EE) column.'
+                        : 'Open the employment contract folder at the main desk. The employee\'s basic monthly salary is printed in the compensation section.'
+                  }
+                </div>
+              </span>
+            </div>
             
             <label style={{ color: '#e2e8f0', fontSize: '0.85rem' }}>
               {activePhaseIndex === 1 
@@ -256,26 +285,44 @@ export default function MissionLog({
                         : 'VARIABLE COMPONENT B (PhilHealth Rate)'
               }
             </label>
-            <input 
-              type="number" 
-              placeholder={
-                activePhaseIndex === 1 
-                  ? "Enter shifts worked" 
-                  : activePhaseIndex === 2 
-                    ? "Enter late minutes" 
-                    : activePhaseIndex === 3
-                      ? "Enter actual OT hours"
-                      : activePhaseIndex === 4
-                        ? "Enter holiday multiplier (e.g. 2.0)"
-                        : activePhaseIndex === 5
-                          ? "₱ Enter personal salary loan"
-                          : "Enter standard rate (e.g. 0.025)"
-              } 
-              className="tech-input"
-              value={extractedB}
-              onChange={(e) => setExtractedB(e.target.value)}
-              disabled={step1Status === 'SUCCESS' || loading}
-            />
+            <div className="input-hint-wrapper">
+              <input 
+                type="number" 
+                placeholder={
+                  activePhaseIndex === 1 
+                    ? "Enter shifts worked" 
+                    : activePhaseIndex === 2 
+                      ? "Enter late minutes" 
+                      : activePhaseIndex === 3
+                        ? "Enter actual OT hours"
+                        : activePhaseIndex === 4
+                          ? "Enter holiday multiplier (e.g. 2.0)"
+                          : activePhaseIndex === 5
+                            ? "₱ Enter personal salary loan"
+                            : "Enter standard rate (e.g. 0.025)"
+                } 
+                className="tech-input"
+                value={extractedB}
+                onChange={(e) => setExtractedB(e.target.value)}
+                disabled={step1Status === 'SUCCESS' || loading}
+              />
+              <span className="input-info-icon">ⓘ
+                <div className="input-tooltip">
+                  {activePhaseIndex === 1
+                    ? 'Count the days marked with a P (Present) on the monthly wall calendar in the lobby. Each marked day represents one shift worked by the employee.'
+                    : activePhaseIndex === 2
+                      ? 'Click the biometric swipe log terminal near the security gate. Sum all tardiness minutes recorded for this employee across the current payroll month.'
+                      : activePhaseIndex === 3
+                        ? 'Examine the production timecard on the supervisor\'s desk. Subtract the standard 8-hour shift from the total hours clocked to find actual overtime hours.'
+                        : activePhaseIndex === 4
+                          ? 'Check the DOLE holiday policy poster on the breakroom corkboard. The correct premium multiplier for a Regular Holiday is stated in the premium rates section.'
+                          : activePhaseIndex === 5
+                            ? 'Review the employee\'s payroll file at the HR desk. The personal salary loan deduction amount is itemized in the financial liabilities section.'
+                            : 'Refer to the PhilHealth premium table posted on the office corkboard. The applicable employee share rate is displayed as a decimal percentage.'
+                  }
+                </div>
+              </span>
+            </div>
 
             {/* 3-Strike Warning Banner */}
             {step1Status === 'ERROR' && extractionAttempts > 0 && extractionAttempts < 3 && (
@@ -422,14 +469,32 @@ export default function MissionLog({
                           : 'FINAL PHILHEALTH PREMIUM DEDUCTION (₱)'
                 }
               </label>
-              <input 
-                type="number" 
-                placeholder="₱ Enter calculated amount" 
-                className="tech-input"
-                value={calculatedValue}
-                onChange={(e) => setCalculatedValue(e.target.value)}
-                disabled={step3Status === 'SUCCESS' || loading}
-              />
+              <div className="input-hint-wrapper">
+                <input 
+                  type="number" 
+                  placeholder="₱ Enter calculated amount" 
+                  className="tech-input"
+                  value={calculatedValue}
+                  onChange={(e) => setCalculatedValue(e.target.value)}
+                  disabled={step3Status === 'SUCCESS' || loading}
+                />
+                <span className="input-info-icon">ⓘ
+                  <div className="input-tooltip">
+                    {activePhaseIndex === 1
+                      ? 'Multiply Daily Rate × Days Present. Use the in-room calculator panel to confirm your arithmetic before entering this value.'
+                      : activePhaseIndex === 2
+                        ? 'Apply: (Hourly Rate ÷ 60) × Late Minutes. Use the calculator to compute the precise tardiness deduction amount.'
+                        : activePhaseIndex === 3
+                          ? 'Apply: Hourly Rate × Overtime Hours × 1.25. The 1.25 multiplier is the legal overtime premium required under DOLE regulations.'
+                          : activePhaseIndex === 4
+                            ? 'Multiply Daily Rate × the holiday multiplier shown on the corkboard poster. Confirm the correct holiday type before applying the multiplier.'
+                            : activePhaseIndex === 5
+                              ? 'Add the SSS Employee Share to the Personal Salary Loan amount. Both values were entered as Variable A and B in Step 1 above.'
+                              : 'Multiply Basic Salary × the PhilHealth rate entered in Step 1. This gives the employee\'s total PhilHealth premium contribution.'
+                    }
+                  </div>
+                </span>
+              </div>
               
               {step3Status !== 'SUCCESS' && (
                 <button className="run-btn" onClick={handleValidateExecution} disabled={loading}>
@@ -464,21 +529,35 @@ export default function MissionLog({
                   {activePhaseIndex === 5 && 'TOTAL STATUTORY DEDUCTIONS SO FAR (₱)'}
                   {activePhaseIndex === 6 && 'FINAL STATUTORY DEDUCTIONS (₱)'}
                 </label>
-                <input 
-                  type="number" 
-                  placeholder={
-                    activePhaseIndex === 2 
-                      ? "₱ Enter calculated Net Pay" 
-                      : activePhaseIndex === 3 || activePhaseIndex === 4
-                        ? "₱ Enter calculated Total Earnings"
-                        : "₱ Enter statutory deductions sum"
-                  } 
-                  className="tech-input"
-                  value={netPayValue}
-                  onChange={(e) => setNetPayValue(e.target.value)}
-                  disabled={step4Status === 'SUCCESS' || loading}
-                  style={{ border: '1px solid #3b82f6', color: '#fff' }}
-                />
+                <div className="input-hint-wrapper">
+                  <input 
+                    type="number" 
+                    placeholder={
+                      activePhaseIndex === 2 
+                        ? "₱ Enter calculated Net Pay" 
+                        : activePhaseIndex === 3 || activePhaseIndex === 4
+                          ? "₱ Enter calculated Total Earnings"
+                          : "₱ Enter statutory deductions sum"
+                    } 
+                    className="tech-input"
+                    value={netPayValue}
+                    onChange={(e) => setNetPayValue(e.target.value)}
+                    disabled={step4Status === 'SUCCESS' || loading}
+                    style={{ border: '1px solid #3b82f6', color: '#fff' }}
+                  />
+                  <span className="input-info-icon">ⓘ
+                    <div className="input-tooltip">
+                      {activePhaseIndex === 2
+                        ? 'Subtract the tardiness deduction (Step 3 result) from the employee\'s gross basic pay computed in Phase 1. The difference is the take-home net pay.'
+                        : (activePhaseIndex === 3 || activePhaseIndex === 4)
+                          ? 'Add the premium pay from Step 3 to the employee\'s gross basic earnings from Phase 1. The total is the overtime or holiday adjusted earnings.'
+                          : activePhaseIndex === 5
+                            ? 'Add the SSS Employee Share and personal salary loan from Steps 1 and 3 to get the total SSS-related deductions accumulated so far.'
+                            : 'Add the SSS deductions total (Phase 5) to the PhilHealth premium (Step 3 of this phase) for the complete statutory deduction total.'
+                      }
+                    </div>
+                  </span>
+                </div>
                 <button 
                   className="tech-link"
                   onClick={() => setActivePopup('HANDBOOK')}
