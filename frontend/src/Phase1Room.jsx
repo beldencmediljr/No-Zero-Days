@@ -76,23 +76,16 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
   }
 
   if (activePhaseIndex === 5 || activePhaseIndex === 6) {
+    const phaseClass = activePhaseIndex === 5 ? 'phase5-room' : 'phase6-room';
     return (
-      <div className="room-container phase5-6-room">
+      <div className={`room-container ${phaseClass}`}>
         <img src={pclabImage} alt="PC Lab / Bureaucracy Department" className="background-image" />
-        {/* Hotspot 1: Notice Board Corkboard Memos */}
+
+        {/* Hotspot 1: Notice Board / Corkboard */}
         <button
           className="hotspot corkboard-hotspot"
           title={activePhaseIndex === 5 ? "📌 SSS Contribution Table" : "📌 PhilHealth Premium Table"}
           onClick={() => setActivePopup(activePhaseIndex === 5 ? 'SSS_TABLE' : 'PHILHEALTH_TABLE')}
-          style={{
-            position: 'absolute',
-            top: '15%',
-            left: '12%',
-            width: '24%',
-            height: '32%',
-            backgroundColor: 'transparent',
-            cursor: 'pointer',
-          }}
         ></button>
 
         {/* Hotspot 2: PC Monitor (Loan Statement / HR Database) */}
@@ -100,15 +93,6 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
           className="hotspot monitor-hotspot"
           title={activePhaseIndex === 5 ? "🖥️ Employee Loan Statement" : "🖥️ HR Salary Database"}
           onClick={() => setActivePopup(activePhaseIndex === 5 ? 'LOAN_STATEMENT' : 'SALARY_DATABASE')}
-          style={{
-            position: 'absolute',
-            top: '40%',
-            left: '52%',
-            width: '16%',
-            height: '24%',
-            backgroundColor: 'transparent',
-            cursor: 'pointer',
-          }}
         ></button>
 
         {/* Hotspot 3: Exit Door */}
@@ -116,15 +100,6 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
           className="hotspot door-hotspot"
           title="🚪 PC Lab Exit Door"
           onClick={() => setActivePopup('DOOR')}
-          style={{
-            position: 'absolute',
-            top: '10%',
-            left: '38%',
-            width: '12%',
-            height: '35%',
-            backgroundColor: 'transparent',
-            cursor: 'pointer',
-          }}
         ></button>
 
         {/* Hotspot 4: Company Payroll Manual */}
@@ -132,15 +107,6 @@ export default function Phase1Room({ setActivePopup, activePhaseIndex = 1 }) {
           className="hotspot handbook-hotspot"
           title="📘 Company Payroll Manual"
           onClick={() => setActivePopup('HANDBOOK')}
-          style={{
-            position: 'absolute',
-            top: '55%',
-            left: '3%',
-            width: '9%',
-            height: '10%',
-            backgroundColor: 'transparent',
-            cursor: 'pointer',
-          }}
         ></button>
       </div>
     );

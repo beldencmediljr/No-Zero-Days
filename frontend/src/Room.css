@@ -106,8 +106,8 @@
 
 .phase4-room .timesheet-hotspot {
   top: 13.5%;
-  left: 90%;
-  width: 8%;
+  left: 81.5%;
+  width: 16.5%;
   height: 10%;
 }
 
@@ -130,4 +130,74 @@
   left: 32%;
   width: 3.5%;
   height: 6%;
+}
+
+/* --- PHASE 5: SSS PC LAB POSITIONS --- */
+.phase5-room {
+  /* 2528×1684 — height = 476px at max-width 714px (matches Phase 1) */
+  aspect-ratio: 2528 / 1684;
+  max-width: 714px;
+}
+
+.phase5-room .corkboard-hotspot {
+  top: 9.5%;
+  left: 61.5%;
+  width: 8%;
+  height: 16%;
+}
+
+.phase5-room .monitor-hotspot {
+  top: 8%;
+  left: 42.5%;
+  width: 18%;
+  height: 14.5%;
+}
+
+.phase5-room .door-hotspot {
+  top: 15%;
+  left: 4%;
+  width: 9.5%;
+  height: 20%;
+}
+
+.phase5-room .handbook-hotspot {
+  top: 48.5%;
+  left: 18.5%;
+  width: 5.5%;
+  height: 10%;
+}
+
+/* --- PHASE 6: PHILHEALTH PC LAB POSITIONS --- */
+.phase6-room {
+  /* Update aspect-ratio and max-width here when Phase 6 background changes */
+  aspect-ratio: 2528 / 1684;
+  max-width: 714px;
+}
+
+.phase6-room .corkboard-hotspot {
+  top: 8%;
+  left: 12%;
+  width: 24%;
+  height: 32%;
+}
+
+.phase6-room .monitor-hotspot {
+  top: 40%;
+  left: 52%;
+  width: 16%;
+  height: 24%;
+}
+
+.phase6-room .door-hotspot {
+  top: 10%;
+  left: 2%;
+  width: 9%;
+  height: 35%;
+}
+
+.phase6-room .handbook-hotspot {
+  top: 55%;
+  left: 3%;
+  width: 9%;
+  height: 10%;
 }
