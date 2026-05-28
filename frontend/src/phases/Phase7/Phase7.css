@@ -1,0 +1,21 @@
+/* --- PHASE 7: EXECUTIVE BOARDROOM POSITIONS --- */
+.phase7-room {
+  aspect-ratio: 2528 / 1684;
+  max-width: 714px;
+}
+
+.phase7-room .folder-hotspot {
+  top: 65%;
+  left: 40%;
+  width: 20%;
+  height: 20%;
+  border-color: rgba(251, 191, 36, 0.6);
+}
+
+.phase7-room .door-hotspot {
+  top: 1%;
+  left: 60%;
+  width: 25%;
+  height: 40%;
+  border-color: rgba(239, 68, 68, 0.4);
+}

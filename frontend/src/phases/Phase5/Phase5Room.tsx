@@ -13,7 +13,7 @@ interface Phase5RoomProps {
  */
 export default function Phase5Room({ setActivePopup }: Phase5RoomProps) {
   return (
-    <div className="room-container pclab-floor" style={{ position: 'relative' }}>
+    <div className="room-container pclab-floor phase5-room" style={{ position: 'relative' }}>
       <img 
         src={pclabImage} 
         alt="PC Lab / Bureaucracy Department" 
@@ -25,16 +25,6 @@ export default function Phase5Room({ setActivePopup }: Phase5RoomProps) {
         className="hotspot corkboard-hotspot" 
         title="📌 SSS Contribution Table" 
         onClick={() => setActivePopup('SSS_TABLE')}
-        style={{
-          position: 'absolute',
-          top: '15%',
-          left: '12%',
-          width: '24%',
-          height: '32%',
-          backgroundColor: 'transparent',
-          cursor: 'pointer',
-          border: '1px dashed rgba(96, 165, 250, 0.4)'
-        }}
       />
 
       {/* Hotspot 2: PC Monitor (Loan Statement / HR Database) */}
@@ -42,16 +32,6 @@ export default function Phase5Room({ setActivePopup }: Phase5RoomProps) {
         className="hotspot monitor-hotspot" 
         title="🖥️ Employee Loan Statement" 
         onClick={() => setActivePopup('LOAN_STATEMENT')}
-        style={{
-          position: 'absolute',
-          top: '40%',
-          left: '52%',
-          width: '16%',
-          height: '24%',
-          backgroundColor: 'transparent',
-          cursor: 'pointer',
-          border: '1px dashed rgba(96, 165, 250, 0.4)'
-        }}
       />
 
       {/* Hotspot 3: Exit Door */}
@@ -59,16 +39,6 @@ export default function Phase5Room({ setActivePopup }: Phase5RoomProps) {
         className="hotspot door-hotspot" 
         title="🚪 PC Lab Exit Door" 
         onClick={() => setActivePopup('DOOR')}
-        style={{
-          position: 'absolute',
-          top: '10%',
-          left: '38%',
-          width: '12%',
-          height: '35%',
-          backgroundColor: 'transparent',
-          cursor: 'pointer',
-          border: '1px dashed rgba(239, 68, 68, 0.4)'
-        }}
       />
 
       {/* Hotspot 4: Company Payroll Manual */}
@@ -76,16 +46,6 @@ export default function Phase5Room({ setActivePopup }: Phase5RoomProps) {
         className="hotspot handbook-hotspot" 
         title="📘 Company Payroll Manual" 
         onClick={() => setActivePopup('HANDBOOK')}
-        style={{
-          position: 'absolute',
-          top: '55%',
-          left: '3%',
-          width: '9%',
-          height: '10%',
-          backgroundColor: 'transparent',
-          cursor: 'pointer',
-          border: '1px dashed rgba(250, 204, 21, 0.4)'
-        }}
       />
     </div>
   );

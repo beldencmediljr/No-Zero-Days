@@ -5,24 +5,27 @@
 }
 
 .phase6-room .corkboard-hotspot {
-  top: 8%;
-  left: 12%;
-  width: 24%;
-  height: 32%;
+  top: 12%;
+  left: 61%;
+  width: 8%;
+  height: 13%;
+  border-color: rgba(96, 165, 250, 0.4);
 }
 
 .phase6-room .monitor-hotspot {
-  top: 40%;
-  left: 52%;
-  width: 16%;
-  height: 24%;
+  top: 15%;
+  left: 70%;
+  width: 11%;
+  height: 10%;
+  border-color: rgba(96, 165, 250, 0.4);
 }
 
 .phase6-room .door-hotspot {
   top: 10%;
-  left: 2%;
-  width: 9%;
-  height: 35%;
+  left: 3.5%;
+  width: 10%;
+  height: 24.5%;
+  border-color: rgba(239, 68, 68, 0.4);
 }
 
 .phase6-room .handbook-hotspot {
@@ -30,4 +33,5 @@
   left: 3%;
   width: 9%;
   height: 10%;
+  border-color: rgba(250, 204, 21, 0.4);
 }
