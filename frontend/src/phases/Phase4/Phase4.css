@@ -1,0 +1,41 @@
+/* --- PHASE 4 BREAKROOM POSITIONS --- */
+.phase4-room {
+  /* Natural aspect ratio */
+  aspect-ratio: 2528 / 1684;
+  max-width: 714px;
+}
+
+.phase4-room .corkboard-hotspot {
+  top: 8%;
+  left: 42%;
+  width: 18.5%;
+  height: 15%;
+}
+
+.phase4-room .timesheet-hotspot {
+  top: 13.5%;
+  left: 81.5%;
+  width: 16.5%;
+  height: 10%;
+}
+
+.phase4-room .poster-hotspot {
+  top: 10%;
+  left: 61.5%;
+  width: 8%;
+  height: 15%;
+}
+
+.phase4-room .door-hotspot {
+  top: 10%;
+  left: 4%;
+  width: 10%;
+  height: 26%;
+}
+
+.phase4-room .handbook-hotspot {
+  top: 31.5%;
+  left: 32%;
+  width: 3.5%;
+  height: 6%;
+}

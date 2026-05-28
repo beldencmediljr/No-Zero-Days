@@ -1,0 +1,33 @@
+/* --- PHASE 5: SSS PC LAB POSITIONS --- */
+.phase5-room {
+  aspect-ratio: 2528 / 1684;
+  max-width: 714px;
+}
+
+.phase5-room .corkboard-hotspot {
+  top: 9.5%;
+  left: 61.5%;
+  width: 8%;
+  height: 16%;
+}
+
+.phase5-room .monitor-hotspot {
+  top: 8%;
+  left: 42.5%;
+  width: 18%;
+  height: 14.5%;
+}
+
+.phase5-room .door-hotspot {
+  top: 15%;
+  left: 4%;
+  width: 9.5%;
+  height: 20%;
+}
+
+.phase5-room .handbook-hotspot {
+  top: 48.5%;
+  left: 18.5%;
+  width: 5.5%;
+  height: 10%;
+}

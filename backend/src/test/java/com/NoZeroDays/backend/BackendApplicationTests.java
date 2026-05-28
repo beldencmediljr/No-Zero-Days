@@ -1,8 +1,8 @@
 package com.NoZeroDays.backend;
 
-import com.NoZeroDays.backend.controller.ValidationController;
-import com.NoZeroDays.backend.model.StudentProfile;
-import com.NoZeroDays.backend.repository.StudentProfileRepository;
+import com.NoZeroDays.backend.common.controller.ValidationController;
+import com.NoZeroDays.backend.common.model.StudentProfile;
+import com.NoZeroDays.backend.common.repository.StudentProfileRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

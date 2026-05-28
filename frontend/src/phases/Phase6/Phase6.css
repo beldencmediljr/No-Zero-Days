@@ -1,0 +1,33 @@
+/* --- PHASE 6: PHILHEALTH PC LAB POSITIONS --- */
+.phase6-room {
+  aspect-ratio: 2528 / 1684;
+  max-width: 714px;
+}
+
+.phase6-room .corkboard-hotspot {
+  top: 8%;
+  left: 12%;
+  width: 24%;
+  height: 32%;
+}
+
+.phase6-room .monitor-hotspot {
+  top: 40%;
+  left: 52%;
+  width: 16%;
+  height: 24%;
+}
+
+.phase6-room .door-hotspot {
+  top: 10%;
+  left: 2%;
+  width: 9%;
+  height: 35%;
+}
+
+.phase6-room .handbook-hotspot {
+  top: 55%;
+  left: 3%;
+  width: 9%;
+  height: 10%;
+}

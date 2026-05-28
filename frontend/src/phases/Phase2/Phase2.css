@@ -1,0 +1,29 @@
+/* --- PHASE 2 SECURITY ROOM POSITIONS --- */
+
+.biometrics-hotspot {
+  top: 12%;
+  left: 67.5%;
+  width: 15%;
+  height: 13%;
+}
+
+.poster-hotspot {
+  top: 12%;
+  left: 12.5%;
+  width: 16%;
+  height: 17%;
+}
+
+.handbook-hotspot {
+  top: 48%;
+  left: 25%;
+  width: 5%;
+  height: 8%;
+}
+
+.phase2-door-hotspot {
+  top: 16%;
+  left: 2%;
+  width: 12%;
+  height: 20%;
+}

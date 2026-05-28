@@ -3,6 +3,7 @@ export interface BiometricLog {
   timeIn: string;
   timeOut: string;
   late: number;
+  early?: number;
   status: 'LATE' | 'ON-TIME' | 'HOLIDAY';
 }
 

@@ -1,0 +1,29 @@
+/* --- HOTSPOT POSITIONS --- */
+
+.desk-hotspot {
+  top: 28%;
+  left: 11%;
+  width: 13.8%;
+  height: 20.5%;
+}
+
+.calendar-hotspot {
+  top: 8%;
+  left: 22%;
+  width: 10%;
+  height: 10%;
+}
+
+.whiteboard-hotspot {
+  top: 15%;
+  left: 82%;
+  width: 20%;
+  height: 25%;
+}
+
+.door-hotspot {
+  top: 10%;
+  left: 43%;
+  width: 12%;
+  height: 22%;
+}
