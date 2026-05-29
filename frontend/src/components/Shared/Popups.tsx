@@ -303,32 +303,48 @@ export default function Popups({
           </div>
         );
 
+      case 'P2_CONTRACT':
+        return (
+          <div className="popup-content">
+            <div className="popup-header">
+              <h4>📁 Employee Profile & Contract (Tardiness Audit)</h4>
+              <p>Classified HR Document // Form 109-B</p>
+            </div>
+
+            <div className="data-box authentic-data" style={{ padding: '15px', lineHeight: '1.5' }}>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span>Employee Name:</span> <strong>{scenario.employeeName}</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span>Contracted Hourly Rate:</span> <strong className="highlight-green">₱{scenario.hourlyRate.toFixed(2)} / Hour</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Days Worked (Present):</span> <strong>{scenario.daysPresent} Days</strong>
+              </div>
+            </div>
+
+            {/* Red Herring Allowance */}
+            <div className="data-box herring-data" style={{ padding: '15px', marginTop: '15px', border: '1px solid #ef4444', borderRadius: '6px' }}>
+              <span className="warning-label" style={{ color: '#f87171', fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>⚠️ RED HERRING AUDIT NOISE (DO NOT EXTRACT)</span>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span>Monthly Rice Allowance:</span> <strong>₱1,500.00</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Uniform Allowance:</span> <strong>₱500.00</strong>
+              </div>
+              <p className="herring-note" style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '10px', fontStyle: 'italic' }}>
+                ⭐ Note: According to Philippine accounting frameworks, standard Gross Basic Pay does not include these auxiliary allowance categories. Filter them out!
+              </p>
+            </div>
+          </div>
+        );
+
       case 'BIOMETRICS':
         return (
           <div className="popup-content">
             <div className="popup-header">
               <h4>📟 Biometrics Swipe Logs</h4>
               <p>June 2026 // Week 2 Attendance Records</p>
-            </div>
-
-            <div className="data-box authentic-data" style={{ padding: '10px', marginBottom: '10px' }}>
-              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Employee Profile Name:</span> <strong>{scenario.employeeName}</strong>
-              </div>
-              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                <span>Contracted Hourly Rate:</span> <strong className="highlight-green">₱{scenario.hourlyRate.toFixed(2)} / Hour</strong>
-              </div>
-
-              {/* Monthly Work Summary */}
-              <div style={{ borderTop: '1px dashed #334155', marginTop: '8px', paddingTop: '8px' }}>
-                <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>📊 MONTHLY AUDIT WORK SUMMARY:</span>
-                <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                  <span>Verified Shifts Worked (Days Present):</span> <strong>{scenario.daysPresent} Days</strong>
-                </div>
-                <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                  <span>Contracted Hours per Shift:</span> <strong>8.0 Hours / Day</strong>
-                </div>
-              </div>
             </div>
 
             <div className="calendar-ui-box" style={{ padding: '10px' }}>
@@ -363,6 +379,42 @@ export default function Popups({
           </div>
         );
 
+      case 'P3_CONTRACT':
+        return (
+          <div className="popup-content">
+            <div className="popup-header">
+              <h4>📁 Employee Profile & Contract (Overtime Audit)</h4>
+              <p>Classified HR Document // Form 109-C</p>
+            </div>
+
+            <div className="data-box authentic-data" style={{ padding: '15px', lineHeight: '1.5' }}>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span>Employee Name:</span> <strong>{scenario.employeeName}</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span>Contracted Hourly Rate:</span> <strong className="highlight-green">₱{scenario.hourlyRate.toFixed(2)} / Hour</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Days Worked (Present):</span> <strong>{scenario.daysPresent} Days</strong>
+              </div>
+            </div>
+
+            {/* Red Herring Allowance */}
+            <div className="data-box herring-data" style={{ padding: '15px', marginTop: '15px', border: '1px solid #ef4444', borderRadius: '6px' }}>
+              <span className="warning-label" style={{ color: '#f87171', fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>⚠️ RED HERRING AUDIT NOISE (DO NOT EXTRACT)</span>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span>Hazard Pay:</span> <strong>₱2,000.00 / Month</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Performance Bonus:</span> <strong>₱3,000.00</strong>
+              </div>
+              <p className="herring-note" style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '10px', fontStyle: 'italic' }}>
+                ⭐ Note: Hazard pay and performance bonuses are supplementary and are excluded when calculating basic overtime hourly rates. Filter them out!
+              </p>
+            </div>
+          </div>
+        );
+
       case 'TIMECARD':
         return (
           <div className="popup-content">
@@ -372,24 +424,12 @@ export default function Popups({
             </div>
 
             <div className="data-box authentic-data" style={{ padding: '10px', marginBottom: '10px' }}>
-              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Employee Name:</span> <strong>{scenario.employeeName}</strong>
+              <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>📊 OVERTIME SHIFT LOGS SUMMARY:</span>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
+                <span>Recorded Raw Overtime Hours:</span> <strong>{scenario.otHours} Hours</strong>
               </div>
               <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                <span>Contracted Hourly Rate:</span> <strong className="highlight-green">₱{scenario.hourlyRate.toFixed(2)} / Hour</strong>
-              </div>
-
-              <div style={{ borderTop: '1px dashed #334155', marginTop: '8px', paddingTop: '8px' }}>
-                <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>📊 OVERTIME SHIFT LOGS SUMMARY:</span>
-                <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                  <span>Shifts Worked (Days Present):</span> <strong>{scenario.daysPresent} Days</strong>
-                </div>
-                <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                  <span>Recorded Raw Overtime Hours:</span> <strong>{scenario.otHours} Hours</strong>
-                </div>
-                <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                  <span>Mandatory Unpaid Rest/Lunch Break:</span> <strong style={{ color: '#ef4444' }}>{scenario.unpaidLunchHours} Hour Unpaid Lunch</strong>
-                </div>
+                <span>Mandatory Unpaid Rest/Lunch Break:</span> <strong style={{ color: '#ef4444' }}>{scenario.unpaidLunchHours} Hour Unpaid Lunch</strong>
               </div>
             </div>
 
@@ -497,6 +537,42 @@ export default function Popups({
           </div>
         );
 
+      case 'P4_CONTRACT':
+        return (
+          <div className="popup-content">
+            <div className="popup-header">
+              <h4>📁 Employee Profile & Contract (Holiday Pay Audit)</h4>
+              <p>Classified HR Document // Form 109-D</p>
+            </div>
+
+            <div className="data-box authentic-data" style={{ padding: '15px', lineHeight: '1.5' }}>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span>Employee Name:</span> <strong>{scenario.employeeName}</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span>Standard Daily Rate:</span> <strong className="highlight-green">₱{scenario.dailyRate.toFixed(2)} / Day</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Shifts Worked (Days Present):</span> <strong>{scenario.daysPresent} Days</strong>
+              </div>
+            </div>
+
+            {/* Red Herring Allowance */}
+            <div className="data-box herring-data" style={{ padding: '15px', marginTop: '15px', border: '1px solid #ef4444', borderRadius: '6px' }}>
+              <span className="warning-label" style={{ color: '#f87171', fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>⚠️ RED HERRING AUDIT NOISE (DO NOT EXTRACT)</span>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span>Transportation Allowance:</span> <strong>₱100.00 / Day</strong>
+              </div>
+              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Laundry Allowance:</span> <strong>₱300.00 / Month</strong>
+              </div>
+              <p className="herring-note" style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '10px', fontStyle: 'italic' }}>
+                ⭐ Note: Under standard auditing procedures, allowances like transportation and laundry are auxiliary benefits and do not alter the base Daily Rate used for holiday pay multiplier calculations. Filter them out!
+              </p>
+            </div>
+          </div>
+        );
+
       case 'TIMESHEET_TERMINAL':
         return (
           <div className="popup-content">
@@ -506,47 +582,27 @@ export default function Popups({
             </div>
 
             <div className="data-box authentic-data" style={{ padding: '12px' }}>
-              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <span>Employee Name:</span> <strong>{scenario.employeeName}</strong>
-              </div>
-              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <span>Standard Daily Rate:</span> <strong className="highlight-green">₱{scenario.dailyRate.toFixed(2)}</strong>
-              </div>
-              <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Daily Shift Hours:</span> <strong>8.0 Hours / Shift</strong>
-              </div>
-
-              {/* Monthly Work Summary */}
-              <div style={{ borderTop: '1px dashed #334155', marginTop: '8px', paddingTop: '8px' }}>
-                <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>📊 MONTHLY AUDIT WORK SUMMARY:</span>
-                <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                  <span>Shifts Worked (Days Present):</span> <strong>{scenario.daysPresent} Days</strong>
-                </div>
-              </div>
-
-              <div style={{ borderTop: '1px dashed #334155', marginTop: '10px', paddingTop: '10px' }}>
-                <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>📅 HOLIDAY ATTENDANCE RECORD:</span>
-                <table style={{ width: '100%', marginTop: '6px', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-                  <thead>
-                    <tr style={{ color: '#60a5fa', borderBottom: '1px solid #334155', textAlign: 'left' }}>
-                      <th style={{ padding: '4px' }}>Date</th>
-                      <th style={{ padding: '4px' }}>Shift Status</th>
-                      <th style={{ padding: '4px' }}>Time In</th>
-                      <th style={{ padding: '4px' }}>Time Out</th>
-                      <th style={{ padding: '4px' }}>Worked Hours</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr style={{ borderBottom: '1px solid #1e293b' }}>
-                      <td style={{ padding: '6px 4px' }}>June 12 (Fri)</td>
-                      <td style={{ padding: '6px 4px', color: '#facc15' }}>REGULAR HOLIDAY</td>
-                      <td style={{ padding: '6px 4px' }}>08:00 AM</td>
-                      <td style={{ padding: '6px 4px' }}>05:00 PM</td>
-                      <td style={{ padding: '6px 4px', color: '#10b981', fontWeight: 'bold' }}>8.0 Hours</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>📅 HOLIDAY ATTENDANCE RECORD:</span>
+              <table style={{ width: '100%', marginTop: '8px', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                <thead>
+                  <tr style={{ color: '#60a5fa', borderBottom: '1px solid #334155', textAlign: 'left' }}>
+                    <th style={{ padding: '4px' }}>Date</th>
+                    <th style={{ padding: '4px' }}>Shift Status</th>
+                    <th style={{ padding: '4px' }}>Time In</th>
+                    <th style={{ padding: '4px' }}>Time Out</th>
+                    <th style={{ padding: '4px' }}>Worked Hours</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style={{ borderBottom: '1px solid #1e293b' }}>
+                    <td style={{ padding: '6px 4px' }}>June 12 (Fri)</td>
+                    <td style={{ padding: '6px 4px', color: '#facc15' }}>REGULAR HOLIDAY</td>
+                    <td style={{ padding: '6px 4px' }}>08:00 AM</td>
+                    <td style={{ padding: '6px 4px' }}>05:00 PM</td>
+                    <td style={{ padding: '6px 4px', color: '#10b981', fontWeight: 'bold' }}>8.0 Hours</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         );

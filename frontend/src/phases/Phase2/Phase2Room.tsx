@@ -50,6 +50,13 @@ export default function Phase2Room({ setActivePopup }: Phase2RoomProps) {
         title="🚪 Security Exit Gate" 
         onClick={() => setActivePopup('DOOR')}
       />
+
+      {/* Hotspot 5: HR Filing Cabinet / Employee Contract */}
+      <button 
+        className="hotspot cabinet-hotspot" 
+        title="📁 Employee Contract Profile" 
+        onClick={() => setActivePopup('P2_CONTRACT')}
+      />
     </div>
   );
 }

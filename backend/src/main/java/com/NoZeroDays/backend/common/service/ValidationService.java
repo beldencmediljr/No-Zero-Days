@@ -661,7 +661,33 @@ public class ValidationService {
             }
         }
 
-        // 3. LOG ATTEMPT TO DATABASE
+        // 4. INFINITE DRILL ENGINE
+        // Rule: 3 consecutive failed attempts at this exact step, or a Red Herring trap triggers the drill.
+        // EXEMPTION: Scaffolding steps (COMPUTE_GROSS, NET_PAY_FORMULA, etc.) never trigger a drill.
+        boolean drillTriggered = false;
+        boolean isDrillExemptStep = "COMPUTE_GROSS".equalsIgnoreCase(step) || "NET_PAY_FORMULA".equalsIgnoreCase(step)
+                || "FILTER_LUNCH".equalsIgnoreCase(step) || "ESTABLISH_PREMIUM".equalsIgnoreCase(step) || "ESTABLISH_FORMULA".equalsIgnoreCase(step);
+
+        // --- Count prior failures BEFORE saving the current attempt ---
+        // Querying BEFORE save means: we count only the student's PREVIOUS failures, then
+        // add exactly +1 for the current submission. This eliminates the timestamp-ordering bug
+        // where two AttemptLog rows created within the same second share an identical timestamp
+        // and MySQL returns them in arbitrary order — causing a correct DRILL_RESET barrier to
+        // sort AFTER old failures and become invisible, making the count jump to 3 after 2 mistakes.
+        int priorConsecutiveFailures = 0;
+        if (!isDrillExemptStep && !isRedHerring && !success) {
+            List<AttemptLog> priorAttempts = attemptLogRepository.findLatestAttemptsByStep(student, module, phase, step);
+            for (AttemptLog log : priorAttempts) {
+                if (!log.isSuccessful()) {
+                    priorConsecutiveFailures++;
+                } else {
+                    // Any success (including DRILL_RESET barrier) stops the consecutive count
+                    break;
+                }
+            }
+        }
+
+        // 3. LOG ATTEMPT TO DATABASE (after counting prior failures)
         AttemptLog attempt = new AttemptLog();
         attempt.setStudentProfile(student);
         attempt.setModule(module);
@@ -692,34 +718,45 @@ public class ValidationService {
 
         attemptLogRepository.save(attempt);
 
-
-        // 4. INFINITE DRILL ENGINE
-        // Rule: 3 consecutive failed attempts in this phase, or a Red Herring trap triggers the drill
-        // EXEMPTION: COMPUTE_GROSS and NET_PAY_FORMULA are scaffolding steps and must NEVER trigger a drill.
-        boolean drillTriggered = false;
-        boolean isDrillExemptStep = "COMPUTE_GROSS".equalsIgnoreCase(step) || "NET_PAY_FORMULA".equalsIgnoreCase(step)
-                || "FILTER_LUNCH".equalsIgnoreCase(step) || "ESTABLISH_PREMIUM".equalsIgnoreCase(step) || "ESTABLISH_FORMULA".equalsIgnoreCase(step);
-
+        // Apply the drill rule: current attempt counts as +1 on top of prior failures
         if (!isDrillExemptStep) {
             if (isRedHerring) {
                 drillTriggered = true;
                 message += " [INFINITE DRILL TRIGGERED: Rerolling scenario variables...]";
             } else if (!success) {
-                List<AttemptLog> recentAttempts = attemptLogRepository.findLatestAttempts(student, module, phase);
-                int consecutiveFailures = 0;
-                // Iterate and count consecutive false successes
-                for (AttemptLog log : recentAttempts) {
-                    if (!log.isSuccessful()) {
-                        consecutiveFailures++;
-                    } else {
-                        break;
-                    }
-                }
-                if (consecutiveFailures >= 3) {
+                // Total failures = prior consecutive failures + the current failure just logged
+                int totalConsecutiveFailures = priorConsecutiveFailures + 1;
+
+                System.out.println("[DRILL ENGINE] step=" + step + " priorConsecutive=" + priorConsecutiveFailures + " total=" + totalConsecutiveFailures);
+
+                if (totalConsecutiveFailures >= 3) {
                     drillTriggered = true;
                     message += " [INFINITE DRILL TRIGGERED: 3 consecutive failure threshold reached. Rerolling scenario variables...]";
+                } else {
+                    // Inform the student exactly how many attempts remain before a reroll
+                    int attemptsLeft = 3 - totalConsecutiveFailures;
+                    message += " (" + attemptsLeft + " attempt" + (attemptsLeft == 1 ? "" : "s") + " remaining before scenario resets.)";
                 }
             }
+        }
+
+        // DRILL_RESET BARRIER: When a drill triggers, save a synthetic success record stamped
+        // 1 second in the FUTURE. This guarantees it sorts BEFORE (DESC order) any old failure
+        // records in subsequent queries, regardless of system clock precision — no timestamp
+        // collision is possible with the explicit +1 second offset.
+        if (drillTriggered) {
+            AttemptLog resetBarrier = new AttemptLog();
+            resetBarrier.setStudentProfile(student);
+            resetBarrier.setModule(module);
+            resetBarrier.setPhase(phase);
+            resetBarrier.setStep(step);
+            resetBarrier.setSuccessful(true);
+            resetBarrier.setRedHerring(false);
+            resetBarrier.setAttemptTime(java.time.LocalDateTime.now().plusSeconds(1)); // Ensures this sorts first in DESC
+            resetBarrier.setFeedbackMessage("[DRILL_RESET] Strike counter reset after Infinite Drill trigger.");
+            resetBarrier.setUserInputData("system=DRILL_RESET");
+            resetBarrier.setExpectedData("system=DRILL_RESET");
+            attemptLogRepository.save(resetBarrier);
         }
 
         ValidationResponse response = new ValidationResponse(success, message, isRedHerring, drillTriggered);

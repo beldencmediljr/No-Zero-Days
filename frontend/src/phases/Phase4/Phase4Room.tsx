@@ -57,6 +57,13 @@ export default function Phase4Room({ setActivePopup }: Phase4RoomProps) {
         title="📘 Company Payroll Manual" 
         onClick={() => setActivePopup('HANDBOOK')}
       />
+
+      {/* Hotspot 6: HR Filing Cabinet / Employee Contract */}
+      <button 
+        className="hotspot cabinet-hotspot" 
+        title="📁 Employee Contract Profile" 
+        onClick={() => setActivePopup('P4_CONTRACT')}
+      />
     </div>
   );
 }

@@ -364,11 +364,19 @@ function App() {
         }
 
         // --- 3-STRIKE SYSTEM ---
+        // Primary signal: backend returns drillTriggered=true after exactly 3 step-scoped failures.
+        // The local counter serves as a safety net (reroll if backend is unreachable / state drifts),
+        // but must NOT fire before the backend confirms 3 strikes to prevent off-by-one errors.
         const newAttempts = extractionAttempts + 1;
         setExtractionAttempts(newAttempts);
 
-        if (newAttempts >= 3 || data.drillTriggered) {
-          // Strike 3 (or backend-triggered drill): force reroll
+        if (data.drillTriggered) {
+          // Backend confirmed: 3 strikes reached. Execute reroll.
+          triggerRerollToast('MAX_STRIKES');
+          handleRerollScenario(false);
+        } else if (newAttempts >= 3) {
+          // Safety-net: backend didn't signal a drill but local counter hit 3 (e.g., stale DB state).
+          // Reroll to guarantee the student is never stuck without a fresh scenario.
           triggerRerollToast('MAX_STRIKES');
           handleRerollScenario(false);
         }

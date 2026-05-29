@@ -346,7 +346,7 @@ export default function MissionLog({
                 </select>
                 <span className="input-info-icon">ⓘ
                   <div className="input-tooltip">
-                    Hint: Check the breakroom calendar for the exact date of June 12 and verify its holiday classification on the DOLE Poster.
+                    Check both the Employee Contract in the filing cabinet and the terminal logs.
                   </div>
                 </span>
               </div>
@@ -391,7 +391,7 @@ export default function MissionLog({
                     {activePhaseIndex === 1
                       ? 'Open the HR desk contract folder. The base Daily Rate is listed in the compensation section of the employment contract.'
                       : (activePhaseIndex === 2 || activePhaseIndex === 3)
-                        ? 'Check the HR Filing Cabinet. The Hourly Rate is listed on the employee\'s contract file (Form 109-B).'
+                        ? 'Check both the Employee Contract in the filing cabinet and the terminal logs.'
                         : activePhaseIndex === 5
                           ? 'Click the SSS contribution table on the corkboard. Find the employee\'s salary bracket and read the Employee Share (EE) column.'
                           : 'Open the employment contract folder. Basic monthly salary is in the compensation section.'
@@ -435,13 +435,11 @@ export default function MissionLog({
                   <div className="input-tooltip">
                     {activePhaseIndex === 1
                       ? 'Count the days marked P (Present) on the wall calendar. Each marked day is one shift worked.'
-                      : activePhaseIndex === 2
-                        ? 'Check the Biometrics Terminal near the security gate. Sum all late minutes for the payroll month.'
-                        : activePhaseIndex === 3
-                          ? 'Check the production timecard. Extract the total recorded OT hours from the timesheet terminal.'
-                          : activePhaseIndex === 5
-                            ? 'Review the HR payroll file. Personal salary loan amount is in the financial liabilities section.'
-                            : 'Refer to the PhilHealth premium table on the corkboard. Find the applicable employee share rate.'
+                      : (activePhaseIndex === 2 || activePhaseIndex === 3)
+                        ? 'Check both the Employee Contract in the filing cabinet and the terminal logs.'
+                        : activePhaseIndex === 5
+                          ? 'Review the HR payroll file. Personal salary loan amount is in the financial liabilities section.'
+                          : 'Refer to the PhilHealth premium table on the corkboard. Find the applicable employee share rate.'
                     }
                   </div>
                 </span>
