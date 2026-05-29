@@ -211,14 +211,18 @@ public class ValidationController {
         if ("M1_MATH".equalsIgnoreCase(module) && phase == 1) {
             return Arrays.asList("EXTRACT", "IDENTIFY_RULE", "EXECUTE");
         } else if ("M1_MATH".equalsIgnoreCase(module) && phase == 2) {
-            return Arrays.asList("EXTRACT", "IDENTIFY_RULE", "EXECUTE", "SYNTHESIS");
+            return Arrays.asList("EXTRACT", "IDENTIFY_RULE", "EXECUTE", "COMPUTE_GROSS", "NET_PAY_FORMULA", "SYNTHESIS");
         } else if ("M2_MULTIPLIERS".equalsIgnoreCase(module)) {
-            return Arrays.asList("EXTRACT", "IDENTIFY_RULE", "EXECUTE", "SYNTHESIS");
+            if (phase == 1) {
+                return Arrays.asList("EXTRACT", "FILTER_LUNCH", "ESTABLISH_PREMIUM", "ESTABLISH_FORMULA", "EXECUTE", "COMPUTE_GROSS", "NET_PAY_FORMULA", "SYNTHESIS");
+            } else {
+                return Arrays.asList("EXTRACT", "ESTABLISH_PREMIUM", "ESTABLISH_FORMULA", "EXECUTE", "COMPUTE_GROSS", "NET_PAY_FORMULA", "SYNTHESIS");
+            }
         } else if ("M3_BUREAUCRACY".equalsIgnoreCase(module)) {
             if (phase == 1) {
-                return Arrays.asList("EXTRACT", "IDENTIFY_RULE", "EXECUTE");
+                return Arrays.asList("EXTRACT", "PAGIBIG_DEDUCTION", "BASIC_SALARY", "IDENTIFY_RULE", "SYNTHESIS");
             } else {
-                return Arrays.asList("EXTRACT", "IDENTIFY_RULE", "EXECUTE", "SYNTHESIS");
+                return Arrays.asList("EXTRACT", "PHILHEALTH_EE", "TAX_BRACKET", "WITHHOLDING_TAX", "SYNTHESIS");
             }
         } else if ("M4_TRIBUNAL".equalsIgnoreCase(module)) {
             return Arrays.asList("SUBMIT");

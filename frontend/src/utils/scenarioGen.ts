@@ -316,9 +316,10 @@ export function generatePhase5Scenario(): ScenarioData {
   const hourlyRate = dailyRate / 8.0;
 
   // SSS variables
-  const sssEeList = [400, 450, 500, 550, 600, 650];
-  const sssEeShare = sssEeList[Math.floor(Math.random() * sssEeList.length)];
-  const sssErShare = sssEeShare * 2; // Decoy ER share is double EE share
+  const basicSalaryList = [18000, 20000, 22000, 24000, 25000, 26000, 28000, 30000];
+  const basicSalary = basicSalaryList[Math.floor(Math.random() * basicSalaryList.length)];
+  const sssEeShare = basicSalary * 0.05; // 5% EE share
+  const sssErShare = basicSalary * 0.10; // 10% ER share
   const personalSalaryLoanList = [200, 250, 300, 350, 400];
   const personalSalaryLoan = personalSalaryLoanList[Math.floor(Math.random() * personalSalaryLoanList.length)];
   const spouseLoan = 1500; // Decoy loan
@@ -338,7 +339,7 @@ export function generatePhase5Scenario(): ScenarioData {
     sssErShare,
     personalSalaryLoan,
     spouseLoan,
-    basicSalary: 22500.00,
+    basicSalary,
   };
 }
 
@@ -346,7 +347,27 @@ export function generatePhase5Scenario(): ScenarioData {
  * Generates a randomized scenario payload specifically suited for Module 3, Phase 6 (PhilHealth Premiums).
  */
 export function generatePhase6Scenario(): ScenarioData {
-  return generatePhase5Scenario();
+  const scenario = generatePhase5Scenario();
+
+  let dailyRate = 0;
+  let daysPresent = 0;
+  let basicSalary = 0;
+
+  while (basicSalary < 22000 || basicSalary > 1000000) {
+    daysPresent = [20, 21, 22, 23, 24, 25, 26][Math.floor(Math.random() * 7)];
+    // Random daily rate as a multiple of 100
+    dailyRate = Math.floor(Math.random() * ((50000 - 800) / 100 + 1)) * 100 + 800;
+    basicSalary = dailyRate * daysPresent;
+  }
+
+  scenario.daysPresent = daysPresent;
+  scenario.dailyRate = dailyRate;
+  scenario.hourlyRate = dailyRate / 8.0;
+  scenario.basicSalary = basicSalary;
+  scenario.sssEeShare = basicSalary * 0.05; // 5% EE share
+  scenario.sssErShare = basicSalary * 0.10; // 10% ER share
+
+  return scenario;
 }
 
 /**

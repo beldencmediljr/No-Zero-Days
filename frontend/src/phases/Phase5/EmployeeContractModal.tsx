@@ -4,12 +4,13 @@ import '../../components/Shared/Popups.css';
 interface EmployeeContractModalProps {
   isOpen: boolean;
   onClose: () => void;
+  basicSalary: number;
 }
 
 /**
  * Retro-styled modal for Phase 5 Employee Contract Profile (SSS).
  */
-export default function EmployeeContractModal({ isOpen, onClose }: EmployeeContractModalProps) {
+export default function EmployeeContractModal({ isOpen, onClose, basicSalary }: EmployeeContractModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -27,7 +28,7 @@ export default function EmployeeContractModal({ isOpen, onClose }: EmployeeContr
               <span>Employee Name:</span> <strong>Juan Dela Cruz</strong>
             </div>
             <div className="data-row" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <span>Monthly Basic Salary:</span> <strong className="highlight-green">₱22,500.00</strong>
+              <span>Monthly Basic Salary:</span> <strong className="highlight-green">₱{basicSalary.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
             </div>
           </div>
 

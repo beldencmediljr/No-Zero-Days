@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * Phase 6 Validation Service — Module: M3_BUREAUCRACY, phase == 2
  * Topic: PhilHealth Deductions.
  *
- * Steps: EXTRACT → PHILHEALTH_ER → IDENTIFY_RULE → EXECUTE → SYNTHESIS
+ * Steps: EXTRACT → PHILHEALTH_EE → TAX_BRACKET → WITHHOLDING_TAX → SYNTHESIS
  */
 @Service
 public class Phase6ValidationService {
@@ -39,67 +39,116 @@ public class Phase6ValidationService {
         if ("EXTRACT".equalsIgnoreCase(step)) {
             double valA = request.getSubmittedValueA() != null ? request.getSubmittedValueA() : 0.0;
             double valB = request.getSubmittedValueB() != null ? request.getSubmittedValueB() : 0.0;
+            double spouseLoan = request.getSpouseLoan() != null ? request.getSpouseLoan() : 1500.00;
 
-            // Red herring: Employer (ER) share rate is 0.10
-            if (Math.abs(valB - 0.10) < epsilon) {
+            // Red herring: Spouse Loans cannot be deducted
+            if (Math.abs(valB - spouseLoan) < epsilon) {
                 isRedHerring = true;
-                message = "RED HERRING DETECTED: You extracted the Employer (ER) share rate (10% / 0.10) instead of the Employee (EE) share rate (5% / 0.05). In payroll deduction synthesis, only the Employee share is subtracted from the basic salary ledger.";
-            } else if (Math.abs(valA - basicSalary) < epsilon && Math.abs(valB - 0.05) < epsilon) {
+                message = "RED HERRING DETECTED: Spouse loans are personal debts of a spouse and must never be subtracted from the employee's basic pay ledger.";
+            } else if (Math.abs(valA - basicSalary) < epsilon && Math.abs(valB - personalLoan) < epsilon) {
                 success = true;
-                message = "Extraction Verified! Base salary and PhilHealth EE rate (5.0% / 0.05) extracted. Proceed to Step 2.";
+                message = "Extraction Verified! Basic Salary and Personal Salary Loan extracted. Proceed to Step 2.";
             } else {
-                message = "Extraction Failed. Extract Basic Salary and the current standard Employee (EE) rate of 5.0% (0.05) for PhilHealth.";
+                message = "Extraction Failed. Extract the Basic Salary and Personal Salary Loan from the Employee contract and loan statement.";
             }
 
-        } else if ("PHILHEALTH_ER".equalsIgnoreCase(step)) {
+        } else if ("PHILHEALTH_EE".equalsIgnoreCase(step)) {
             double valA = request.getSubmittedValueA() != null ? request.getSubmittedValueA() : 0.0;
+            double valB = request.getSubmittedValueB() != null ? request.getSubmittedValueB() : 0.0;
+            double expectedPhEe = basicSalary * 0.025;
+            double expectedSssEe = sssEe;
 
-            // Red herring: Employee (EE) share rate is 0.05
-            if (Math.abs(valA - 0.05) < epsilon) {
+            if (Math.abs(valA - (basicSalary * 0.05)) < epsilon) {
                 isRedHerring = true;
-                message = "RED HERRING DETECTED: That is the Employee (EE) share rate (5.0% / 0.05). Find the Employer (ER) share rate from the PhilHealth bulletin corkboard memo.";
-            } else if (Math.abs(valA - 0.10) < epsilon || Math.abs(valA - 10.0) < epsilon) {
+                message = "RED HERRING DETECTED: You computed the total 5.0% PhilHealth rate instead of the Employee (EE) share rate of 2.5% (0.025). Only the Employee share is subtracted from the basic salary ledger.";
+            } else if (Math.abs(valA - expectedPhEe) < epsilon && Math.abs(valB - expectedSssEe) < epsilon) {
                 success = true;
-                message = "PhilHealth Employer (ER) share rate verified at 10.0% (0.10)! Proceed to Step 3.";
+                message = "Statutory Employee (EE) shares verified successfully: PhilHealth EE Share at ₱" + String.format("%.2f", expectedPhEe) + " and SSS EE Share at ₱" + String.format("%.2f", expectedSssEe) + "! Proceed to Step 3.";
+            } else if (Math.abs(valA - expectedPhEe) >= epsilon) {
+                message = "Incorrect PhilHealth Employee (EE) Share. Compute 2.5% (0.025) of the Basic Salary.";
             } else {
-                message = "Incorrect Employer share rate. Refer to the PhilHealth Contribution Bulletin memo on the notice board to identify the employer share rate.";
+                message = "Incorrect SSS Employee (EE) Share. Compute 5.0% (0.05) of the Basic Salary.";
             }
 
-        } else if ("IDENTIFY_RULE".equalsIgnoreCase(step)) {
+        } else if ("TAX_BRACKET".equalsIgnoreCase(step)) {
             String rule = request.getSubmittedRule();
-            if ("PHILHEALTH_FORMULA".equalsIgnoreCase(rule) || "BASIC_SALARY_X_0.05".equalsIgnoreCase(rule)) {
-                success = true;
-                message = "Rule Verified! PhilHealth Premium = Basic Salary × 5.0%. Proceed to Step 4.";
+            double taxableIncome = basicSalary - sssEe - 200.00 - (basicSalary * 0.025);
+            String expectedBracket;
+
+            if (taxableIncome <= 20833.00) {
+                expectedBracket = "BRACKET_1";
+            } else if (taxableIncome <= 33333.00) {
+                expectedBracket = "BRACKET_2";
+            } else if (taxableIncome <= 66667.00) {
+                expectedBracket = "BRACKET_3";
+            } else if (taxableIncome <= 166667.00) {
+                expectedBracket = "BRACKET_4";
+            } else if (taxableIncome <= 666667.00) {
+                expectedBracket = "BRACKET_5";
             } else {
-                message = "Incorrect Rule! Multiplier rate should be 5% (0.05) of Basic Salary.";
+                expectedBracket = "BRACKET_6";
             }
 
-        } else if ("EXECUTE".equalsIgnoreCase(step)) {
-            double result   = request.getSubmittedResult() != null ? request.getSubmittedResult() : 0.0;
-            double expected = basicSalary * 0.05;
-
-            if (Math.abs(result - expected) < epsilon) {
+            if (expectedBracket.equalsIgnoreCase(rule)) {
                 success = true;
-                message = "PhilHealth Deduction verified successfully at ₱" + String.format("%.2f", expected);
+                message = "Tax Bracket Verified! Taxable income of ₱" + String.format("%.2f", taxableIncome) + " falls into the selected bracket. Proceed to Step 4.";
             } else {
-                message = "Arithmetic Error! Calculate Basic Salary (₱" + basicSalary + ") × 0.05.";
+                message = "Incorrect Tax Bracket. Calculate taxable income (Basic Salary minus SSS EE, Pag-IBIG, and PhilHealth EE shares) and find its matching category.";
+            }
+
+        } else if ("WITHHOLDING_TAX".equalsIgnoreCase(step)) {
+            double result = request.getSubmittedResult() != null ? request.getSubmittedResult() : 0.0;
+            double taxableIncome = basicSalary - sssEe - 200.00 - (basicSalary * 0.025);
+            double expectedTax = 0.0;
+
+            if (taxableIncome <= 20833.00) {
+                expectedTax = 0.0;
+            } else if (taxableIncome <= 33333.00) {
+                expectedTax = (taxableIncome - 20833.00) * 0.15;
+            } else if (taxableIncome <= 66667.00) {
+                expectedTax = 1875.00 + (taxableIncome - 33333.00) * 0.20;
+            } else if (taxableIncome <= 166667.00) {
+                expectedTax = 8541.80 + (taxableIncome - 66667.00) * 0.25;
+            } else if (taxableIncome <= 666667.00) {
+                expectedTax = 33541.80 + (taxableIncome - 166667.00) * 0.30;
+            } else {
+                expectedTax = 153541.80 + (taxableIncome - 666667.00) * 0.35;
+            }
+
+            if (Math.abs(result - expectedTax) < epsilon) {
+                success = true;
+                message = "Withholding Tax verified successfully at ₱" + String.format("%.2f", expectedTax) + "! Proceed to Step 5.";
+            } else {
+                message = "Incorrect Withholding Tax amount. Apply the rate of the selected tax bracket on the excess over the bracket threshold.";
             }
 
         } else if ("SYNTHESIS".equalsIgnoreCase(step)) {
-            double result       = request.getSubmittedResult() != null ? request.getSubmittedResult() : 0.0;
-            double expectedSss  = sssEe + personalLoan + 200.00; // SSS EE Share + Personal Salary Loan + Pag-IBIG EE Share (₱200.00)
-            double expectedPh   = basicSalary * 0.05;
-            double expected     = expectedSss + expectedPh;
+            double result = request.getSubmittedResult() != null ? request.getSubmittedResult() : 0.0;
+            double taxableIncome = basicSalary - sssEe - 200.00 - (basicSalary * 0.025);
+            double expectedTax = 0.0;
 
-            if (Math.abs(result - expected) < epsilon) {
+            if (taxableIncome <= 20833.00) {
+                expectedTax = 0.0;
+            } else if (taxableIncome <= 33333.00) {
+                expectedTax = (taxableIncome - 20833.00) * 0.15;
+            } else if (taxableIncome <= 66667.00) {
+                expectedTax = 1875.00 + (taxableIncome - 33333.00) * 0.20;
+            } else if (taxableIncome <= 166667.00) {
+                expectedTax = 8541.80 + (taxableIncome - 66667.00) * 0.25;
+            } else if (taxableIncome <= 666667.00) {
+                expectedTax = 33541.80 + (taxableIncome - 166667.00) * 0.30;
+            } else {
+                expectedTax = 153541.80 + (taxableIncome - 666667.00) * 0.35;
+            }
+
+            double expectedNetPay = basicSalary - sssEe - personalLoan - 200.00 - (basicSalary * 0.025) - expectedTax;
+
+            if (Math.abs(result - expectedNetPay) < epsilon) {
                 success = true;
-                message = "Phase 6 Complete! Final Statutory Deductions verified successfully at ₱"
-                        + String.format("%.2f", expected);
+                message = "Phase 6 Complete! Net Take-Home Pay verified successfully at ₱" + String.format("%.2f", expectedNetPay);
                 validationService.updateProgress(student, "M3_BUREAUCRACY", 2);
             } else {
-                message = "Arithmetic Error! Final Statutory Deductions = SSS/Pag-IBIG/Loan (₱"
-                        + String.format("%.2f", expectedSss) + ") + PhilHealth (₱"
-                        + String.format("%.2f", expectedPh) + ") again.";
+                message = "Arithmetic Error! Compute Net Pay: Basic Salary minus all statutory deductions (SSS EE, PhilHealth EE, Pag-IBIG), Personal Loan, and Withholding Tax.";
             }
         }
 

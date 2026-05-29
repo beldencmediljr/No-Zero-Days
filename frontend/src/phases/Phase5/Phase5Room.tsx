@@ -8,12 +8,13 @@ import PagIbigMemoModal from './PagIbigMemoModal';
 
 interface Phase5RoomProps {
   setActivePopup: (popupName: string | null) => void;
+  scenario: any;
 }
 
 /**
  * TSX Component managing hotspots for Phase 5 (SSS Deductions).
  */
-export default function Phase5Room({ setActivePopup }: Phase5RoomProps) {
+export default function Phase5Room({ setActivePopup, scenario }: Phase5RoomProps) {
   const [isContractOpen, setIsContractOpen] = useState(false);
   const [isPagIbigOpen, setIsPagIbigOpen] = useState(false);
 
@@ -71,6 +72,7 @@ export default function Phase5Room({ setActivePopup }: Phase5RoomProps) {
       <EmployeeContractModal 
         isOpen={isContractOpen} 
         onClose={() => setIsContractOpen(false)} 
+        basicSalary={scenario.basicSalary}
       />
 
       {/* HDMF Pag-IBIG Memo Circular Modal */}

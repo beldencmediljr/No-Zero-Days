@@ -44,7 +44,7 @@ public class Phase7ValidationService {
 
         double tardinessDeduction = (hourlyRate / 60.0) * lateMinutes;
         double sssDeductions      = sssEe + personalLoan + 200.00;
-        double phDeduction        = basicSalary * 0.05;
+        double phDeduction        = basicSalary * 0.025;
         double expectedDeductions = tardinessDeduction + sssDeductions + phDeduction;
 
         double expectedNet = expectedGross - expectedDeductions;

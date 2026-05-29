@@ -87,8 +87,9 @@ function App() {
   const [pagIbigDeductionValue, setPagIbigDeductionValue] = useState('');
   const [pagIbigDeductionStatus, setPagIbigDeductionStatus] = useState('LOCKED');
 
-  // Phase 6 exclusive PhilHealth ER rate step
+  // Phase 6 exclusive PhilHealth & SSS EE shares step
   const [philhealthErValue, setPhilhealthErValue] = useState('');
+  const [philhealthSssEeValue, setPhilhealthSssEeValue] = useState('');
   const [philhealthErStatus, setPhilhealthErStatus] = useState('LOCKED');
 
   // Phase 3 and 4 exclusive scaffolding states
@@ -181,18 +182,7 @@ function App() {
     } else if (phaseToUse === 5) {
       newScenario = generatePhase5Scenario();
     } else if (phaseToUse === 6) {
-      newScenario = generatePhase6Scenario(); // default fallback
-      fetch(`http://localhost:8080/api/phase6/init?studentNumber=${student?.studentNumber || 'STU-UNKNOWN'}`)
-        .then(res => {
-          if (!res.ok) throw new Error();
-          return res.json();
-        })
-        .then(data => {
-          setScenario(data);
-        })
-        .catch(err => {
-          console.error("Failed to fetch inherited Phase 6 scenario:", err);
-        });
+      newScenario = generatePhase6Scenario();
     } else if (phaseToUse === 7) {
       newScenario = generatePhase7Scenario();
     }
@@ -210,6 +200,7 @@ function App() {
     setPagIbigDeductionValue('');
     setPagIbigDeductionStatus('LOCKED');
     setPhilhealthErValue('');
+    setPhilhealthSssEeValue('');
     setPhilhealthErStatus('LOCKED');
 
     // Reset Tribunal inputs
@@ -721,7 +712,7 @@ function App() {
       const data = await response.json();
       if (data.success) {
         setPagIbigDeductionStatus('SUCCESS');
-        setStep2Status('ACTIVE');
+        setStep3Status('ACTIVE'); // Unlocks Step 3: Find Basic Salary Pay
         setFeedback(data.message);
       } else {
         setPagIbigDeductionStatus('ERROR');
@@ -742,14 +733,14 @@ function App() {
     }
   };
 
-  // Phase 6 Step 2: FIND PHILHEALTH ER RATE
-  const handleValidatePhilhealthEr = async () => {
-    if (!philhealthErValue) {
-      setFeedback('Please enter the PhilHealth Employer (ER) share rate.');
+  // Phase 5 Step 3: FIND BASIC SALARY PAY
+  const handleValidateBasicSalary = async () => {
+    if (!calculatedValue) {
+      setFeedback('Please enter the Basic Salary.');
       return;
     }
     setLoading(true);
-    setFeedback('Verifying PhilHealth Employer share rate...');
+    setFeedback('Verifying Basic Salary...');
     try {
       const { module: mod, phase: ph } = getModuleAndPhase();
       const response = await fetch('http://localhost:8080/api/validation/submit', {
@@ -759,7 +750,7 @@ function App() {
           studentNumber: student?.studentNumber || 'STU-UNKNOWN',
           module: mod,
           phase: ph,
-          step: 'PHILHEALTH_ER',
+          step: 'BASIC_SALARY',
           dailyRate: scenario.dailyRate,
           daysPresent: scenario.daysPresent,
           hourlyRate: scenario.hourlyRate,
@@ -773,19 +764,73 @@ function App() {
           personalSalaryLoan: scenario.personalSalaryLoan,
           spouseLoan: scenario.spouseLoan,
           workedOnHoliday: scenario.workedOnHoliday,
-          submittedValueA: Number(philhealthErValue) || 0.0
+          submittedValueA: Number(calculatedValue) || 0.0
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setStep3Status('SUCCESS');
+        setStep2Status('ACTIVE'); // Unlocks Step 4: Rule Identification
+        setFeedback(data.message);
+      } else {
+        setStep3Status('ERROR');
+        setFeedback(data.message);
+        if (data.drillTriggered) handleRerollScenario();
+      }
+    } catch (err) {
+      console.error(err);
+      setFeedback('Network Error: Basic Salary validation failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Submit Phase 6 Step 2: GET PHILHEALTH & SSS EE SHARES
+  const handleValidatePhilhealthEr = async () => {
+    if (!philhealthErValue || !philhealthSssEeValue) {
+      setFeedback('Please enter both the computed PhilHealth EE Share and SSS EE Share.');
+      return;
+    }
+    setLoading(true);
+    setFeedback('Verifying statutory Employee (EE) share deductions...');
+    try {
+      const { module: mod, phase: ph } = getModuleAndPhase();
+      const response = await fetch('http://localhost:8080/api/validation/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentNumber: student?.studentNumber || 'STU-UNKNOWN',
+          module: mod,
+          phase: ph,
+          step: 'PHILHEALTH_EE',
+          dailyRate: scenario.dailyRate,
+          daysPresent: scenario.daysPresent,
+          hourlyRate: scenario.hourlyRate,
+          lateMinutes: scenario.lateMinutes,
+          earlyClockInMinutes: scenario.earlyClockInMinutes,
+          otHours: scenario.otHours,
+          unpaidLunchHours: scenario.unpaidLunchHours,
+          basicSalary: scenario.basicSalary,
+          sssEeShare: scenario.sssEeShare,
+          sssErShare: scenario.sssErShare,
+          personalSalaryLoan: scenario.personalSalaryLoan,
+          spouseLoan: scenario.spouseLoan,
+          workedOnHoliday: scenario.workedOnHoliday,
+          submittedValueA: Number(philhealthErValue) || 0.0,
+          submittedValueB: Number(philhealthSssEeValue) || 0.0
         })
       });
       const data = await response.json();
       if (data.success) {
         setPhilhealthErStatus('SUCCESS');
-        setStep2Status('ACTIVE'); // Unlocks Step 3: IDENTIFY_RULE
+        setStep2Status('ACTIVE'); // Unlocks Step 3: Tax Bracket Identification (mapped to step2Status)
         setFeedback(data.message);
       } else {
         setPhilhealthErStatus('ERROR');
         setFeedback(data.message);
         if (data.redHerring) {
           setPhilhealthErValue('');
+          setPhilhealthSssEeValue('');
           triggerRerollToast('RED_HERRING');
           handleRerollScenario(false);
         } else if (data.drillTriggered) {
@@ -794,7 +839,7 @@ function App() {
       }
     } catch (err) {
       console.error(err);
-      setFeedback('Network Error: PhilHealth ER rate validation failed.');
+      setFeedback('Network Error: Validation failed.');
     } finally {
       setLoading(false);
     }
@@ -803,12 +848,12 @@ function App() {
   // Submit Step 2: Rule Identification
   const handleValidateRule = async () => {
     if (!selectedRule) {
-      setFeedback('Please select a mathematical equation operator.');
+      setFeedback(activePhaseIndex === 6 ? 'Please select a tax bracket category.' : 'Please select a mathematical equation operator.');
       return;
     }
 
     setLoading(true);
-    setFeedback('Validating formula syntax with standard accounting laws...');
+    setFeedback(activePhaseIndex === 6 ? 'Verifying tax bracket category...' : 'Validating formula syntax with standard accounting laws...');
 
     try {
       const { module: mod, phase: ph } = getModuleAndPhase();
@@ -819,7 +864,7 @@ function App() {
           studentNumber: student?.studentNumber || 'STU-UNKNOWN',
           module: mod,
           phase: ph,
-          step: 'IDENTIFY_RULE',
+          step: activePhaseIndex === 6 ? 'TAX_BRACKET' : 'IDENTIFY_RULE',
           dailyRate: scenario.dailyRate,
           daysPresent: scenario.daysPresent,
           hourlyRate: scenario.hourlyRate,
@@ -863,15 +908,15 @@ function App() {
     }
   };
 
-  // Submit Step 3: Arithmetic Execution
+  // Submit Step 3: Arithmetic Execution / Step 4: Withholding Tax
   const handleValidateExecution = async () => {
     if (!calculatedValue) {
-      setFeedback('Please enter the final computed pay amount.');
+      setFeedback(activePhaseIndex === 6 ? 'Please enter the calculated Withholding Tax.' : 'Please enter the final computed pay amount.');
       return;
     }
 
     setLoading(true);
-    setFeedback('Auditing final arithmetic ledger pay calculations...');
+    setFeedback(activePhaseIndex === 6 ? 'Auditing withholding tax calculations...' : 'Auditing final arithmetic ledger pay calculations...');
 
     try {
       const { module: mod, phase: ph } = getModuleAndPhase();
@@ -879,7 +924,7 @@ function App() {
         studentNumber: student?.studentNumber || 'STU-UNKNOWN',
         module: mod,
         phase: ph,
-        step: 'EXECUTE',
+        step: activePhaseIndex === 6 ? 'WITHHOLDING_TAX' : 'EXECUTE',
         dailyRate: scenario.dailyRate,
         daysPresent: scenario.daysPresent,
         hourlyRate: scenario.hourlyRate,
@@ -926,7 +971,7 @@ function App() {
       }
     } catch (err) {
       console.error(err);
-      setFeedback('Network Error: Final ledger verification failed.');
+      setFeedback(activePhaseIndex === 6 ? 'Network Error: Withholding tax verification failed.' : 'Network Error: Final ledger verification failed.');
     } finally {
       setLoading(false);
     }
@@ -1226,7 +1271,7 @@ function App() {
             {activePhaseIndex === 2 && <Phase2Room setActivePopup={setActivePopup} />}
             {activePhaseIndex === 3 && <Phase3Room setActivePopup={setActivePopup} />}
             {activePhaseIndex === 4 && <Phase4Room setActivePopup={setActivePopup} />}
-            {activePhaseIndex === 5 && <Phase5Room setActivePopup={setActivePopup} />}
+            {activePhaseIndex === 5 && <Phase5Room setActivePopup={setActivePopup} scenario={scenario} />}
             {activePhaseIndex === 6 && <Phase6Room setActivePopup={setActivePopup} scenario={scenario} />}
             {activePhaseIndex === 7 && <Phase7Room setActivePopup={setActivePopup} />}
           </div>
@@ -1272,7 +1317,7 @@ function App() {
           calculatedValue={calculatedValue}
           setCalculatedValue={setCalculatedValue}
           step3Status={step3Status}
-          handleValidateExecution={handleValidateExecution}
+          handleValidateExecution={activePhaseIndex === 5 ? handleValidateBasicSalary : handleValidateExecution}
           grossPayValue={grossPayValue}
           setGrossPayValue={setGrossPayValue}
           grossPayStatus={grossPayStatus}
@@ -1320,6 +1365,8 @@ function App() {
           handleValidatePagIbigDeduction={handleValidatePagIbigDeduction}
           philhealthErValue={philhealthErValue}
           setPhilhealthErValue={setPhilhealthErValue}
+          philhealthSssEeValue={philhealthSssEeValue}
+          setPhilhealthSssEeValue={setPhilhealthSssEeValue}
           philhealthErStatus={philhealthErStatus}
           handleValidatePhilhealthEr={handleValidatePhilhealthEr}
         />
