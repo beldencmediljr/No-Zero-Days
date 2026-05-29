@@ -83,6 +83,14 @@ function App() {
   const [netPayFormula, setNetPayFormula] = useState('');
   const [netFormulaStatus, setNetFormulaStatus] = useState('LOCKED'); // LOCKED, ACTIVE, SUCCESS, ERROR
 
+  // Phase 5 exclusive Pag-IBIG deduction step
+  const [pagIbigDeductionValue, setPagIbigDeductionValue] = useState('');
+  const [pagIbigDeductionStatus, setPagIbigDeductionStatus] = useState('LOCKED');
+
+  // Phase 6 exclusive PhilHealth ER rate step
+  const [philhealthErValue, setPhilhealthErValue] = useState('');
+  const [philhealthErStatus, setPhilhealthErStatus] = useState('LOCKED');
+
   // Phase 3 and 4 exclusive scaffolding states
   const [trueOtHoursValue, setTrueOtHoursValue] = useState('');
   const [trueOtHoursStatus, setTrueOtHoursStatus] = useState('LOCKED');
@@ -199,6 +207,10 @@ function App() {
     setNetPayValue('');
     setGrossPayValue('');
     setNetPayFormula('');
+    setPagIbigDeductionValue('');
+    setPagIbigDeductionStatus('LOCKED');
+    setPhilhealthErValue('');
+    setPhilhealthErStatus('LOCKED');
 
     // Reset Tribunal inputs
     setTribunalGross('');
@@ -358,6 +370,10 @@ function App() {
         setStep1Status('SUCCESS');
         if (activePhaseIndex === 3) {
           setTrueOtHoursStatus('ACTIVE');
+        } else if (activePhaseIndex === 5) {
+          setPagIbigDeductionStatus('ACTIVE');
+        } else if (activePhaseIndex === 6) {
+          setPhilhealthErStatus('ACTIVE');
         } else {
           setStep2Status('ACTIVE');
         }
@@ -667,6 +683,122 @@ function App() {
       setLoading(false);
     }
   };
+ 
+  // Phase 5 Step 2: FIND PAG-IBIG DEDUCTION
+  const handleValidatePagIbigDeduction = async () => {
+    if (!pagIbigDeductionValue) {
+      setFeedback('Please enter the statutory Pag-IBIG deduction.');
+      return;
+    }
+    setLoading(true);
+    setFeedback('Verifying Pag-IBIG contribution cap...');
+    try {
+      const { module: mod, phase: ph } = getModuleAndPhase();
+      const response = await fetch('http://localhost:8080/api/validation/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentNumber: student?.studentNumber || 'STU-UNKNOWN',
+          module: mod,
+          phase: ph,
+          step: 'PAGIBIG_DEDUCTION',
+          dailyRate: scenario.dailyRate,
+          daysPresent: scenario.daysPresent,
+          hourlyRate: scenario.hourlyRate,
+          lateMinutes: scenario.lateMinutes,
+          earlyClockInMinutes: scenario.earlyClockInMinutes,
+          otHours: scenario.otHours,
+          unpaidLunchHours: scenario.unpaidLunchHours,
+          basicSalary: scenario.basicSalary,
+          sssEeShare: scenario.sssEeShare,
+          sssErShare: scenario.sssErShare,
+          personalSalaryLoan: scenario.personalSalaryLoan,
+          spouseLoan: scenario.spouseLoan,
+          workedOnHoliday: scenario.workedOnHoliday,
+          submittedValueA: Number(pagIbigDeductionValue) || 0.0
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setPagIbigDeductionStatus('SUCCESS');
+        setStep2Status('ACTIVE');
+        setFeedback(data.message);
+      } else {
+        setPagIbigDeductionStatus('ERROR');
+        setFeedback(data.message);
+        if (data.redHerring) {
+          setPagIbigDeductionValue('');
+          triggerRerollToast('RED_HERRING');
+          handleRerollScenario(false);
+        } else if (data.drillTriggered) {
+          handleRerollScenario();
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      setFeedback('Network Error: Pag-IBIG validation failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Phase 6 Step 2: FIND PHILHEALTH ER RATE
+  const handleValidatePhilhealthEr = async () => {
+    if (!philhealthErValue) {
+      setFeedback('Please enter the PhilHealth Employer (ER) share rate.');
+      return;
+    }
+    setLoading(true);
+    setFeedback('Verifying PhilHealth Employer share rate...');
+    try {
+      const { module: mod, phase: ph } = getModuleAndPhase();
+      const response = await fetch('http://localhost:8080/api/validation/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentNumber: student?.studentNumber || 'STU-UNKNOWN',
+          module: mod,
+          phase: ph,
+          step: 'PHILHEALTH_ER',
+          dailyRate: scenario.dailyRate,
+          daysPresent: scenario.daysPresent,
+          hourlyRate: scenario.hourlyRate,
+          lateMinutes: scenario.lateMinutes,
+          earlyClockInMinutes: scenario.earlyClockInMinutes,
+          otHours: scenario.otHours,
+          unpaidLunchHours: scenario.unpaidLunchHours,
+          basicSalary: scenario.basicSalary,
+          sssEeShare: scenario.sssEeShare,
+          sssErShare: scenario.sssErShare,
+          personalSalaryLoan: scenario.personalSalaryLoan,
+          spouseLoan: scenario.spouseLoan,
+          workedOnHoliday: scenario.workedOnHoliday,
+          submittedValueA: Number(philhealthErValue) || 0.0
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setPhilhealthErStatus('SUCCESS');
+        setStep2Status('ACTIVE'); // Unlocks Step 3: IDENTIFY_RULE
+        setFeedback(data.message);
+      } else {
+        setPhilhealthErStatus('ERROR');
+        setFeedback(data.message);
+        if (data.redHerring) {
+          setPhilhealthErValue('');
+          triggerRerollToast('RED_HERRING');
+          handleRerollScenario(false);
+        } else if (data.drillTriggered) {
+          handleRerollScenario();
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      setFeedback('Network Error: PhilHealth ER rate validation failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Submit Step 2: Rule Identification
   const handleValidateRule = async () => {
@@ -709,7 +841,11 @@ function App() {
 
       if (data.success) {
         setStep2Status('SUCCESS');
-        setStep3Status('ACTIVE');
+        if (activePhaseIndex === 5) {
+          setStep4Status('ACTIVE');
+        } else {
+          setStep3Status('ACTIVE');
+        }
         setFeedback(data.message);
       } else {
         setStep2Status('ERROR');
@@ -1178,6 +1314,14 @@ function App() {
           holidayFormulaStatus={holidayFormulaStatus}
           handleValidateHolidayMultiplier={handleValidateHolidayMultiplier}
           handleValidateHolidayFormula={handleValidateHolidayFormula}
+          pagIbigDeductionValue={pagIbigDeductionValue}
+          setPagIbigDeductionValue={setPagIbigDeductionValue}
+          pagIbigDeductionStatus={pagIbigDeductionStatus}
+          handleValidatePagIbigDeduction={handleValidatePagIbigDeduction}
+          philhealthErValue={philhealthErValue}
+          setPhilhealthErValue={setPhilhealthErValue}
+          philhealthErStatus={philhealthErStatus}
+          handleValidatePhilhealthEr={handleValidatePhilhealthEr}
         />
 
       </div>

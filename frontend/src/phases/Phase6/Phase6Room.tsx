@@ -4,6 +4,7 @@ import '../../components/Shared/room-base.css';
 import '../../components/Shared/Room.css';
 import './Phase6.css';
 import EmployeeContractModal from './EmployeeContractModal';
+import PagIbigMemoModal from '../Phase5/PagIbigMemoModal';
 
 interface Phase6RoomProps {
   setActivePopup: (popupName: string | null) => void;
@@ -15,6 +16,7 @@ interface Phase6RoomProps {
  */
 export default function Phase6Room({ setActivePopup, scenario }: Phase6RoomProps) {
   const [isContractOpen, setIsContractOpen] = useState(false);
+  const [isPagIbigOpen, setIsPagIbigOpen] = useState(false);
 
   return (
     <div className="room-container pclab-floor phase6-room" style={{ position: 'relative' }}>
@@ -24,14 +26,14 @@ export default function Phase6Room({ setActivePopup, scenario }: Phase6RoomProps
         className="background-image pixelated"
         style={{ imageRendering: 'pixelated', width: '100%' }}
       />
-      {/* Hotspot 1: Notice Board Corkboard Memos */}
+      {/* Hotspot 1: Notice Board Corkboard Memos (PhilHealth) */}
       <button 
         className="hotspot corkboard-hotspot" 
         title="📌 PhilHealth Premium Table" 
         onClick={() => setActivePopup('PHILHEALTH_TABLE')}
       />
 
-      {/* Hotspot 2: PC Monitor (Loan Statement / HR Database) */}
+      {/* Hotspot 2: PC Monitor (HR Salary Database) */}
       <button 
         className="hotspot monitor-hotspot" 
         title="🖥️ HR Salary Database" 
@@ -59,11 +61,45 @@ export default function Phase6Room({ setActivePopup, scenario }: Phase6RoomProps
         onClick={() => setIsContractOpen(true)}
       />
 
+      {/* Hotspot 6: SSS Premium Table */}
+      <button 
+        className="hotspot sss-hotspot" 
+        title="📌 SSS Contribution Table" 
+        onClick={() => setActivePopup('SSS_TABLE')}
+      />
+
+      {/* Hotspot 7: Personal Salary Loan Statement */}
+      <button 
+        className="hotspot loan-hotspot" 
+        title="🖥️ Employee Loan Statement" 
+        onClick={() => setActivePopup('LOAN_STATEMENT')}
+      />
+
+      {/* Hotspot 8: HDMF Pag-IBIG Memo Circular */}
+      <button 
+        className="hotspot pagibig-hotspot" 
+        title="📋 HDMF Pag-IBIG Circular" 
+        onClick={() => setIsPagIbigOpen(true)}
+      />
+
+      {/* Hotspot 9: BIR Tax Withholding Table */}
+      <button 
+        className="hotspot tax-hotspot" 
+        title="📈 BIR Withholding Tax Table" 
+        onClick={() => setActivePopup('TAX_TABLE')}
+      />
+
       {/* Employee Contract Profile Modal */}
       <EmployeeContractModal 
         isOpen={isContractOpen} 
         onClose={() => setIsContractOpen(false)} 
         scenario={scenario}
+      />
+
+      {/* HDMF Pag-IBIG Memo Circular Modal */}
+      <PagIbigMemoModal 
+        isOpen={isPagIbigOpen} 
+        onClose={() => setIsPagIbigOpen(false)} 
       />
     </div>
   );

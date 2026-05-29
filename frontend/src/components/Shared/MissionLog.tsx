@@ -71,6 +71,16 @@ interface MissionLogProps {
   handleValidateHolidayMultiplier?: () => Promise<void>;
   handleValidateHolidayFormula?: () => Promise<void>;
 
+  pagIbigDeductionValue?: string;
+  setPagIbigDeductionValue?: (val: string) => void;
+  pagIbigDeductionStatus?: string;
+  handleValidatePagIbigDeduction?: () => Promise<void>;
+
+  philhealthErValue?: string;
+  setPhilhealthErValue?: (val: string) => void;
+  philhealthErStatus?: string;
+  handleValidatePhilhealthEr?: () => Promise<void>;
+
   // Phase 7 (Tribunal) state and handlers
   tribunalGross: string;
   setTribunalGross: (val: string) => void;
@@ -146,6 +156,16 @@ export default function MissionLog({
   holidayFormulaStatus,
   handleValidateHolidayMultiplier,
   handleValidateHolidayFormula,
+
+  pagIbigDeductionValue,
+  setPagIbigDeductionValue,
+  pagIbigDeductionStatus,
+  handleValidatePagIbigDeduction,
+
+  philhealthErValue,
+  setPhilhealthErValue,
+  philhealthErStatus,
+  handleValidatePhilhealthEr,
 
   tribunalGross,
   setTribunalGross,
@@ -306,7 +326,7 @@ export default function MissionLog({
 
   // Phases 1-6 standard UI
   // Phase 2, 3, and 4 have special multi-step scaffolding flows.
-  const isSynthesisSupported = (activePhaseIndex >= 2 && activePhaseIndex <= 6) && activePhaseIndex !== 5;
+  const isSynthesisSupported = (activePhaseIndex >= 2 && activePhaseIndex <= 6);
 
   return (
     <div className="right-panel">
@@ -408,7 +428,7 @@ export default function MissionLog({
                     : activePhaseIndex === 3
                       ? 'VARIABLE COMPONENT B (Total Recorded OT Hours)'
                       : activePhaseIndex === 5
-                        ? 'VARIABLE COMPONENT B (Pag-IBIG EE Share)'
+                        ? 'VARIABLE COMPONENT B (Personal Salary Loan)'
                         : 'VARIABLE COMPONENT B (PhilHealth Rate)'
                 }
               </label>
@@ -423,8 +443,8 @@ export default function MissionLog({
                         : activePhaseIndex === 3
                           ? "Enter total recorded OT hours"
                           : activePhaseIndex === 5
-                            ? "₱ Enter Pag-IBIG EE share"
-                            : "Enter standard rate (e.g. 0.025)"
+                            ? "₱ Enter Personal Salary Loan"
+                            : "Enter standard rate (e.g. 0.05)"
                   } 
                   className="tech-input"
                   value={extractedB}
@@ -438,7 +458,7 @@ export default function MissionLog({
                       : (activePhaseIndex === 2 || activePhaseIndex === 3)
                         ? 'Check both the Employee Contract in the filing cabinet and the terminal logs.'
                         : activePhaseIndex === 5
-                          ? 'Refer to the Pag-IBIG Circular Corkboard Memo. Identify the employee capped mandatory contribution cap.'
+                          ? 'Inspect the Employee Loan Statement on the PC monitor hotspot. Find the monthly deduction for the Personal Salary Loan.'
                           : 'Refer to the PhilHealth premium table on the corkboard. Find the applicable employee share rate.'
                     }
                   </div>
@@ -479,12 +499,92 @@ export default function MissionLog({
           </div>
         )}
         </div>
+ 
+        {/* PHASE 5 STEP 2: FIND PAG-IBIG DEDUCTION */}
+        {activePhaseIndex === 5 && (
+          <div className={`step-card ${pagIbigDeductionStatus === 'ACTIVE' ? 'active-step' : ''} ${pagIbigDeductionStatus === 'SUCCESS' ? 'success-step' : ''} ${pagIbigDeductionStatus === 'ERROR' ? 'error-step' : ''} ${pagIbigDeductionStatus === 'LOCKED' ? 'locked-step' : ''}`}
+            style={{ border: pagIbigDeductionStatus !== 'LOCKED' ? '2px solid #a855f7' : undefined, boxShadow: pagIbigDeductionStatus !== 'LOCKED' ? '0 0 10px rgba(168, 85, 247, 0.2)' : undefined }}>
+            <div className="step-title">
+              <h4 style={{ color: '#c084fc' }}>② STEP 2: FIND PAG-IBIG DEDUCTION</h4>
+              <span className="badge" style={{ backgroundColor: pagIbigDeductionStatus === 'SUCCESS' ? '#10b981' : '#475569', color: '#fff' }}>
+                {pagIbigDeductionStatus}
+              </span>
+            </div>
+            {pagIbigDeductionStatus !== 'LOCKED' && (
+              <div className="inputs-container">
+                <label style={{ color: '#e2e8f0', fontSize: '0.85rem' }}>PAG-IBIG EE SHARE DEDUCTION (₱)</label>
+                <div className="input-hint-wrapper">
+                  <input
+                    type="number"
+                    placeholder="₱ Enter statutory Pag-IBIG deduction"
+                    className="tech-input"
+                    value={pagIbigDeductionValue}
+                    onChange={(e) => setPagIbigDeductionValue && setPagIbigDeductionValue(e.target.value)}
+                    disabled={pagIbigDeductionStatus === 'SUCCESS' || loading}
+                    style={{ border: '1px solid #a855f7', color: '#fff' }}
+                  />
+                  <span className="input-info-icon">ⓘ
+                    <div className="input-tooltip">
+                      Hint: Open the HDMF Pag-IBIG Circular notice board memo. Under statutory standards, identify the capped monthly employee contribution share for basic monthly salaries above ₱10,000.
+                    </div>
+                  </span>
+                </div>
+                {pagIbigDeductionStatus !== 'SUCCESS' && (
+                  <button className="run-btn" onClick={handleValidatePagIbigDeduction} disabled={loading} style={{ backgroundColor: '#6b21a8', borderColor: '#a855f7' }}>
+                    {loading ? 'VERIFYING...' : 'VERIFY PAG-IBIG DEDUCTION >'}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* PHASE 6 STEP 2: VERIFY EMPLOYER SHARE RATE */}
+        {activePhaseIndex === 6 && (
+          <div className={`step-card ${philhealthErStatus === 'ACTIVE' ? 'active-step' : ''} ${philhealthErStatus === 'SUCCESS' ? 'success-step' : ''} ${philhealthErStatus === 'ERROR' ? 'error-step' : ''} ${philhealthErStatus === 'LOCKED' ? 'locked-step' : ''}`}
+            style={{ border: philhealthErStatus !== 'LOCKED' ? '2px solid #a855f7' : undefined, boxShadow: philhealthErStatus !== 'LOCKED' ? '0 0 10px rgba(168, 85, 247, 0.2)' : undefined }}>
+            <div className="step-title">
+              <h4 style={{ color: '#c084fc' }}>② STEP 2: VERIFY EMPLOYER SHARE RATE</h4>
+              <span className="badge" style={{ backgroundColor: philhealthErStatus === 'SUCCESS' ? '#10b981' : '#475569', color: '#fff' }}>
+                {philhealthErStatus}
+              </span>
+            </div>
+            {philhealthErStatus !== 'LOCKED' && (
+              <div className="inputs-container">
+                <label style={{ color: '#e2e8f0', fontSize: '0.85rem' }}>PHILHEALTH ER SHARE RATE</label>
+                <div className="input-hint-wrapper">
+                  <input
+                    type="number"
+                    placeholder="Enter standard employer rate (e.g. 0.10)"
+                    className="tech-input"
+                    value={philhealthErValue}
+                    onChange={(e) => setPhilhealthErValue && setPhilhealthErValue(e.target.value)}
+                    disabled={philhealthErStatus === 'SUCCESS' || loading}
+                    style={{ border: '1px solid #a855f7', color: '#fff' }}
+                  />
+                  <span className="input-info-icon">ⓘ
+                    <div className="input-tooltip">
+                      Hint: Open the PhilHealth Premium Contribution Bulletin corkboard memo. Under statutory standards, identify the Employer (ER) share rate matching standard splits (10.0% or 0.10).
+                    </div>
+                  </span>
+                </div>
+                {philhealthErStatus !== 'SUCCESS' && (
+                  <button className="run-btn" onClick={handleValidatePhilhealthEr} disabled={loading} style={{ backgroundColor: '#6b21a8', borderColor: '#a855f7' }}>
+                    {loading ? 'VERIFYING...' : 'VERIFY EMPLOYER RATE >'}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* STEP 2: RULE IDENTIFICATION */}
         {activePhaseIndex !== 3 && activePhaseIndex !== 4 && (
           <div className={`step-card ${step2Status === 'ACTIVE' ? 'active-step' : ''} ${step2Status === 'SUCCESS' ? 'success-step' : ''} ${step2Status === 'ERROR' ? 'error-step' : ''} ${step2Status === 'LOCKED' ? 'locked-step' : ''}`}>
             <div className="step-title">
-              <h4>② STEP 2: IDENTIFY CORE EQUATION</h4>
+              <h4>
+                {activePhaseIndex === 5 || activePhaseIndex === 6 ? '③ STEP 3: IDENTIFY CORE EQUATION' : '② STEP 2: IDENTIFY CORE EQUATION'}
+              </h4>
               <span className="badge" style={{ backgroundColor: step2Status === 'SUCCESS' ? '#10b981' : '#475569', color: '#fff' }}>
                 {step2Status}
               </span>
@@ -498,7 +598,7 @@ export default function MissionLog({
                     : activePhaseIndex === 2 
                       ? 'Tardiness Deduction Equation Formula:' 
                       : activePhaseIndex === 5
-                        ? 'SSS Deduction Equation Formula:'
+                        ? 'Total Deductions Equation Formula:'
                         : 'PhilHealth Premium Equation Formula:'
                   }
                 </label>
@@ -526,16 +626,16 @@ export default function MissionLog({
                   )}
                   {activePhaseIndex === 5 && (
                     <>
-                      <option value="SSS_PAGIBIG_FORMULA">SSS EE Share + Pag-IBIG EE Share</option>
+                      <option value="SSS_PERSONAL_PAGIBIG_FORMULA">SSS EE Share + Personal Salary Loan + Pag-ibig Deduction</option>
                       <option value="SSS_ER_FORMULA">SSS EE Share + SSS ER Share + Pag-IBIG EE Share</option>
                       <option value="SSS_SPOUSE_FORMULA">SSS EE Share + Pag-IBIG EE Share + Spouse Loan</option>
                     </>
                   )}
                   {activePhaseIndex === 6 && (
                     <>
-                      <option value="PHILHEALTH_FORMULA">Basic Salary × 0.025</option>
-                      <option value="PHILHEALTH_TOTAL_FORMULA">Basic Salary × 0.05</option>
-                      <option value="PHILHEALTH_DAILY_FORMULA">Daily Rate × 0.025</option>
+                      <option value="PHILHEALTH_FORMULA">Basic Salary × 0.05</option>
+                      <option value="PHILHEALTH_TOTAL_FORMULA">Basic Salary × 0.15</option>
+                      <option value="PHILHEALTH_DAILY_FORMULA">Daily Rate × 0.05</option>
                     </>
                   )}
                 </select>
@@ -763,72 +863,76 @@ export default function MissionLog({
         )}
 
         {/* STEP 3: ARITHMETIC EXECUTION */}
-        <div className={`step-card ${step3Status === 'ACTIVE' ? 'active-step' : ''} ${step3Status === 'SUCCESS' ? 'success-step' : ''} ${step3Status === 'ERROR' ? 'error-step' : ''} ${step3Status === 'LOCKED' ? 'locked-step' : ''}`}>
-          <div className="step-title">
-            <h4>
-              {activePhaseIndex === 3 
-                ? '⑤ STEP 5: COMPUTE OVERTIME PAY'
-                : activePhaseIndex === 4
-                  ? '④ STEP 4: COMPUTE HOLIDAY PAY'
-                  : '③ STEP 3: EXECUTE ARITHMETIC'
-              }
-            </h4>
-            <span className="badge" style={{ backgroundColor: step3Status === 'SUCCESS' ? '#10b981' : '#475569', color: '#fff' }}>
-              {step3Status}
-            </span>
-          </div>
-          
-          {step3Status !== 'LOCKED' && (
-            <div className="inputs-container">
-              <label style={{ color: '#e2e8f0', fontSize: '0.85rem' }}>
-                {activePhaseIndex === 1 
-                  ? 'FINAL GROSS BASIC EARNINGS (₱)' 
-                  : activePhaseIndex === 2 
-                    ? 'TOTAL TARDINESS DEDUCTIONS (₱)' 
-                    : activePhaseIndex === 3
-                      ? 'FINAL OVERTIME PREMIUM PAY (₱)'
-                      : activePhaseIndex === 4
-                        ? 'FINAL REGULAR HOLIDAY PAY (₱)'
-                        : activePhaseIndex === 5
-                          ? 'TOTAL SSS DEDUCTIONS (₱)'
-                          : 'FINAL PHILHEALTH PREMIUM DEDUCTION (₱)'
+        {activePhaseIndex !== 5 && (
+          <div className={`step-card ${step3Status === 'ACTIVE' ? 'active-step' : ''} ${step3Status === 'SUCCESS' ? 'success-step' : ''} ${step3Status === 'ERROR' ? 'error-step' : ''} ${step3Status === 'LOCKED' ? 'locked-step' : ''}`}>
+            <div className="step-title">
+              <h4>
+                {activePhaseIndex === 3 
+                  ? '⑤ STEP 5: COMPUTE OVERTIME PAY'
+                  : activePhaseIndex === 4
+                    ? '④ STEP 4: COMPUTE HOLIDAY PAY'
+                    : activePhaseIndex === 6
+                      ? '④ STEP 4: COMPUTE PHILHEALTH DEDUCTION'
+                      : '③ STEP 3: EXECUTE ARITHMETIC'
                 }
-              </label>
-              <div className="input-hint-wrapper">
-                <input 
-                  type="number" 
-                  placeholder="₱ Enter calculated amount" 
-                  className="tech-input"
-                  value={calculatedValue}
-                  onChange={(e) => setCalculatedValue(e.target.value)}
-                  disabled={step3Status === 'SUCCESS' || loading}
-                />
-                <span className="input-info-icon">ⓘ
-                  <div className="input-tooltip">
-                    {activePhaseIndex === 1
-                      ? 'Multiply Daily Rate × Days Present. Confirm your arithmetic before entering.'
-                      : activePhaseIndex === 2
-                        ? 'Apply: (Hourly Rate ÷ 60) × Late Minutes. Use a calculator for precision.'
-                        : activePhaseIndex === 3
-                          ? 'Review the DOLE Overtime poster on the wall and verify your true OT hours.'
-                          : activePhaseIndex === 4
-                            ? 'Review the DOLE holiday poster on the breakroom corkboard and verify your daily rate.'
-                            : activePhaseIndex === 5
-                              ? 'Add SSS Employee Share + Personal Salary Loan (Variables A and B from Step 1).'
-                              : 'Multiply Basic Salary × PhilHealth rate from Step 1.'
-                    }
-                  </div>
-                </span>
-              </div>
-              
-              {step3Status !== 'SUCCESS' && (
-                <button className="run-btn" onClick={handleValidateExecution} disabled={loading}>
-                  {loading ? 'AUDITING LEDGER...' : 'RUN FINAL LEDGER AUDIT >'}
-                </button>
-              )}
+              </h4>
+              <span className="badge" style={{ backgroundColor: step3Status === 'SUCCESS' ? '#10b981' : '#475569', color: '#fff' }}>
+                {step3Status}
+              </span>
             </div>
-          )}
-        </div>
+            
+            {step3Status !== 'LOCKED' && (
+              <div className="inputs-container">
+                <label style={{ color: '#e2e8f0', fontSize: '0.85rem' }}>
+                  {activePhaseIndex === 1 
+                    ? 'FINAL GROSS BASIC EARNINGS (₱)' 
+                    : activePhaseIndex === 2 
+                      ? 'TOTAL TARDINESS DEDUCTIONS (₱)' 
+                      : activePhaseIndex === 3
+                        ? 'FINAL OVERTIME PREMIUM PAY (₱)'
+                        : activePhaseIndex === 4
+                          ? 'FINAL REGULAR HOLIDAY PAY (₱)'
+                          : activePhaseIndex === 5
+                            ? 'TOTAL SSS DEDUCTIONS (₱)'
+                            : 'FINAL PHILHEALTH PREMIUM DEDUCTION (₱)'
+                  }
+                </label>
+                <div className="input-hint-wrapper">
+                  <input 
+                    type="number" 
+                    placeholder="₱ Enter calculated amount" 
+                    className="tech-input"
+                    value={calculatedValue}
+                    onChange={(e) => setCalculatedValue(e.target.value)}
+                    disabled={step3Status === 'SUCCESS' || loading}
+                  />
+                  <span className="input-info-icon">ⓘ
+                    <div className="input-tooltip">
+                      {activePhaseIndex === 1
+                        ? 'Multiply Daily Rate × Days Present. Confirm your arithmetic before entering.'
+                        : activePhaseIndex === 2
+                          ? 'Apply: (Hourly Rate ÷ 60) × Late Minutes. Use a calculator for precision.'
+                          : activePhaseIndex === 3
+                            ? 'Review the DOLE Overtime poster on the wall and verify your true OT hours.'
+                            : activePhaseIndex === 4
+                              ? 'Review the DOLE holiday poster on the breakroom corkboard and verify your daily rate.'
+                              : activePhaseIndex === 5
+                                ? 'Add SSS Employee Share + Personal Salary Loan (Variables A and B from Step 1).'
+                                : 'Multiply Basic Salary × PhilHealth rate from Step 1.'
+                      }
+                    </div>
+                  </span>
+                </div>
+                
+                {step3Status !== 'SUCCESS' && (
+                  <button className="run-btn" onClick={handleValidateExecution} disabled={loading}>
+                    {loading ? 'AUDITING LEDGER...' : 'RUN FINAL LEDGER AUDIT >'}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ============================================================ */}
         {/* PHASE 2 EXCLUSIVE: STEPS 4, 5, 6 — Gross Pay → Formula → Net Pay */}
@@ -987,8 +1091,8 @@ export default function MissionLog({
                 {activePhaseIndex === 2 && '⑥ STEP 6: COMPUTE FINAL NET PAY'}
                 {activePhaseIndex === 3 && '⑧ STEP 8: SYNTHESIZE TOTAL EARNINGS'}
                 {activePhaseIndex === 4 && '⑦ STEP 7: SYNTHESIZE TOTAL EARNINGS'}
-                {activePhaseIndex === 5 && '④ STEP 4: COMPUTE STAT DEDUCTIONS SO FAR'}
-                {activePhaseIndex === 6 && '④ STEP 4: COMPUTE FINAL STAT DEDUCTIONS'}
+                {activePhaseIndex === 5 && '④ STEP 4: TOTAL DEDUCTIONS'}
+                {activePhaseIndex === 6 && '⑤ STEP 5: TOTAL DEDUCTIONS'}
               </h4>
               <span className="badge" style={{ backgroundColor: step4Status === 'SUCCESS' ? '#10b981' : '#475569', color: '#fff' }}>
                 {step4Status}
@@ -1001,12 +1105,22 @@ export default function MissionLog({
                   {activePhaseIndex === 2 && 'FINAL TOTAL TAKE-HOME NET PAY (₱)'}
                   {activePhaseIndex === 3 && 'FINAL OVERTIME-ADJUSTED TOTAL EARNINGS (₱)'}
                   {activePhaseIndex === 4 && 'FINAL HOLIDAY-ADJUSTED TOTAL EARNINGS (₱)'}
-                  {activePhaseIndex === 5 && 'TOTAL STATUTORY DEDUCTIONS SO FAR (₱)'}
-                  {activePhaseIndex === 6 && 'FINAL STATUTORY DEDUCTIONS (₱)'}
+                  {activePhaseIndex === 5 && 'TOTAL DEDUCTIONS (₱)'}
+                  {activePhaseIndex === 6 && 'TOTAL DEDUCTIONS (₱)'}
                 </label>
                 {activePhaseIndex === 2 && (
                   <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '2px 0 6px 0', fontStyle: 'italic' }}>
                     Formula: Verified Gross Basic Pay − Verified Tardiness Deduction
+                  </p>
+                )}
+                {activePhaseIndex === 5 && (
+                  <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '2px 0 6px 0', fontStyle: 'italic' }}>
+                    Formula: SSS EE Share + Personal Salary Loan + Pag-ibig Deduction
+                  </p>
+                )}
+                {activePhaseIndex === 6 && (
+                  <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '2px 0 6px 0', fontStyle: 'italic' }}>
+                    Formula: SSS EE Share + Personal Salary Loan + Pag-ibig Deduction + PhilHealth EE Share
                   </p>
                 )}
                 <div className="input-hint-wrapper">
@@ -1017,7 +1131,9 @@ export default function MissionLog({
                         ? "₱ Gross Basic Pay − Tardiness Deduction" 
                         : activePhaseIndex === 3 || activePhaseIndex === 4
                           ? "₱ Enter calculated Total Earnings"
-                          : "₱ Enter statutory deductions sum"
+                          : activePhaseIndex === 5 || activePhaseIndex === 6
+                            ? "₱ Enter total deductions sum"
+                            : "₱ Enter statutory deductions sum"
                     } 
                     className="tech-input"
                     value={netPayValue}
@@ -1033,7 +1149,9 @@ export default function MissionLog({
                           ? 'Review the Company Payroll Manual to synthesize Overtime Pay into Total Gross Earnings.'
                           : activePhaseIndex === 4
                             ? 'Review the Company Payroll Manual to synthesize Holiday Pay into Total Gross Earnings.'
-                            : 'Sum all statutory deductions calculated.'
+                            : activePhaseIndex === 5
+                              ? 'Sum SSS EE Share, Personal Salary Loan, and Pag-ibig deduction.'
+                              : 'Sum all statutory deductions: SSS EE Share, Personal Salary Loan, Pag-ibig deduction, and PhilHealth Employee share.'
                       }
                     </div>
                   </span>

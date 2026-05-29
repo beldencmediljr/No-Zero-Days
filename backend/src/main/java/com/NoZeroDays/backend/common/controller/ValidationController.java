@@ -174,7 +174,11 @@ public class ValidationController {
         } else if ("M2_MULTIPLIERS".equalsIgnoreCase(module)) {
             return Arrays.asList("EXTRACT", "IDENTIFY_RULE", "EXECUTE", "SYNTHESIS");
         } else if ("M3_BUREAUCRACY".equalsIgnoreCase(module)) {
-            return Arrays.asList("EXTRACT", "IDENTIFY_RULE", "EXECUTE", "SYNTHESIS");
+            if (phase == 1) {
+                return Arrays.asList("EXTRACT", "IDENTIFY_RULE", "EXECUTE");
+            } else {
+                return Arrays.asList("EXTRACT", "IDENTIFY_RULE", "EXECUTE", "SYNTHESIS");
+            }
         } else if ("M4_TRIBUNAL".equalsIgnoreCase(module)) {
             return Arrays.asList("SUBMIT");
         }

@@ -691,16 +691,21 @@ export default function Popups({
             </div>
             <div className="data-box authentic-data" style={{ padding: '15px', fontSize: '0.9rem', lineHeight: '1.6' }}>
               <p><strong>1. TOTAL PREMIUM RATE:</strong></p>
-              <p>For June 2026, the total PhilHealth premium is <strong>5.0%</strong> of the employee's basic salary.</p>
+              <p>For June 2026, the total PhilHealth premium is <strong>15.0%</strong> of the employee's monthly basic salary.</p>
 
               <p style={{ marginTop: '10px' }}><strong>2. EMPLOYEE VS EMPLOYER SPLIT:</strong></p>
-              <p>The premium is split equally: 50% paid by the Employer, 50% paid by the Employee.</p>
+              <p>Under the updated standard statutory guidelines:</p>
+              <ul style={{ paddingLeft: '20px', margin: '5px 0' }}>
+                <li><strong>Employee (EE) Share:</strong> 5.0% (Multiplier: 0.05)</li>
+                <li><strong>Employer (ER) Share:</strong> 10.0% (Multiplier: 0.10)</li>
+              </ul>
 
               <div className="formula-box" style={{ margin: '12px 0', padding: '10px', background: '#0b1120', border: '1px solid #1e293b', textAlign: 'center', color: '#fbbf24', fontWeight: 'bold' }}>
-                Employee Premium Rate = 5.0% × 50% = 2.5% (Multiplier: 0.025)
+                Employee Premium Rate = 5.0% (Multiplier: 0.05) <br />
+                Employer Premium Rate = 10.0% (Multiplier: 0.10)
               </div>
               <p style={{ color: '#94a3b8', fontSize: '0.8rem', fontStyle: 'italic' }}>
-                * Calculate PhilHealth Deduction by multiplying the basic salary of the employee by 0.025.
+                * Calculate the employee's PhilHealth Deduction by multiplying the basic salary by 0.05.
               </p>
             </div>
           </div>
@@ -730,6 +735,55 @@ export default function Popups({
                 <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '8px', fontStyle: 'italic' }}>
                   * Basic Salary = Daily Rate × Days Present. This is the base amount used for computing PhilHealth deductions.
                 </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'TAX_TABLE':
+        return (
+          <div className="popup-content">
+            <div className="popup-header">
+              <h4>📈 BIR Withholding Tax Table (June 2026)</h4>
+              <p>Bureau of Internal Revenue // National Tax Brackets</p>
+            </div>
+            <div className="data-box authentic-data" style={{ padding: '15px', fontSize: '0.85rem', lineHeight: '1.6', maxHeight: '350px', overflowY: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '8px' }}>
+                <thead>
+                  <tr style={{ color: '#60a5fa', borderBottom: '1px solid #334155', textAlign: 'left' }}>
+                    <th style={{ padding: '6px' }}>Monthly Salary Bracket</th>
+                    <th style={{ padding: '6px' }}>Prescribed Withholding Tax Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style={{ borderBottom: '1px solid #1e293b' }}>
+                    <td style={{ padding: '8px 6px' }}><strong>Up to ₱20,833</strong></td>
+                    <td style={{ padding: '8px 6px', color: '#10b981', fontWeight: 'bold' }}>0% tax (None)</td>
+                  </tr>
+                  <tr style={{ borderBottom: '1px solid #1e293b' }}>
+                    <td style={{ padding: '8px 6px' }}><strong>Over ₱20,833 up to ₱33,333</strong></td>
+                    <td style={{ padding: '8px 6px', color: '#fbbf24' }}>15% of the excess over ₱20,833</td>
+                  </tr>
+                  <tr style={{ borderBottom: '1px solid #1e293b' }}>
+                    <td style={{ padding: '8px 6px' }}><strong>Over ₱33,333 up to ₱66,667</strong></td>
+                    <td style={{ padding: '8px 6px', color: '#fbbf24' }}>₱1,875 + 20% of the excess over ₱33,333</td>
+                  </tr>
+                  <tr style={{ borderBottom: '1px solid #1e293b' }}>
+                    <td style={{ padding: '8px 6px' }}><strong>Over ₱66,667 up to ₱166,667</strong></td>
+                    <td style={{ padding: '8px 6px', color: '#fbbf24' }}>₱8,541.80 + 25% of the excess over ₱66,667</td>
+                  </tr>
+                  <tr style={{ borderBottom: '1px solid #1e293b' }}>
+                    <td style={{ padding: '8px 6px' }}><strong>Over ₱166,667 up to ₱666,667</strong></td>
+                    <td style={{ padding: '8px 6px', color: '#fbbf24' }}>₱33,541.80 + 30% of the excess over ₱166,667</td>
+                  </tr>
+                  <tr style={{ borderBottom: '1px solid #1e293b' }}>
+                    <td style={{ padding: '8px 6px' }}><strong>Over ₱666,667</strong></td>
+                    <td style={{ padding: '8px 6px', color: '#ef4444', fontWeight: 'bold' }}>₱153,541.80 + 35% of the excess over ₱666,667</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style={{ marginTop: '12px', padding: '8px', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3b82f6', borderRadius: '4px', fontSize: '0.8rem', color: '#93c5fd' }}>
+                💡 <strong>Auditor Tip:</strong> These brackets apply to the taxable basic salary (Gross Basic Salary minus standard statutory EE shares: SSS, PhilHealth, and Pag-IBIG).
               </div>
             </div>
           </div>
@@ -855,27 +909,27 @@ export default function Popups({
               ) : activePhaseIndex === 5 || activePhaseIndex === 6 ? (
                 <>
                   <div style={{ marginTop: '10px' }}>
-                    <p><strong>1. SSS Deduction Formula (Phase 5):</strong></p>
+                    <p><strong>1. SSS & Pag-IBIG Deductions Formula (Phase 5):</strong></p>
                     <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
-                      Add Employee SSS EE share and personal salary loan. Employer ER shares and spouse loans are NOT deducted from basic pay.
+                      Add Employee SSS EE share, personal salary loan, and Pag-IBIG EE share. Employer ER shares and spouse loans are NOT deducted from basic pay.
                       <br />
-                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Total SSS Deduction = SSS EE Share + Personal Salary Loan</code>
+                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Total Deductions = SSS EE Share + Personal Salary Loan + Pag-IBIG EE Share (₱200.00 cap)</code>
                     </p>
                   </div>
                   <div style={{ marginTop: '10px' }}>
                     <p><strong>2. PhilHealth Deduction Formula (Phase 6):</strong></p>
                     <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
-                      PhilHealth premium is 5%, split 50/50. The employee share is 2.5% (0.025).
+                      PhilHealth premium is 15.0% total: Employer share is 10.0% (0.10) and Employee share is 5.0% (0.05). Only the Employee share is deducted from basic pay.
                       <br />
-                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>PhilHealth Deduction = Basic Salary × 0.025</code>
+                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>PhilHealth Deduction = Basic Salary × 0.05</code>
                     </p>
                   </div>
                   <div style={{ marginTop: '10px' }}>
                     <p><strong>3. Statutory Deductions Synthesis (Phase 6):</strong></p>
                     <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
-                      Add the SSS deductions and the PhilHealth deductions together.
+                      Add Phase 5's Total Deductions and the PhilHealth deductions together.
                       <br />
-                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Final Statutory Deductions = Total SSS Deduction + PhilHealth Deduction</code>
+                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Final Statutory Deductions = Total Deductions + PhilHealth Deduction</code>
                     </p>
                   </div>
                 </>
@@ -896,15 +950,15 @@ export default function Popups({
                   <div style={{ marginTop: '10px' }}>
                     <p><strong>2. Total Deductions:</strong></p>
                     <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
-                      Sum of Tardiness deductions, SSS deductions, and PhilHealth deductions.
+                      Sum of Tardiness deductions, SSS deductions (including Personal Salary Loan and Pag-IBIG), and PhilHealth deductions.
                       <br />
                       <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Deductions = Tardiness + SSS Deduction + PhilHealth Deduction</code>
                       <br />
                       <code>Tardiness = (Hourly Rate / 60) × Late Minutes</code>
                       <br />
-                      <code>SSS Deduction = SSS EE Share + Personal Salary Loan</code>
+                      <code>SSS Deduction = SSS EE Share + Personal Salary Loan + Pag-IBIG EE Share (₱200.00)</code>
                       <br />
-                      <code>PhilHealth Deduction = Basic Salary × 0.025</code>
+                      <code>PhilHealth Deduction = Basic Salary × 0.05</code>
                     </p>
                   </div>
                   <div style={{ marginTop: '10px' }}>

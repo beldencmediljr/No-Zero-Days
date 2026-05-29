@@ -516,7 +516,7 @@ public class ValidationService {
                 }
             }
         } else if ("M3_BUREAUCRACY".equalsIgnoreCase(module)) {
-            if (phase == 1) { // Phase 1: SSS Deductions
+            if (phase == 1) { // Phase 1: SSS & Pag-IBIG & Personal Loan Deductions (Phase 5)
                 double sssEe = request.getSssEeShare() != null ? request.getSssEeShare() : 0.0;
                 double sssEr = request.getSssErShare() != null ? request.getSssErShare() : 0.0;
                 double personalLoan = request.getPersonalSalaryLoan() != null ? request.getPersonalSalaryLoan() : 0.0;
@@ -526,45 +526,48 @@ public class ValidationService {
                     double valA = request.getSubmittedValueA() != null ? request.getSubmittedValueA() : 0.0;
                     double valB = request.getSubmittedValueB() != null ? request.getSubmittedValueB() : 0.0;
 
-                    // Red Herring check: ignore ER share or spouse loan
+                    // Red Herring check: ignore ER share and spouse loan
                     if (Math.abs(valA - sssEr) < epsilon || Math.abs(valB - spouseLoan) < epsilon) {
                         isRedHerring = true;
-                        message = "ERROR: SSS Employer (ER) Share and spouse loans cannot be deducted from this employee's basic pay. Extract EE Share and Personal Loan.";
+                        message = "ERROR: SSS Employer (ER) Share and Spouse Loans cannot be deducted from this employee's basic pay ledger. Extract SSS EE Share and Personal Salary Loan.";
                     } else if (Math.abs(valA - sssEe) < epsilon && Math.abs(valB - personalLoan) < epsilon) {
                         success = true;
-                        message = "Extraction Verified! Proceed to Step 2.";
+                        message = "Extraction Verified! SSS EE share and Personal Salary Loan extracted successfully. Proceed to Step 2.";
                     } else {
-                        message = "Extraction Failed. Extract the employee SSS EE share and personal salary loan.";
+                        message = "Extraction Failed. Extract the employee SSS EE share and Personal Salary Loan.";
+                    }
+                } else if ("PAGIBIG_DEDUCTION".equalsIgnoreCase(step)) {
+                    double valA = request.getSubmittedValueA() != null ? request.getSubmittedValueA() : 0.0;
+                    // Red herring: Employer Pag-IBIG share is 300.00
+                    if (Math.abs(valA - 300.00) < epsilon) {
+                        isRedHerring = true;
+                        message = "RED HERRING DETECTED: The Employer (ER) Pag-IBIG share is paid fully by the employer and must never be subtracted from the employee's basic pay ledger.";
+                    } else if (Math.abs(valA - 200.00) < epsilon) {
+                        success = true;
+                        message = "Pag-IBIG deduction verified at ₱200.00! Proceed to Step 3.";
+                    } else {
+                        message = "Incorrect Pag-IBIG deduction. Refer to the HDMF Pag-IBIG Circular memo on the notice board to identify the employee contribution share cap.";
                     }
                 } else if ("IDENTIFY_RULE".equalsIgnoreCase(step)) {
                     String rule = request.getSubmittedRule();
-                    if ("SSS_FORMULA".equalsIgnoreCase(rule) || "EE_SHARE_ADD_LOAN".equalsIgnoreCase(rule)) {
+                    if ("SSS_PERSONAL_PAGIBIG_FORMULA".equalsIgnoreCase(rule) || "EE_SHARE_ADD_PAGIBIG".equalsIgnoreCase(rule) || "ADDITION".equalsIgnoreCase(rule)) {
                         success = true;
-                        message = "Rule Verified! SSS Deductions = SSS EE Share + Personal Salary Loan. Proceed to Step 3.";
+                        message = "Rule Verified! The core equation is SSS EE Share + Personal Salary Loan + Pag-ibig Deduction. Proceed to Step 4.";
                     } else {
-                        message = "Incorrect Rule! Deduct SSS Employee Share and Personal Loan together. Ignore Spouse loans and Employer share.";
+                        message = "Incorrect Rule! Choose the formula that adds SSS EE Share, Personal Salary Loan, and Pag-ibig Deduction together.";
                     }
-                } else if ("EXECUTE".equalsIgnoreCase(step)) {
+                } else if ("EXECUTE".equalsIgnoreCase(step) || "SYNTHESIS".equalsIgnoreCase(step)) {
                     double result = request.getSubmittedResult() != null ? request.getSubmittedResult() : 0.0;
-                    double expected = sssEe + personalLoan;
+                    double expected = sssEe + personalLoan + 200.00;
                     if (Math.abs(result - expected) < epsilon) {
                         success = true;
-                        message = "SSS Deductions verified successfully at ₱" + String.format("%.2f", expected);
-                    } else {
-                        message = "Arithmetic Error! Sum SSS EE (₱" + sssEe + ") and Personal Loan (₱" + personalLoan + ") carefully.";
-                    }
-                } else if ("SYNTHESIS".equalsIgnoreCase(step)) {
-                    double result = request.getSubmittedResult() != null ? request.getSubmittedResult() : 0.0;
-                    double expected = sssEe + personalLoan;
-                    if (Math.abs(result - expected) < epsilon) {
-                        success = true;
-                        message = "Phase 5 Complete! Total Statutory Deductions So Far verified successfully at ₱" + String.format("%.2f", expected);
+                        message = "Phase 5 Complete! Total Deductions verified successfully at ₱" + String.format("%.2f", expected);
                         updateProgress(student, "M3_BUREAUCRACY", 1);
                     } else {
-                        message = "Arithmetic Error! Total Statutory Deductions So Far should be equal to the SSS Deductions (₱" + String.format("%.2f", expected) + ").";
+                        message = "Arithmetic Error! Calculate SSS EE Share (₱" + sssEe + ") + Personal Salary Loan (₱" + personalLoan + ") + Pag-ibig Deduction (₱200.00) again.";
                     }
                 }
-            } else if (phase == 2) { // Phase 2: PhilHealth Deductions
+            } else if (phase == 2) { // Phase 2: PhilHealth Deductions (Phase 6)
                 double basicSalary = request.getBasicSalary() != null ? request.getBasicSalary() : 0.0;
                 double sssEe = request.getSssEeShare() != null ? request.getSssEeShare() : 0.0;
                 double personalLoan = request.getPersonalSalaryLoan() != null ? request.getPersonalSalaryLoan() : 0.0;
@@ -573,40 +576,57 @@ public class ValidationService {
                     double valA = request.getSubmittedValueA() != null ? request.getSubmittedValueA() : 0.0;
                     double valB = request.getSubmittedValueB() != null ? request.getSubmittedValueB() : 0.0;
 
-                    if (Math.abs(valA - basicSalary) < epsilon && Math.abs(valB - 0.025) < epsilon) {
+                    // Red herring: Employer (ER) share rate is 0.10
+                    if (Math.abs(valB - 0.10) < epsilon) {
+                        isRedHerring = true;
+                        message = "RED HERRING DETECTED: You extracted the Employer (ER) share rate (10% / 0.10) instead of the Employee (EE) share rate (5% / 0.05). In payroll deduction synthesis, only the Employee share is subtracted from the basic salary ledger.";
+                    } else if (Math.abs(valA - basicSalary) < epsilon && Math.abs(valB - 0.05) < epsilon) {
                         success = true;
-                        message = "Extraction Verified! Base salary and PhilHealth rate (2.5% / 0.025) extracted. Proceed to Step 2.";
+                        message = "Extraction Verified! Base salary and PhilHealth EE rate (5.0% / 0.05) extracted. Proceed to Step 2.";
                     } else {
-                        message = "Extraction Failed. Extract Basic Salary and the current standard rate of 2.5% (0.025) for PhilHealth.";
+                        message = "Extraction Failed. Extract Basic Salary and the current standard Employee (EE) rate of 5.0% (0.05) for PhilHealth.";
+                    }
+                } else if ("PHILHEALTH_ER".equalsIgnoreCase(step)) {
+                    double valA = request.getSubmittedValueA() != null ? request.getSubmittedValueA() : 0.0;
+
+                    // Red herring: Employee (EE) share rate is 0.05
+                    if (Math.abs(valA - 0.05) < epsilon) {
+                        isRedHerring = true;
+                        message = "RED HERRING DETECTED: That is the Employee (EE) share rate (5.0% / 0.05). Find the Employer (ER) share rate from the PhilHealth bulletin corkboard memo.";
+                    } else if (Math.abs(valA - 0.10) < epsilon || Math.abs(valA - 10.0) < epsilon) {
+                        success = true;
+                        message = "PhilHealth Employer (ER) share rate verified at 10.0% (0.10)! Proceed to Step 3.";
+                    } else {
+                        message = "Incorrect Employer share rate. Refer to the PhilHealth Contribution Bulletin memo on the notice board to identify the employer share rate.";
                     }
                 } else if ("IDENTIFY_RULE".equalsIgnoreCase(step)) {
                     String rule = request.getSubmittedRule();
-                    if ("PHILHEALTH_FORMULA".equalsIgnoreCase(rule) || "BASIC_SALARY_X_0.025".equalsIgnoreCase(rule)) {
+                    if ("PHILHEALTH_FORMULA".equalsIgnoreCase(rule) || "BASIC_SALARY_X_0.05".equalsIgnoreCase(rule)) {
                         success = true;
-                        message = "Rule Verified! PhilHealth Premium = Basic Salary × 2.5%. Proceed to Step 3.";
+                        message = "Rule Verified! PhilHealth Premium = Basic Salary × 5.0%. Proceed to Step 4.";
                     } else {
-                        message = "Incorrect Rule! Multiplier rate should be 2.5% (0.025) of Basic Salary.";
+                        message = "Incorrect Rule! Multiplier rate should be 5% (0.05) of Basic Salary.";
                     }
                 } else if ("EXECUTE".equalsIgnoreCase(step)) {
                     double result = request.getSubmittedResult() != null ? request.getSubmittedResult() : 0.0;
-                    double expected = basicSalary * 0.025;
+                    double expected = basicSalary * 0.05;
                     if (Math.abs(result - expected) < epsilon) {
                         success = true;
                         message = "PhilHealth Deduction verified successfully at ₱" + String.format("%.2f", expected);
                     } else {
-                        message = "Arithmetic Error! Calculate Basic Salary (₱" + basicSalary + ") × 0.025.";
+                        message = "Arithmetic Error! Calculate Basic Salary (₱" + basicSalary + ") × 0.05.";
                     }
                 } else if ("SYNTHESIS".equalsIgnoreCase(step)) {
                     double result = request.getSubmittedResult() != null ? request.getSubmittedResult() : 0.0;
-                    double expectedSss = sssEe + personalLoan;
-                    double expectedPh = basicSalary * 0.025;
+                    double expectedSss = sssEe + personalLoan + 200.00; // SSS EE Share + Personal Salary Loan + Pag-IBIG EE Share (₱200.00)
+                    double expectedPh = basicSalary * 0.05;
                     double expected = expectedSss + expectedPh;
                     if (Math.abs(result - expected) < epsilon) {
                         success = true;
                         message = "Phase 6 Complete! Final Statutory Deductions verified successfully at ₱" + String.format("%.2f", expected);
                         updateProgress(student, "M3_BUREAUCRACY", 2);
                     } else {
-                        message = "Arithmetic Error! Final Statutory Deductions = SSS Deductions (₱" + String.format("%.2f", expectedSss) + ") + PhilHealth Deduction (₱" + String.format("%.2f", expectedPh) + ") again.";
+                        message = "Arithmetic Error! Final Statutory Deductions = SSS/Pag-IBIG/Loan (₱" + String.format("%.2f", expectedSss) + ") + PhilHealth (₱" + String.format("%.2f", expectedPh) + ") again.";
                     }
                 }
             }
@@ -630,8 +650,8 @@ public class ValidationService {
             double expectedGross = grossBasicPay + otPay + holidayPay;
 
             double tardinessDeduction = (hourlyRate / 60.0) * lateMinutes;
-            double sssDeductions = sssEe + personalLoan;
-            double phDeduction = basicSalary * 0.025;
+            double sssDeductions = sssEe + personalLoan + 200.00;
+            double phDeduction = basicSalary * 0.05;
             double expectedDeductions = tardinessDeduction + sssDeductions + phDeduction;
 
             double expectedNet = expectedGross - expectedDeductions;
@@ -704,7 +724,7 @@ public class ValidationService {
                 request.getSubmittedRule(),
                 request.getSubmittedResult() != null ? request.getSubmittedResult() : 0.0));
 
-        attempt.setExpectedData(String.format("dailyRate=%.2f, daysPresent=%d, hourlyRate=%.2f, lateMinutes=%d, otHours=%.2f, unpaidLunchHours=%.2f, workedOnHoliday=%b, sssEeShare=%.2f, personalSalaryLoan=%.2f, basicSalary=%.2f",
+        attempt.setExpectedData(String.format("dailyRate=%.2f, daysPresent=%d, hourlyRate=%.2f, lateMinutes=%d, otHours=%.2f, unpaidLunchHours=%.2f, workedOnHoliday=%b, sssEeShare=%.2f, personalSalaryLoan=%.2f, basicSalary=%.2f, employeeName=%s, companyName=%s",
                 request.getDailyRate() != null ? request.getDailyRate() : 0.0,
                 request.getDaysPresent() != null ? request.getDaysPresent() : 0,
                 request.getHourlyRate() != null ? request.getHourlyRate() : 0.0,
@@ -714,7 +734,9 @@ public class ValidationService {
                 request.getWorkedOnHoliday() != null ? request.getWorkedOnHoliday() : false,
                 request.getSssEeShare() != null ? request.getSssEeShare() : 0.0,
                 request.getPersonalSalaryLoan() != null ? request.getPersonalSalaryLoan() : 0.0,
-                request.getBasicSalary() != null ? request.getBasicSalary() : 0.0));
+                request.getBasicSalary() != null ? request.getBasicSalary() : 0.0,
+                request.getEmployeeName() != null ? request.getEmployeeName() : "Juan Dela Cruz",
+                request.getCompanyName() != null ? request.getCompanyName() : "Apex Industrial Works"));
 
         attemptLogRepository.save(attempt);
 
