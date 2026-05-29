@@ -2,7 +2,6 @@ package com.NoZeroDays.backend.phase4.service;
 
 import com.NoZeroDays.backend.common.dto.ValidationRequest;
 import com.NoZeroDays.backend.common.dto.ValidationResponse;
-import com.NoZeroDays.backend.common.service.ValidationService;
 import com.NoZeroDays.backend.phase4.model.Phase4Attempt;
 import com.NoZeroDays.backend.phase4.repository.Phase4AttemptRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +14,10 @@ public class Phase4Service {
     private Phase4AttemptRepository attemptRepository;
 
     @Autowired
-    private ValidationService validationService;
+    private Phase4ValidationService phase4ValidationService;
 
     public ValidationResponse validate(ValidationRequest request) {
-        ValidationResponse response = validationService.validate(request);
+        ValidationResponse response = phase4ValidationService.validate(request);
 
         Phase4Attempt attempt = new Phase4Attempt();
         attempt.setSubmittedDailyRate(request.getDailyRate());

@@ -2,7 +2,6 @@ package com.NoZeroDays.backend.phase7.service;
 
 import com.NoZeroDays.backend.common.dto.ValidationRequest;
 import com.NoZeroDays.backend.common.dto.ValidationResponse;
-import com.NoZeroDays.backend.common.service.ValidationService;
 import com.NoZeroDays.backend.phase7.model.Phase7Attempt;
 import com.NoZeroDays.backend.phase7.repository.Phase7AttemptRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +14,10 @@ public class Phase7Service {
     private Phase7AttemptRepository attemptRepository;
 
     @Autowired
-    private ValidationService validationService;
+    private Phase7ValidationService phase7ValidationService;
 
     public ValidationResponse validate(ValidationRequest request) {
-        ValidationResponse response = validationService.validate(request);
+        ValidationResponse response = phase7ValidationService.validate(request);
 
         Phase7Attempt attempt = new Phase7Attempt();
         attempt.setSubmittedGross(request.getSubmittedValueA());

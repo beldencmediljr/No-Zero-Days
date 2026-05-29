@@ -9,6 +9,13 @@ import com.NoZeroDays.backend.common.model.AttemptLog;
 import com.NoZeroDays.backend.common.repository.AttemptLogRepository;
 import com.NoZeroDays.backend.common.model.GameSession;
 import com.NoZeroDays.backend.common.repository.GameSessionRepository;
+import com.NoZeroDays.backend.phase1.service.Phase1ValidationService;
+import com.NoZeroDays.backend.phase2.service.Phase2ValidationService;
+import com.NoZeroDays.backend.phase3.service.Phase3ValidationService;
+import com.NoZeroDays.backend.phase4.service.Phase4ValidationService;
+import com.NoZeroDays.backend.phase5.service.Phase5ValidationService;
+import com.NoZeroDays.backend.phase6.service.Phase6ValidationService;
+import com.NoZeroDays.backend.phase7.service.Phase7ValidationService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -36,10 +43,44 @@ public class ValidationController {
     @Autowired
     private AttemptLogRepository attemptLogRepository;
 
-    // 1. Unified Validation Endpoint for all Modules, Phases, and Steps
+    // Phase-specific validation services
+    @Autowired private Phase1ValidationService phase1ValidationService;
+    @Autowired private Phase2ValidationService phase2ValidationService;
+    @Autowired private Phase3ValidationService phase3ValidationService;
+    @Autowired private Phase4ValidationService phase4ValidationService;
+    @Autowired private Phase5ValidationService phase5ValidationService;
+    @Autowired private Phase6ValidationService phase6ValidationService;
+    @Autowired private Phase7ValidationService phase7ValidationService;
+
+    // 1. Unified Validation Endpoint — routes to the correct phase service based on module + phase
     @PostMapping("/validation/submit")
     public ResponseEntity<ValidationResponse> validate(@RequestBody ValidationRequest request) {
-        ValidationResponse response = validationService.validate(request);
+        String module = request.getModule() != null ? request.getModule() : "M1_MATH";
+        int phase     = request.getPhase()  != null ? request.getPhase()  : 1;
+
+        ValidationResponse response;
+
+        if ("M1_MATH".equalsIgnoreCase(module)) {
+            response = (phase == 2)
+                    ? phase2ValidationService.validate(request)
+                    : phase1ValidationService.validate(request);
+        } else if ("M2_MULTIPLIERS".equalsIgnoreCase(module)) {
+            response = (phase == 2)
+                    ? phase4ValidationService.validate(request)
+                    : phase3ValidationService.validate(request);
+        } else if ("M3_BUREAUCRACY".equalsIgnoreCase(module)) {
+            response = (phase == 2)
+                    ? phase6ValidationService.validate(request)
+                    : phase5ValidationService.validate(request);
+        } else if ("M4_TRIBUNAL".equalsIgnoreCase(module)) {
+            response = phase7ValidationService.validate(request);
+        } else {
+            // Fallback: unknown module — return a generic failure
+            response = new ValidationResponse(false,
+                    "Unknown module: " + module + ". Please check your request payload.",
+                    false, false);
+        }
+
         return ResponseEntity.ok(response);
     }
 

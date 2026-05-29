@@ -2,7 +2,7 @@ package com.NoZeroDays.backend.phase1.controller;
 
 import com.NoZeroDays.backend.common.dto.ValidationRequest;
 import com.NoZeroDays.backend.common.dto.ValidationResponse;
-import com.NoZeroDays.backend.common.service.ValidationService;
+import com.NoZeroDays.backend.phase1.service.Phase1ValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 public class Phase1Controller {
 
     @Autowired
-    private ValidationService validationService;
+    private Phase1ValidationService phase1ValidationService;
 
     @PostMapping("/validate-extraction")
     public ResponseEntity<ValidationResponse> validate(@RequestBody ValidationRequest request) {
@@ -27,8 +27,8 @@ public class Phase1Controller {
         if (request.getStep() == null) {
             request.setStep("EXTRACT");
         }
-        
-        ValidationResponse response = validationService.validate(request);
+
+        ValidationResponse response = phase1ValidationService.validate(request);
         return ResponseEntity.ok(response);
     }
 }
