@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import pclabImage from '../../assets/phase5-6-pclab.png';
 import '../../components/Shared/room-base.css';
 import '../../components/Shared/Room.css';
 import './Phase5.css';
+import EmployeeContractModal from './EmployeeContractModal';
+import PagIbigMemoModal from './PagIbigMemoModal';
 
 interface Phase5RoomProps {
   setActivePopup: (popupName: string | null) => void;
@@ -12,6 +14,9 @@ interface Phase5RoomProps {
  * TSX Component managing hotspots for Phase 5 (SSS Deductions).
  */
 export default function Phase5Room({ setActivePopup }: Phase5RoomProps) {
+  const [isContractOpen, setIsContractOpen] = useState(false);
+  const [isPagIbigOpen, setIsPagIbigOpen] = useState(false);
+
   return (
     <div className="room-container pclab-floor phase5-room" style={{ position: 'relative' }}>
       <img 
@@ -46,6 +51,32 @@ export default function Phase5Room({ setActivePopup }: Phase5RoomProps) {
         className="hotspot handbook-hotspot" 
         title="📘 Company Payroll Manual" 
         onClick={() => setActivePopup('HANDBOOK')}
+      />
+
+      {/* Hotspot 5: Employee Contract Folder */}
+      <button 
+        className="hotspot contract-hotspot" 
+        title="📁 Employee Contract Profile" 
+        onClick={() => setIsContractOpen(true)}
+      />
+
+      {/* Hotspot 6: HDMF Pag-IBIG Memo Circular */}
+      <button 
+        className="hotspot pagibig-hotspot" 
+        title="📋 HDMF Pag-IBIG Circular" 
+        onClick={() => setIsPagIbigOpen(true)}
+      />
+
+      {/* Employee Contract Profile Modal */}
+      <EmployeeContractModal 
+        isOpen={isContractOpen} 
+        onClose={() => setIsContractOpen(false)} 
+      />
+
+      {/* HDMF Pag-IBIG Memo Circular Modal */}
+      <PagIbigMemoModal 
+        isOpen={isPagIbigOpen} 
+        onClose={() => setIsPagIbigOpen(false)} 
       />
     </div>
   );

@@ -35,3 +35,19 @@
   height: 10%;
   border-color: rgba(250, 204, 21, 0.4);
 }
+
+.phase5-room .contract-hotspot {
+  top: 50%;
+  left: 45%;
+  width: 18%;
+  height: 20%;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.phase5-room .pagibig-hotspot {
+  top: 12%;
+  left: 52%;
+  width: 8%;
+  height: 13%;
+  border-color: rgba(250, 204, 21, 0.4);
+}

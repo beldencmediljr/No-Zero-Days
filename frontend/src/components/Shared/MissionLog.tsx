@@ -306,7 +306,7 @@ export default function MissionLog({
 
   // Phases 1-6 standard UI
   // Phase 2, 3, and 4 have special multi-step scaffolding flows.
-  const isSynthesisSupported = activePhaseIndex >= 2 && activePhaseIndex <= 6;
+  const isSynthesisSupported = (activePhaseIndex >= 2 && activePhaseIndex <= 6) && activePhaseIndex !== 5;
 
   return (
     <div className="right-panel">
@@ -392,9 +392,9 @@ export default function MissionLog({
                       ? 'Open the HR desk contract folder. The base Daily Rate is listed in the compensation section of the employment contract.'
                       : (activePhaseIndex === 2 || activePhaseIndex === 3)
                         ? 'Check both the Employee Contract in the filing cabinet and the terminal logs.'
-                        : activePhaseIndex === 5
-                          ? 'Click the SSS contribution table on the corkboard. Find the employee\'s salary bracket and read the Employee Share (EE) column.'
-                          : 'Open the employment contract folder. Basic monthly salary is in the compensation section.'
+                      : activePhaseIndex === 5
+                        ? 'Click the SSS contribution table on the corkboard. Find the employee\'s salary bracket and read the Employee Share (EE) column. Hint: Locate the Employee\'s Contract in the room to find their base compensation before checking the statutory tables.'
+                        : 'Hint: Locate the Employee\'s Contract in the room to find their base compensation before checking the statutory tables.'
                     }
                   </div>
                 </span>
@@ -408,7 +408,7 @@ export default function MissionLog({
                     : activePhaseIndex === 3
                       ? 'VARIABLE COMPONENT B (Total Recorded OT Hours)'
                       : activePhaseIndex === 5
-                        ? 'VARIABLE COMPONENT B (Personal Salary Loan)'
+                        ? 'VARIABLE COMPONENT B (Pag-IBIG EE Share)'
                         : 'VARIABLE COMPONENT B (PhilHealth Rate)'
                 }
               </label>
@@ -423,7 +423,7 @@ export default function MissionLog({
                         : activePhaseIndex === 3
                           ? "Enter total recorded OT hours"
                           : activePhaseIndex === 5
-                            ? "₱ Enter personal salary loan"
+                            ? "₱ Enter Pag-IBIG EE share"
                             : "Enter standard rate (e.g. 0.025)"
                   } 
                   className="tech-input"
@@ -438,7 +438,7 @@ export default function MissionLog({
                       : (activePhaseIndex === 2 || activePhaseIndex === 3)
                         ? 'Check both the Employee Contract in the filing cabinet and the terminal logs.'
                         : activePhaseIndex === 5
-                          ? 'Review the HR payroll file. Personal salary loan amount is in the financial liabilities section.'
+                          ? 'Refer to the Pag-IBIG Circular Corkboard Memo. Identify the employee capped mandatory contribution cap.'
                           : 'Refer to the PhilHealth premium table on the corkboard. Find the applicable employee share rate.'
                     }
                   </div>
@@ -526,9 +526,9 @@ export default function MissionLog({
                   )}
                   {activePhaseIndex === 5 && (
                     <>
-                      <option value="SSS_FORMULA">SSS EE Share + Personal Salary Loan</option>
-                      <option value="SSS_ER_FORMULA">SSS EE Share + SSS ER Share + Personal Loan</option>
-                      <option value="SSS_SPOUSE_FORMULA">SSS EE Share + Personal Loan + Spouse Loan</option>
+                      <option value="SSS_PAGIBIG_FORMULA">SSS EE Share + Pag-IBIG EE Share</option>
+                      <option value="SSS_ER_FORMULA">SSS EE Share + SSS ER Share + Pag-IBIG EE Share</option>
+                      <option value="SSS_SPOUSE_FORMULA">SSS EE Share + Pag-IBIG EE Share + Spouse Loan</option>
                     </>
                   )}
                   {activePhaseIndex === 6 && (

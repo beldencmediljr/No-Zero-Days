@@ -1,17 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import pclabImage from '../../assets/phase5-6-pclab.png';
 import '../../components/Shared/room-base.css';
 import '../../components/Shared/Room.css';
 import './Phase6.css';
+import EmployeeContractModal from './EmployeeContractModal';
 
 interface Phase6RoomProps {
   setActivePopup: (popupName: string | null) => void;
+  scenario: any;
 }
 
 /**
  * TSX Component managing hotspots for Phase 6 (PhilHealth Deductions).
  */
-export default function Phase6Room({ setActivePopup }: Phase6RoomProps) {
+export default function Phase6Room({ setActivePopup, scenario }: Phase6RoomProps) {
+  const [isContractOpen, setIsContractOpen] = useState(false);
+
   return (
     <div className="room-container pclab-floor phase6-room" style={{ position: 'relative' }}>
       <img 
@@ -46,6 +50,20 @@ export default function Phase6Room({ setActivePopup }: Phase6RoomProps) {
         className="hotspot handbook-hotspot" 
         title="📘 Company Payroll Manual" 
         onClick={() => setActivePopup('HANDBOOK')}
+      />
+
+      {/* Hotspot 5: Employee Contract Folder */}
+      <button 
+        className="hotspot contract-hotspot" 
+        title="📁 Employee Contract Profile" 
+        onClick={() => setIsContractOpen(true)}
+      />
+
+      {/* Employee Contract Profile Modal */}
+      <EmployeeContractModal 
+        isOpen={isContractOpen} 
+        onClose={() => setIsContractOpen(false)} 
+        scenario={scenario}
       />
     </div>
   );

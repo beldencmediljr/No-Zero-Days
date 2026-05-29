@@ -35,3 +35,15 @@
   height: 10%;
   border-color: rgba(250, 204, 21, 0.4);
 }
+
+.phase6-room .contract-hotspot {
+  top: 45%;
+  left: 40%;
+  width: 9%;
+  height: 10%;
+  border-color: rgba(16, 185, 129, 0.4);
+  /* Optional debug border, set to transparent for production */
+  position: absolute;
+  cursor: pointer;
+  background: transparent;
+}

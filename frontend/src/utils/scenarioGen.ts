@@ -309,7 +309,7 @@ export function generatePhase5Scenario(): ScenarioData {
   const rates = [500, 600, 750, 800, 900, 1000];
   const shifts = [7, 8, 9, 10, 11, 12, 13, 14, 15];
 
-  const employeeName = employees[Math.floor(Math.random() * employees.length)];
+  const employeeName = 'Juan Dela Cruz';
   const companyName = companies[Math.floor(Math.random() * companies.length)];
   const dailyRate = rates[Math.floor(Math.random() * rates.length)];
   const daysPresent = shifts[Math.floor(Math.random() * shifts.length)];
@@ -338,7 +338,7 @@ export function generatePhase5Scenario(): ScenarioData {
     sssErShare,
     personalSalaryLoan,
     spouseLoan,
-    basicSalary: dailyRate * daysPresent,
+    basicSalary: 22500.00,
   };
 }
 

@@ -173,7 +173,18 @@ function App() {
     } else if (phaseToUse === 5) {
       newScenario = generatePhase5Scenario();
     } else if (phaseToUse === 6) {
-      newScenario = generatePhase6Scenario();
+      newScenario = generatePhase6Scenario(); // default fallback
+      fetch(`http://localhost:8080/api/phase6/init?studentNumber=${student?.studentNumber || 'STU-UNKNOWN'}`)
+        .then(res => {
+          if (!res.ok) throw new Error();
+          return res.json();
+        })
+        .then(data => {
+          setScenario(data);
+        })
+        .catch(err => {
+          console.error("Failed to fetch inherited Phase 6 scenario:", err);
+        });
     } else if (phaseToUse === 7) {
       newScenario = generatePhase7Scenario();
     }
@@ -303,6 +314,8 @@ function App() {
         module: mod,
         phase: ph,
         step: 'EXTRACT',
+        employeeName: scenario.employeeName,
+        companyName: scenario.companyName,
         dailyRate: scenario.dailyRate,
         daysPresent: scenario.daysPresent,
         riceSubsidy: scenario.riceSubsidy,
@@ -1078,7 +1091,7 @@ function App() {
             {activePhaseIndex === 3 && <Phase3Room setActivePopup={setActivePopup} />}
             {activePhaseIndex === 4 && <Phase4Room setActivePopup={setActivePopup} />}
             {activePhaseIndex === 5 && <Phase5Room setActivePopup={setActivePopup} />}
-            {activePhaseIndex === 6 && <Phase6Room setActivePopup={setActivePopup} />}
+            {activePhaseIndex === 6 && <Phase6Room setActivePopup={setActivePopup} scenario={scenario} />}
             {activePhaseIndex === 7 && <Phase7Room setActivePopup={setActivePopup} />}
           </div>
 
