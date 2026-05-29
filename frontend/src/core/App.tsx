@@ -1191,6 +1191,12 @@ function App() {
       } else {
         setTribunalStatus('ERROR');
         setFeedback(data.message);
+        // Regenerate scenario and clear inputs on every failed attempt
+        const newScenario = generatePhase7Scenario();
+        setScenario(newScenario as any);
+        setTribunalGross('');
+        setTribunalDeductions('');
+        setTribunalNet('');
       }
     } catch (err) {
       console.error(err);

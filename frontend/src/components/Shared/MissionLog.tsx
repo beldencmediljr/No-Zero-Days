@@ -241,25 +241,99 @@ export default function MissionLog({
                 style={{ border: '1px solid #ef4444', color: '#fff', marginBottom: '12px' }}
               />
 
-              <button 
-                className="tech-link"
-                onClick={() => setActivePopup('HANDBOOK')}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#f87171',
-                  cursor: 'pointer',
-                  textDecoration: 'underline',
-                  fontFamily: 'monospace',
-                  fontSize: '0.8rem',
-                  padding: 0,
-                  textAlign: 'left',
-                  marginBottom: '15px',
-                  display: 'block'
-                }}
-              >
-                💡 Need the complete formulas? Check the Company Payroll Manual
-              </button>
+              {tribunalStatus === 'ERROR' && (
+                <>
+                  <button 
+                    className="tech-link"
+                    onClick={() => setActivePopup('HANDBOOK')}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#f87171',
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      fontFamily: 'monospace',
+                      fontSize: '0.8rem',
+                      padding: 0,
+                      textAlign: 'left',
+                      marginBottom: '15px',
+                      display: 'block'
+                    }}
+                  >
+                    💡 Need the complete formulas? Check the Company Payroll Manual
+                  </button>
+
+                  <div style={{
+                    backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    borderRadius: '6px',
+                    padding: '10px',
+                    marginBottom: '15px',
+                    fontSize: '0.8rem',
+                    color: '#f87171',
+                    fontFamily: 'monospace',
+                    lineHeight: '1.4'
+                  }}>
+                    <div style={{ fontWeight: 'bold', color: '#fca5a5', borderBottom: '1px dashed rgba(239, 68, 68, 0.3)', paddingBottom: '4px', marginBottom: '8px' }}>
+                      📋 REMEDIATION NOTES: FORMULAS
+                    </div>
+                    <div>
+                      <strong>• Gross:</strong> <code>Basic Gross + OT Pay + Holiday Pay</code>
+                      <br />
+                      <span style={{ color: '#94a3b8', paddingLeft: '8px', display: 'inline-block' }}>
+                        - Basic Gross = Daily Rate × Days Present
+                      </span>
+                      <br />
+                      <span style={{ color: '#94a3b8', paddingLeft: '8px', display: 'inline-block' }}>
+                        - OT Pay = Hourly Rate × (OT Hours - Unpaid Lunch) × 1.25
+                      </span>
+                      <br />
+                      <span style={{ color: '#94a3b8', paddingLeft: '8px', display: 'inline-block' }}>
+                        - Holiday Pay = Daily Rate × 2.0 (if worked holiday)
+                      </span>
+                    </div>
+                    <div style={{ marginTop: '8px' }}>
+                      <strong>• Deductions:</strong> <code>Tardiness + SSS + phDeduction + Tax</code>
+                      <br />
+                      <span style={{ color: '#94a3b8', paddingLeft: '8px', display: 'inline-block' }}>
+                        - Tardiness = (Hourly Rate / 60) × Late Minutes
+                      </span>
+                      <br />
+                      <span style={{ color: '#94a3b8', paddingLeft: '8px', display: 'inline-block' }}>
+                        - SSS = SSS EE Share + Personal Loan + Pag-IBIG (₱200.00)
+                      </span>
+                      <br />
+                      <span style={{ color: '#94a3b8', paddingLeft: '8px', display: 'inline-block' }}>
+                        - phDeduction = Basic Salary × 0.025 (2.5%)
+                      </span>
+                      <br />
+                      <span style={{ color: '#94a3b8', paddingLeft: '8px', display: 'inline-block' }}>
+                        - Taxable Income = Basic Salary − SSS EE Share − Pag-IBIG (₱200) − phDeduction
+                      </span>
+                      <br />
+                      <span style={{ color: '#94a3b8', paddingLeft: '8px', display: 'inline-block' }}>
+                        - Withholding Tax:
+                      </span>
+                      <span style={{ color: '#facc15', paddingLeft: '12px', display: 'block', fontSize: '0.75rem', lineHeight: '1.3' }}>
+                        • Up to ₱20,833: 0% Tax
+                        <br />
+                        • Over ₱20,833 to ₱33,333: 15% of excess over ₱20,833
+                        <br />
+                        • Over ₱33,333 to ₱66,667: ₱1,875 + 20% of excess over ₱33,333
+                        <br />
+                        • Over ₱66,667 to ₱166,667: ₱8,541.80 + 25% of excess over ₱66,667
+                        <br />
+                        • Over ₱166,667 to ₱666,667: ₱33,541.80 + 30% of excess over ₱166,667
+                        <br />
+                        • Over ₱666,667: ₱153,541.80 + 35% of excess over ₱666,667
+                      </span>
+                    </div>
+                    <div style={{ marginTop: '8px' }}>
+                      <strong>• Net Pay:</strong> <code>Gross - Deductions</code>
+                    </div>
+                  </div>
+                </>
+              )}
 
               {tribunalStatus !== 'SUCCESS' && (
                 <button 

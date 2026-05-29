@@ -975,15 +975,33 @@ export default function Popups({
                   <div style={{ marginTop: '10px' }}>
                     <p><strong>2. Total Deductions:</strong></p>
                     <p style={{ paddingLeft: '10px', color: '#94a3b8' }}>
-                      Sum of Tardiness deductions, SSS deductions (including Personal Salary Loan and Pag-IBIG), and PhilHealth deductions.
+                      Sum of Tardiness deductions, SSS deductions (including Personal Salary Loan and Pag-IBIG), PhilHealth deductions, and Withholding Tax.
                       <br />
-                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Deductions = Tardiness + SSS Deduction + PhilHealth Deduction</code>
+                      <span style={{ color: '#fbbf24' }}>Formula:</span> <code>Deductions = Tardiness + SSS Deduction + PhilHealth Deduction + Withholding Tax</code>
                       <br />
                       <code>Tardiness = (Hourly Rate / 60) × Late Minutes</code>
                       <br />
                       <code>SSS Deduction = SSS EE Share + Personal Salary Loan + Pag-IBIG EE Share (₱200.00)</code>
                       <br />
                       <code>PhilHealth Deduction = Basic Salary × 0.025</code>
+                      <br />
+                      <code>Withholding Tax = Computed using the Tax Table brackets on Taxable Income:</code>
+                      <br />
+                      <span style={{ color: '#60a5fa', paddingLeft: '10px', display: 'block', fontSize: '0.75rem', marginTop: '4px', lineHeight: '1.4' }}>
+                        * Taxable Income = Basic Salary − SSS EE Share − Pag-IBIG EE Share (₱200) − PhilHealth Deduction
+                        <br />
+                        * Bracket 1 (Up to ₱20,833): 0% Tax
+                        <br />
+                        * Bracket 2 (Over ₱20,833 to ₱33,333): 15% of excess over ₱20,833
+                        <br />
+                        * Bracket 3 (Over ₱33,333 to ₱66,667): ₱1,875 + 20% of excess over ₱33,333
+                        <br />
+                        * Bracket 4 (Over ₱66,667 to ₱166,667): ₱8,541.80 + 25% of excess over ₱66,667
+                        <br />
+                        * Bracket 5 (Over ₱166,667 to ₱666,667): ₱33,541.80 + 30% of excess over ₱166,667
+                        <br />
+                        * Bracket 6 (Over ₱666,667): ₱153,541.80 + 35% of excess over ₱666,667
+                      </span>
                     </p>
                   </div>
                   <div style={{ marginTop: '10px' }}>

@@ -45,7 +45,25 @@ public class Phase7ValidationService {
         double tardinessDeduction = (hourlyRate / 60.0) * lateMinutes;
         double sssDeductions      = sssEe + personalLoan + 200.00;
         double phDeduction        = basicSalary * 0.025;
-        double expectedDeductions = tardinessDeduction + sssDeductions + phDeduction;
+
+        // Cumulative Withholding Tax (learned in Phase 6)
+        double taxableIncome = basicSalary - sssEe - 200.00 - phDeduction;
+        double expectedTax = 0.0;
+        if (taxableIncome <= 20833.00) {
+            expectedTax = 0.0;
+        } else if (taxableIncome <= 33333.00) {
+            expectedTax = (taxableIncome - 20833.00) * 0.15;
+        } else if (taxableIncome <= 66667.00) {
+            expectedTax = 1875.00 + (taxableIncome - 33333.00) * 0.20;
+        } else if (taxableIncome <= 166667.00) {
+            expectedTax = 8541.80 + (taxableIncome - 66667.00) * 0.25;
+        } else if (taxableIncome <= 666667.00) {
+            expectedTax = 33541.80 + (taxableIncome - 166667.00) * 0.30;
+        } else {
+            expectedTax = 153541.80 + (taxableIncome - 666667.00) * 0.35;
+        }
+
+        double expectedDeductions = tardinessDeduction + sssDeductions + phDeduction + expectedTax;
 
         double expectedNet = expectedGross - expectedDeductions;
 
