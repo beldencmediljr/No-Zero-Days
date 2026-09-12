@@ -5,7 +5,7 @@ import './Auth.css';
 export default function Login({ onLoginSuccess }) {
   const [studentNumber, setStudentNumber] = useState('');
   const [fullName, setFullName] = useState('');
-  const [section, setSection] = useState('ABM-12A');
+  const [section, setSection] = useState('GRADE12-ABM');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -97,16 +97,16 @@ export default function Login({ onLoginSuccess }) {
             </div>
 
             <div className="input-group">
-              <label>SECTION</label>
+              <label>ROLE</label>
               <select 
                 value={section} 
                 onChange={(e) => setSection(e.target.value)}
                 disabled={loading}
                 className="retro-select"
               >
-                <option value="ABM-12A">ABM - 12A (Cebu Campus)</option>
-                <option value="ABM-12B">ABM - 12B (Cebu Campus)</option>
-                <option value="ABM-12C">ABM - 12C (Talamban Campus)</option>
+                <option value="GRADE12-ABM">Grade 12 ABM Student</option>
+                <option value="OM-TEACHER">O&amp;M Teacher</option>
+                <option value="COLLEGE-STUDENT">College Student</option>
               </select>
             </div>
 
