@@ -2,14 +2,35 @@ import React, { useState } from 'react';
 import API_BASE_URL from '../config';
 import './Auth.css';
 
-export default function Login({ onLoginSuccess }) {
+export default function Login({ onLoginSuccess, onTeacherCreateRoom, onStudentJoinRoom }) {
   const [studentNumber, setStudentNumber] = useState('');
   const [fullName, setFullName] = useState('');
-  const [section, setSection] = useState('GRADE12-ABM');
+  const [role, setRole] = useState('GRADE12-ABM');
+  const [section, setSection] = useState('GRADE12-ABM'); // kept for backward compatibility
+  const [teacherSection, setTeacherSection] = useState('');
+  const [teacherRoomCode, setTeacherRoomCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e) => {
+  // Join Room Modal state
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [joinRoomCode, setJoinRoomCode] = useState('');
+  const [joinLoading, setJoinLoading] = useState(false);
+  const [joinError, setJoinError] = useState('');
+
+  const isTeacher = role === 'OM-TEACHER';
+
+
+
+  const handleRoleChange = (e) => {
+    const newRole = e.target.value;
+    setRole(newRole);
+    setSection(newRole); // For backward compatibility with student registration
+    setError('');
+  };
+
+  // Student registration (standard login)
+  const handleStudentSubmit = async (e) => {
     e.preventDefault();
     if (!studentNumber.trim() || !fullName.trim()) {
       setError('Please fill in all fields.');
@@ -50,6 +71,37 @@ export default function Login({ onLoginSuccess }) {
     }
   };
 
+  // Teacher: Login
+  const handleTeacherSubmit = async (e) => {
+    e.preventDefault();
+    if (!fullName.trim()) {
+      setError('Please enter your full name.');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      // Store teacher info in localStorage without a room code initially
+      localStorage.setItem('teacher', JSON.stringify({
+        teacherName: fullName.trim(),
+        section: teacherSection.trim(),
+        roomCode: ''
+      }));
+      onTeacherCreateRoom('', fullName.trim(), teacherSection.trim());
+    } catch (err) {
+      console.error('[Auth] Login error:', err);
+      setError('Failed to login.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Student: Join Room logic moved to Dashboard
+
+
+
   return (
     <div className="auth-container">
       <div className="glow-overlay"></div>
@@ -69,20 +121,38 @@ export default function Login({ onLoginSuccess }) {
             <p className="subtitle">Interactive Philippine Payroll Simulator</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="auth-form">
+          <form onSubmit={isTeacher ? handleTeacherSubmit : handleStudentSubmit} className="auth-form">
             {error && <div className="error-banner">{error}</div>}
 
-            <div className="input-group">
-              <label>STUDENT NUMBER</label>
-              <input 
-                type="text" 
-                placeholder="e.g., 2026-1002"
-                value={studentNumber}
-                onChange={(e) => setStudentNumber(e.target.value)}
-                disabled={loading}
-                className="retro-input"
-              />
-            </div>
+            {/* Student Number — only for Students */}
+            {!isTeacher && (
+              <div className="input-group">
+                <label>STUDENT NUMBER</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g., 2026-1002"
+                  value={studentNumber}
+                  onChange={(e) => setStudentNumber(e.target.value)}
+                  disabled={loading}
+                  className="retro-input"
+                />
+              </div>
+            )}
+
+            {/* Section — only for Teachers */}
+            {isTeacher && (
+              <div className="input-group">
+                <label>SECTION</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g., Grade 12 - ABM A"
+                  value={teacherSection}
+                  onChange={(e) => setTeacherSection(e.target.value)}
+                  disabled={loading}
+                  className="retro-input"
+                />
+              </div>
+            )}
 
             <div className="input-group">
               <label>FULL NAME</label>
@@ -99,8 +169,8 @@ export default function Login({ onLoginSuccess }) {
             <div className="input-group">
               <label>ROLE</label>
               <select 
-                value={section} 
-                onChange={(e) => setSection(e.target.value)}
+                value={role} 
+                onChange={handleRoleChange}
                 disabled={loading}
                 className="retro-select"
               >
@@ -110,9 +180,21 @@ export default function Login({ onLoginSuccess }) {
               </select>
             </div>
 
-            <button type="submit" disabled={loading} className="login-btn">
-              {loading ? 'CONNECTING...' : 'INITIATE SESSION >'}
-            </button>
+            {/* Teacher: Login button */}
+            {isTeacher && (
+              <button type="submit" disabled={loading} className="login-btn">
+                {loading ? 'LOGGING IN...' : 'LOGIN >'}
+              </button>
+            )}
+
+            {/* Student: Login / Register button */}
+            {!isTeacher && (
+              <>
+                <button type="submit" disabled={loading} className="login-btn">
+                  {loading ? 'CONNECTING...' : 'LOGIN / REGISTER >'}
+                </button>
+              </>
+            )}
           </form>
         </div>
 
@@ -120,6 +202,8 @@ export default function Login({ onLoginSuccess }) {
           <span>CIT-U // Grade 12 ABM Capstone</span>
         </div>
       </div>
+
+
     </div>
   );
 }

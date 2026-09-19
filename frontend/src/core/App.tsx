@@ -10,6 +10,9 @@ import Phase7Room from '../phases/Phase7/Phase7Room';
 import Popups from '../components/Shared/Popups'; 
 import Login from './Auth';
 import Dashboard from './Dashboard';
+import TeacherLobby from './TeacherLobby';
+import TeacherDashboard from './TeacherDashboard';
+import StudentWaiting from './StudentWaiting';
 import MissionLog from '../components/Shared/MissionLog';
 import Calculator from '../components/Shared/Calculator';
 import { 
@@ -27,6 +30,11 @@ function App() {
   const [currentView, setCurrentView] = useState('LOGIN'); 
   const [student, setStudent] = useState(null);
   const [showCalculator, setShowCalculator] = useState(false);
+
+  // --- ROOM MANAGEMENT STATE ---
+  const [roomCode, setRoomCode] = useState('');
+  const [teacherName, setTeacherName] = useState('');
+  const [teacherSection, setTeacherSection] = useState('');
 
   // --- 2. GAMEPLAY SCENARIO STATE ---
   // NOTE: All fields used by any phase/popup must have safe defaults here to prevent
@@ -118,12 +126,36 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState('Scenario loaded. Extract the basic variables to begin.');
 
-  // Load student profile if present in localStorage
+  // Load profile if present in localStorage
   useEffect(() => {
     const savedStudent = localStorage.getItem('student');
-    if (savedStudent) {
+    const savedTeacher = localStorage.getItem('teacher');
+
+    if (savedTeacher) {
+      const parsedTeacher = JSON.parse(savedTeacher);
+      setTeacherName(parsedTeacher.teacherName);
+      setTeacherSection(parsedTeacher.section);
+      if (parsedTeacher.roomCode) {
+        setRoomCode(parsedTeacher.roomCode);
+        const savedStatus = localStorage.getItem('teacherRoomStatus');
+        if (savedStatus === 'ACTIVE') {
+          setCurrentView('TEACHER_DASHBOARD');
+        } else {
+          setCurrentView('TEACHER_LOBBY');
+        }
+      } else {
+        setCurrentView('TEACHER_LOBBY');
+      }
+    } else if (savedStudent) {
       setStudent(JSON.parse(savedStudent));
-      setCurrentView('DASHBOARD');
+      
+      const savedRoomCode = localStorage.getItem('studentRoomCode');
+      if (savedRoomCode) {
+        setRoomCode(savedRoomCode);
+        setCurrentView('STUDENT_WAITING');
+      } else {
+        setCurrentView('DASHBOARD');
+      }
     }
   }, []);
 
@@ -1209,27 +1241,121 @@ function App() {
 
   // --- 6. CONDITIONAL SCREEN ROUTERS ---
   if (currentView === 'LOGIN') {
-    return <Login onLoginSuccess={(stu) => {
-      setStudent(stu);
-      setCurrentView('DASHBOARD');
-    }} />;
+    return <Login 
+      onLoginSuccess={(stu) => {
+        setStudent(stu);
+        setCurrentView('DASHBOARD');
+      }}
+      onTeacherCreateRoom={(code, name, sec) => {
+        setRoomCode(code);
+        setTeacherName(name);
+        setTeacherSection(sec);
+        setCurrentView('TEACHER_LOBBY');
+      }}
+      onStudentJoinRoom={(code, stu) => {
+        setRoomCode(code);
+        setStudent(stu);
+        setCurrentView('STUDENT_WAITING');
+      }}
+    />;
+  }
+
+  if (currentView === 'TEACHER_LOBBY') {
+    return <TeacherLobby
+      roomCode={roomCode}
+      teacherName={teacherName}
+      section={teacherSection}
+      onInitiateSession={() => {
+        localStorage.setItem('teacherRoomStatus', 'ACTIVE');
+        setCurrentView('TEACHER_DASHBOARD');
+      }}
+      onBack={() => {
+        localStorage.removeItem('teacher');
+        setRoomCode('');
+        setTeacherName('');
+        setTeacherSection('');
+        setCurrentView('LOGIN');
+      }}
+      onRoomCreated={(code) => setRoomCode(code)}
+    />;
+  }
+
+  if (currentView === 'TEACHER_DASHBOARD') {
+    return <TeacherDashboard
+      roomCode={roomCode}
+      teacherName={teacherName}
+      onBack={() => {
+        localStorage.removeItem('teacher');
+        localStorage.removeItem('teacherRoomStatus');
+        setRoomCode('');
+        setTeacherName('');
+        setTeacherSection('');
+        setCurrentView('LOGIN');
+      }}
+    />;
+  }
+
+  if (currentView === 'STUDENT_WAITING') {
+    return <StudentWaiting
+      roomCode={roomCode}
+      studentName={student?.fullName || 'Student'}
+      onSessionStarted={() => {
+        // Student is redirected to Phase 1 room
+        setActivePhaseIndex(1);
+        handleRerollScenario(true, 1);
+        setCurrentView('PHASE1');
+        setFeedback('Session started! Simulator Room 1 entered. Scan HR Contract desk and June Calendar wall to extract variables.');
+      }}
+      onBack={() => {
+        setRoomCode('');
+        localStorage.removeItem('studentRoomCode');
+        setCurrentView('DASHBOARD');
+      }}
+    />;
   }
 
   if (currentView === 'DASHBOARD') {
-    return <Dashboard onSelectPhase={(phaseId) => {
-      setActivePhaseIndex(phaseId);
-      handleRerollScenario(true, phaseId);
-      setCurrentView('PHASE1');
-      if (phaseId === 1) {
-        setFeedback('Simulator Room 1 entered. Scan HR Contract desk and June Calendar wall to extract variables.');
-      } else if (phaseId === 2) {
-        setFeedback('Security & Biometrics Room entered. Scan the Biometrics Terminal and DOLE Poster to audit the tardiness deduction.');
-      } else if (phaseId === 3) {
-        setFeedback('Production Line Room entered. Scan the Production Time Card and DOLE Overtime Poster to audit overtime premiums.');
-      } else {
-        setFeedback(`Room for Phase ${phaseId} entered.`);
-      }
-    }} />;
+    return <Dashboard 
+      roomCode={roomCode}
+      onSelectPhase={(phase) => {
+        setActivePhaseIndex(phase);
+        handleRerollScenario(true, phase);
+        
+        let targetView = 'PHASE';
+        if (phase === 1) {
+          targetView = 'PHASE1';
+          setFeedback('Simulator Room 1 entered. Scan HR Contract desk and June Calendar wall to extract variables.');
+        } else if (phase === 2) {
+          targetView = 'PHASE2';
+          setFeedback('Security & Biometrics Room entered. Scan the Biometrics Terminal and DOLE Poster to audit the tardiness deduction.');
+        } else if (phase === 3) {
+          targetView = 'PHASE3';
+          setFeedback('Production Line Room entered. Scan the Production Time Card and DOLE Overtime Poster to audit overtime premiums.');
+        } else if (phase === 4) {
+          targetView = 'PHASE4';
+          setFeedback('Factory Breakroom entered. Scan the Corkboard Corporate Memos and Timesheet Terminal to audit Regular Holiday Pay.');
+        } else if (phase === 5) {
+          targetView = 'PHASE5';
+          setFeedback('PC Lab / Bureaucracy Room entered. Scan the SSS contribution table and employee loan statement on the monitor to audit SSS deductions.');
+        } else if (phase === 6) {
+          targetView = 'PHASE6';
+          setFeedback('PC Lab / Bureaucracy Room entered. Scan the PhilHealth table and HR salary database to audit PhilHealth premium deductions.');
+        } else if (phase === 7) {
+          targetView = 'PHASE7';
+          setFeedback('Executive Boardroom entered. Scan the Master Case File in the Audit Folder on the table to perform the final payroll run.');
+        } else {
+          setFeedback(`Room for Phase ${phase} entered.`);
+        }
+        
+        setCurrentView(targetView);
+      }} 
+      onStudentJoinRoom={(code, studentObj) => {
+        setStudent(studentObj);
+        setRoomCode(code);
+        localStorage.setItem('studentRoomCode', code);
+        setCurrentView('STUDENT_WAITING');
+      }}
+    />;
   }
 
   return (

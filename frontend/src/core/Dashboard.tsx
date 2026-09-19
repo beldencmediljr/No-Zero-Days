@@ -2,11 +2,22 @@ import React, { useState, useEffect } from 'react';
 import API_BASE_URL from '../config';
 import './Auth.css';
 
-export default function Dashboard({ onSelectPhase }) {
+interface DashboardProps {
+  onSelectPhase: (phaseId: number) => void;
+  onStudentJoinRoom: (code: string, student: any) => void;
+  roomCode: string;
+}
+
+export default function Dashboard({ onSelectPhase, onStudentJoinRoom, roomCode }: DashboardProps) {
   const [student, setStudent] = useState({ fullName: 'Temporary Student', studentNumber: 'STU-UNKNOWN', section: 'ABM-A' });
   const [progressList, setProgressList] = useState([]);
   const [selectedPhaseSummary, setSelectedPhaseSummary] = useState(null);
   const [loadingProgress, setLoadingProgress] = useState(true);
+
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [joinRoomCode, setJoinRoomCode] = useState('');
+  const [joinLoading, setJoinLoading] = useState(false);
+  const [joinError, setJoinError] = useState('');
 
   const defaultRoadmap = [
     { phaseId: 1, title: "Phase 1: Basic Gross Pay", description: "Audit morning Lobby Daily Rate and Shifts worked.", status: "ACTIVE", bestScore: 0, module: "M1_MATH", phaseIndex: 1 },
@@ -47,7 +58,47 @@ export default function Dashboard({ onSelectPhase }) {
 
   const handleLogout = () => {
     localStorage.removeItem('student');
+    localStorage.removeItem('studentRoomCode');
     window.location.reload();
+  };
+
+  const handleJoinRoom = async () => {
+    if (!joinRoomCode.trim()) {
+      setJoinError('Please enter a room code.');
+      return;
+    }
+    setJoinLoading(true);
+    setJoinError('');
+
+    try {
+      const joinRes = await fetch(`${API_BASE_URL}/api/rooms/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomCode: joinRoomCode.trim().toUpperCase(),
+          studentNumber: student.studentNumber,
+          fullName: student.fullName,
+          section: student.section
+        })
+      });
+
+      if (!joinRes.ok) {
+        const errData = await joinRes.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to join room.');
+      }
+
+      const joinData = await joinRes.json();
+      if (joinData.success) {
+        onStudentJoinRoom(joinRoomCode.trim().toUpperCase(), student);
+      } else {
+        throw new Error(joinData.error || 'Could not join the room.');
+      }
+    } catch (err) {
+      console.error('[Dashboard] Join room error:', err);
+      setJoinError(err.message || 'Server connection error.');
+    } finally {
+      setJoinLoading(false);
+    }
   };
 
   // Raw progression tracking list from backend
@@ -93,7 +144,7 @@ export default function Dashboard({ onSelectPhase }) {
             <p className="subtitle" style={{ fontSize: '0.9rem' }}>Navigate and master each payroll accounting phase</p>
           </div>
 
-          <div className="student-info-bar" style={{ padding: '10px 20px', marginBottom: '20px' }}>
+          <div className="student-info-bar" style={{ padding: '10px 20px', marginBottom: '20px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '15px' }}>
             <div className="info-item">
               <span>STUDENT:</span> <strong>{student.fullName}</strong>
             </div>
@@ -103,7 +154,17 @@ export default function Dashboard({ onSelectPhase }) {
             <div className="info-item">
               <span>ID:</span> <strong>{student.studentNumber}</strong>
             </div>
-            <button className="logout-btn" onClick={handleLogout}>[ LOGOUT ]</button>
+            
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {roomCode ? (
+                <div style={{ padding: '5px 15px', backgroundColor: '#1e293b', border: '1px solid #334155', color: '#facc15', fontWeight: 'bold', fontSize: '0.85rem' }}>
+                  ROOM: {roomCode}
+                </div>
+              ) : (
+                <button className="join-room-btn" onClick={() => setShowJoinModal(true)} style={{ fontSize: '0.8rem', padding: '5px 15px', backgroundColor: '#10b981', color: '#000', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>[ JOIN ROOM ]</button>
+              )}
+              <button className="logout-btn" onClick={handleLogout} style={{ fontSize: '0.8rem', padding: '5px 15px' }}>[ LOGOUT ]</button>
+            </div>
           </div>
 
           {/* Progress Bar */}
@@ -238,6 +299,65 @@ export default function Dashboard({ onSelectPhase }) {
               >
                 RE-ENTER AUDIT &gt;
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* JOIN ROOM MODAL */}
+      {showJoinModal && (
+        <div className="join-modal-overlay" onClick={() => setShowJoinModal(false)}>
+          <div className="join-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="terminal-header">
+              <span className="dot red"></span>
+              <span className="dot yellow"></span>
+              <span className="dot green"></span>
+              <span className="terminal-title">JOIN_ROOM.EXE</span>
+            </div>
+            <div className="join-modal-body">
+              <h3 className="join-modal-title">🔗 JOIN A CLASSROOM ROOM</h3>
+              <p className="join-modal-subtitle">
+                Enter the room code provided by your O&amp;M Teacher to join their session.
+              </p>
+
+              {joinError && <div className="error-banner" style={{ marginBottom: '15px' }}>{joinError}</div>}
+
+              <div className="input-group">
+                <label>ROOM CODE</label>
+                <input
+                  type="text"
+                  placeholder="e.g., NZD4X9"
+                  value={joinRoomCode}
+                  onChange={(e) => setJoinRoomCode(e.target.value.toUpperCase())}
+                  disabled={joinLoading}
+                  className="retro-input room-code-input"
+                  maxLength={10}
+                  autoFocus
+                  style={{ 
+                    textAlign: 'center', 
+                    fontSize: '1.5rem', 
+                    letterSpacing: '5px',
+                    textTransform: 'uppercase'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                <button
+                  className="join-modal-cancel"
+                  onClick={() => setShowJoinModal(false)}
+                  disabled={joinLoading}
+                >
+                  CANCEL
+                </button>
+                <button
+                  className="join-modal-confirm"
+                  onClick={handleJoinRoom}
+                  disabled={joinLoading || !joinRoomCode.trim()}
+                >
+                  {joinLoading ? 'JOINING...' : 'JOIN >'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
