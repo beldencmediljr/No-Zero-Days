@@ -29,6 +29,15 @@ public class StudentProfile {
     @Column(name = "session_token")
     private String sessionToken;
 
+    /** Expiry for the session token. NULL = legacy token (never expires). */
+    private LocalDateTime sessionTokenExpiresAt;
+
+    /** Consecutive failed password attempts (for throttling). */
+    private int failedLoginAttempts = 0;
+
+    /** Lockout deadline set after too many failed attempts; NULL when unlocked. */
+    private LocalDateTime lockedUntil;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // Default Constructor
@@ -61,6 +70,15 @@ public class StudentProfile {
 
     public String getSessionToken() { return sessionToken; }
     public void setSessionToken(String sessionToken) { this.sessionToken = sessionToken; }
+
+    public LocalDateTime getSessionTokenExpiresAt() { return sessionTokenExpiresAt; }
+    public void setSessionTokenExpiresAt(LocalDateTime sessionTokenExpiresAt) { this.sessionTokenExpiresAt = sessionTokenExpiresAt; }
+
+    public int getFailedLoginAttempts() { return failedLoginAttempts; }
+    public void setFailedLoginAttempts(int failedLoginAttempts) { this.failedLoginAttempts = failedLoginAttempts; }
+
+    public LocalDateTime getLockedUntil() { return lockedUntil; }
+    public void setLockedUntil(LocalDateTime lockedUntil) { this.lockedUntil = lockedUntil; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

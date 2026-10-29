@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +23,17 @@ import java.util.Optional;
 public class AuthService {
 
     private static final SecureRandom RANDOM = new SecureRandom();
+
+    /** Session token lifetime (hours) and sliding-renewal threshold (hours). */
+    public static final long SESSION_LIFETIME_HOURS = 24;
+    public static final long SESSION_RENEW_THRESHOLD_HOURS = 12;
+
+    /** Lockout policy: lock the account after this many failed password attempts. */
+    public static final int MAX_FAILED_ATTEMPTS = 5;
+    public static final long LOCK_MINUTES = 15;
+
+    /** Password reset token lifetime (minutes). */
+    public static final long RESET_TOKEN_MINUTES = 15;
 
     @Autowired
     private StudentProfileRepository studentRepository;
@@ -35,11 +47,30 @@ public class AuthService {
     @Autowired
     private RoomRepository roomRepository;
 
+    @Autowired
+    private EmailReportService emailReportService;
+
     /** Cryptographically random 256-bit session token (hex). */
     public String issueSessionToken() {
         byte[] bytes = new byte[32];
         RANDOM.nextBytes(bytes);
         return HexFormat.of().formatHex(bytes);
+    }
+
+    /** Issues a new session token (with expiry) onto the profile. */
+    public void issueSession(StudentProfile profile) {
+        profile.setSessionToken(issueSessionToken());
+        profile.setSessionTokenExpiresAt(LocalDateTime.now().plusHours(SESSION_LIFETIME_HOURS));
+        profile.setFailedLoginAttempts(0);
+        profile.setLockedUntil(null);
+    }
+
+    /** Issues a new session token (with expiry) onto the teacher account. */
+    public void issueSession(Teacher teacher) {
+        teacher.setSessionToken(issueSessionToken());
+        teacher.setSessionTokenExpiresAt(LocalDateTime.now().plusHours(SESSION_LIFETIME_HOURS));
+        teacher.setFailedLoginAttempts(0);
+        teacher.setLockedUntil(null);
     }
 
     /**
@@ -69,6 +100,10 @@ public class AuthService {
 
         StudentProfile profile = existing.get();
 
+        if (isLockedOut(profile)) {
+            throw new IllegalArgumentException(lockoutMessage(profile));
+        }
+
         if (rawName != null && !rawName.trim().isEmpty()
                 && !isFlexibleNameMatch(profile.getFullName(), rawName)) {
             throw new IllegalArgumentException("Entered name '" + rawName.trim()
@@ -81,8 +116,12 @@ public class AuthService {
                 throw new IllegalArgumentException("Password is required. This account was upgraded with a password.");
             }
             if (!PasswordHasher.verify(password, profile.getPasswordHash())) {
+                // Throttle: record the failure and lock after repeated misses.
+                registerFailedLogin(profile);
                 throw new IllegalArgumentException("Incorrect password for '" + identifier + "'.");
             }
+            profile.setFailedLoginAttempts(0);
+            profile.setLockedUntil(null);
         }
 
         // NOTE: Do NOT create a GameSession here.
@@ -170,6 +209,9 @@ public class AuthService {
         Teacher teacher;
         if (opt.isPresent()) {
             teacher = opt.get();
+            if (isLockedOut(teacher)) {
+                throw new IllegalArgumentException(lockoutMessage(teacher));
+            }
             if (teacher.getPasswordHash() == null) {
                 // Legacy pre-password account: signing in without a password
                 // stays allowed. Supplying one claims and secures the account.
@@ -181,6 +223,7 @@ public class AuthService {
                     throw new IllegalArgumentException("This account has a password. Please enter it to sign in.");
                 }
                 if (!PasswordHasher.verify(trimmedPassword, teacher.getPasswordHash())) {
+                    registerFailedLogin(teacher);
                     throw new IllegalArgumentException("Incorrect password for '" + email + "'.");
                 }
             }
@@ -211,7 +254,7 @@ public class AuthService {
         if (rawName != null && !rawName.trim().isEmpty()) {
             teacher.setFullName(rawName.trim());
         }
-        teacher.setSessionToken(issueSessionToken());
+        issueSession(teacher);
         return teacherRepository.save(teacher);
     }
 
@@ -242,8 +285,133 @@ public class AuthService {
         Teacher teacher = opt.orElseGet(() -> new Teacher(email, rawName.trim()));
         teacher.setFullName(rawName.trim());
         teacher.setPasswordHash(PasswordHasher.hash(password));
-        teacher.setSessionToken(issueSessionToken());
+        issueSession(teacher);
         return teacherRepository.save(teacher);
+    }
+
+    /**
+     * Initiates the teacher forgot-password flow. Always returns a neutral
+     * response so account existence is not revealed; returns true only when a
+     * reset email was actually sent for an existing account.
+     */
+    public boolean requestTeacherPasswordReset(String rawEmail) throws Exception {
+        String email = (rawEmail != null) ? rawEmail.trim() : "";
+        if (email.isEmpty()) {
+            throw new IllegalArgumentException("Email is required.");
+        }
+        Optional<Teacher> opt = teacherRepository.findByEmailIgnoreCase(email);
+        if (opt.isEmpty()) {
+            return false;
+        }
+        Teacher teacher = opt.get();
+        teacher.setResetToken(issueSessionToken());
+        teacher.setResetTokenExpiresAt(LocalDateTime.now().plusMinutes(RESET_TOKEN_MINUTES));
+        teacherRepository.save(teacher);
+        emailReportService.sendPasswordResetEmail(email, teacher.getResetToken());
+        return true;
+    }
+
+    /**
+     * Completes the teacher password reset. Invalidates all existing sessions
+     * so a leaked reset link cannot be combined with a stolen token.
+     */
+    public void resetTeacherPassword(String token, String newPassword) {
+        if (token == null || token.trim().isEmpty()) {
+            throw new IllegalArgumentException("Reset link is invalid or has expired.");
+        }
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new IllegalArgumentException("Password must be at least 8 characters.");
+        }
+        Optional<Teacher> opt = teacherRepository.findByResetToken(token.trim());
+        if (opt.isEmpty()) {
+            throw new IllegalArgumentException("Reset link is invalid or has expired.");
+        }
+        Teacher teacher = opt.get();
+        if (teacher.getResetTokenExpiresAt() == null
+                || LocalDateTime.now().isAfter(teacher.getResetTokenExpiresAt())) {
+            teacher.setResetToken(null);
+            teacher.setResetTokenExpiresAt(null);
+            teacherRepository.save(teacher);
+            throw new IllegalArgumentException("Reset link is invalid or has expired.");
+        }
+        teacher.setPasswordHash(PasswordHasher.hash(newPassword));
+        teacher.setResetToken(null);
+        teacher.setResetTokenExpiresAt(null);
+        teacher.setSessionToken(null);
+        teacher.setSessionTokenExpiresAt(null);
+        teacher.setFailedLoginAttempts(0);
+        teacher.setLockedUntil(null);
+        teacherRepository.save(teacher);
+    }
+
+    /** Changes the teacher's password after verifying the current one. */
+    public void changeTeacherPassword(Teacher teacher, String currentPassword, String newPassword) {
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new IllegalArgumentException("New password must be at least 8 characters.");
+        }
+        if (teacher.getPasswordHash() != null) {
+            if (currentPassword == null || !PasswordHasher.verify(currentPassword, teacher.getPasswordHash())) {
+                throw new IllegalArgumentException("Current password is incorrect.");
+            }
+        }
+        teacher.setPasswordHash(PasswordHasher.hash(newPassword));
+        teacherRepository.save(teacher);
+    }
+
+    /** Changes the student's password after verifying the current one. */
+    public void changeStudentPassword(StudentProfile student, String currentPassword, String newPassword) {
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new IllegalArgumentException("New password must be at least 8 characters.");
+        }
+        if (student.getPasswordHash() != null) {
+            if (currentPassword == null || !PasswordHasher.verify(currentPassword, student.getPasswordHash())) {
+                throw new IllegalArgumentException("Current password is incorrect.");
+            }
+        }
+        student.setPasswordHash(PasswordHasher.hash(newPassword));
+        studentRepository.save(student);
+    }
+
+    private boolean isLockedOut(StudentProfile profile) {
+        return profile.getLockedUntil() != null && LocalDateTime.now().isBefore(profile.getLockedUntil());
+    }
+
+    private boolean isLockedOut(Teacher teacher) {
+        return teacher.getLockedUntil() != null && LocalDateTime.now().isBefore(teacher.getLockedUntil());
+    }
+
+    private String lockoutMessage(StudentProfile profile) {
+        long minutes = java.time.Duration.between(LocalDateTime.now(), profile.getLockedUntil()).toMinutes();
+        return "Too many failed sign-in attempts. Please try again in "
+                + Math.max(minutes, 1) + " minute(s).";
+    }
+
+    private String lockoutMessage(Teacher teacher) {
+        long minutes = java.time.Duration.between(LocalDateTime.now(), teacher.getLockedUntil()).toMinutes();
+        return "Too many failed sign-in attempts. Please try again in "
+                + Math.max(minutes, 1) + " minute(s).";
+    }
+
+    private void registerFailedLogin(StudentProfile profile) {
+        int attempts = profile.getFailedLoginAttempts() + 1;
+        if (attempts >= MAX_FAILED_ATTEMPTS) {
+            profile.setFailedLoginAttempts(0);
+            profile.setLockedUntil(LocalDateTime.now().plusMinutes(LOCK_MINUTES));
+        } else {
+            profile.setFailedLoginAttempts(attempts);
+        }
+        studentRepository.save(profile);
+    }
+
+    private void registerFailedLogin(Teacher teacher) {
+        int attempts = teacher.getFailedLoginAttempts() + 1;
+        if (attempts >= MAX_FAILED_ATTEMPTS) {
+            teacher.setFailedLoginAttempts(0);
+            teacher.setLockedUntil(LocalDateTime.now().plusMinutes(LOCK_MINUTES));
+        } else {
+            teacher.setFailedLoginAttempts(attempts);
+        }
+        teacherRepository.save(teacher);
     }
 
     /**

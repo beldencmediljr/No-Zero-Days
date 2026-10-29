@@ -4,6 +4,7 @@ import com.NoZeroDays.backend.common.model.StudentProfile;
 import com.NoZeroDays.backend.common.model.Teacher;
 import com.NoZeroDays.backend.common.repository.StudentProfileRepository;
 import com.NoZeroDays.backend.common.repository.TeacherRepository;
+import com.NoZeroDays.backend.common.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
@@ -64,8 +66,24 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         Optional<Teacher> teacherOpt = teacherRepository.findBySessionToken(token);
         if (teacherOpt.isPresent()) {
+            Teacher teacher = teacherOpt.get();
+            LocalDateTime now = LocalDateTime.now();
+            if (teacher.getSessionTokenExpiresAt() != null
+                    && now.isAfter(teacher.getSessionTokenExpiresAt())) {
+                // Expired: clear the token so it cannot be replayed.
+                teacher.setSessionToken(null);
+                teacher.setSessionTokenExpiresAt(null);
+                teacherRepository.save(teacher);
+                return reject(response, "Session expired. Please sign in again.");
+            }
+            if (teacher.getSessionTokenExpiresAt() != null
+                    && teacher.getSessionTokenExpiresAt().isBefore(now.plusHours(AuthService.SESSION_RENEW_THRESHOLD_HOURS))) {
+                // Sliding renewal: active users keep their session; stale tokens expire.
+                teacher.setSessionTokenExpiresAt(now.plusHours(AuthService.SESSION_LIFETIME_HOURS));
+                teacherRepository.save(teacher);
+            }
             request.setAttribute(ATTR_ROLE, "TEACHER");
-            request.setAttribute(ATTR_TEACHER_EMAIL, teacherOpt.get().getEmail());
+            request.setAttribute(ATTR_TEACHER_EMAIL, teacher.getEmail());
             if (isStudentOnlyPath(path, method)) {
                 return reject(response, "Teacher accounts cannot use student endpoints.");
             }
@@ -79,6 +97,19 @@ public class AuthInterceptor implements HandlerInterceptor {
             // granted — even a valid pre-upgrade token cannot bypass this.
             if (student.getPasswordHash() == null) {
                 return reject(response, "This account must be upgraded with an email and password. Please sign in again to update your credentials.");
+            }
+            LocalDateTime now = LocalDateTime.now();
+            if (student.getSessionTokenExpiresAt() != null
+                    && now.isAfter(student.getSessionTokenExpiresAt())) {
+                student.setSessionToken(null);
+                student.setSessionTokenExpiresAt(null);
+                studentProfileRepository.save(student);
+                return reject(response, "Session expired. Please sign in again.");
+            }
+            if (student.getSessionTokenExpiresAt() != null
+                    && student.getSessionTokenExpiresAt().isBefore(now.plusHours(AuthService.SESSION_RENEW_THRESHOLD_HOURS))) {
+                student.setSessionTokenExpiresAt(now.plusHours(AuthService.SESSION_LIFETIME_HOURS));
+                studentProfileRepository.save(student);
             }
             request.setAttribute(ATTR_ROLE, "STUDENT");
             request.setAttribute(ATTR_STUDENT_NUMBER, student.getStudentNumber());
@@ -98,13 +129,16 @@ public class AuthInterceptor implements HandlerInterceptor {
         // Session probe requires a token (used by the frontend to validate
         // restored sessions before rendering)
         if (path.equals("/auth/me") || path.equals("/auth/me/")) return false;
+        // Password change requires an authenticated session
+        if (path.equals("/auth/change-password") || path.equals("/auth/change-password/")) return false;
         if (path.startsWith("/auth/")) return true;
         // Legacy auth endpoints
         if (path.equals("/students/login") || path.equals("/students/login/")) return true;
         if (path.equals("/students/register") || path.equals("/students/register/")) return true;
         if (path.equals("/teachers/login") || path.equals("/teachers/login/")) return true;
         if (path.equals("/teachers/register") || path.equals("/teachers/register/")) return true;
-        if (path.matches("/rooms/[^/]+/reaudit-rankings")) return true;
+        // Rankings expose student names/numbers — authentication required;
+        // room ownership/participation is enforced inside the endpoint.
         return false;
     }
 
@@ -113,9 +147,11 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (path.equals("/teachers/rooms")) return true;
         if (path.equals("/rooms/find-by-teacher")) return true;
         if (path.matches("/rooms/[^/]+/start")) return true;
+        if (path.matches("/rooms/[^/]+/close")) return true;
         if (path.matches("/rooms/[^/]+/dashboard")) return true;
         if (path.matches("/rooms/[^/]+/participants")) return true;
         if ("POST".equalsIgnoreCase(method) && path.matches("/rooms/[^/]+/students")) return true;
+        if ("DELETE".equalsIgnoreCase(method) && path.matches("/rooms/[^/]+")) return true;
         if ("DELETE".equalsIgnoreCase(method) && path.matches("/rooms/[^/]+/students/[^/]+")) return true;
         if ("DELETE".equalsIgnoreCase(method) && path.matches("/students/[^/]+")) return true;
         if (path.matches("/rooms/[^/]+/send-report")) return true;

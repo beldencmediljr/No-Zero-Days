@@ -1125,7 +1125,9 @@ function App() {
 
   const generateCalendarDays = (totalDays) => {
     const weekdaysList = [8, 9, 10, 11, 12, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26];
-    const otherDays = weekdaysList.filter(d => d !== 12).sort(() => Math.random() - 0.5);
+    // Deterministic: same totalDays always yields the same grid, so a restored
+    // scenario never shows a different calendar than the one the student extracted from.
+    const otherDays = weekdaysList.filter(d => d !== 12);
     const presentDays = new Set([12, ...otherDays.slice(0, Math.max(0, totalDays - 1))]);
     
     const newGrid = {};

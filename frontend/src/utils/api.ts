@@ -30,11 +30,38 @@ export function getAuthToken(): string | null {
   return readStoredToken();
 }
 
+function clearAuthStorage() {
+  try {
+    localStorage.removeItem(STUDENT_KEY);
+    localStorage.removeItem(TEACHER_KEY);
+    localStorage.removeItem(TEACHER_ROOM_STATUS_KEY);
+  } catch (_) {}
+}
+
+/**
+ * True when the backend rejected the attached token itself (expired/invalid),
+ * as opposed to a business-level 401. Inspects a cloned body so callers can
+ * still read the original response.
+ */
+async function isSessionRejection(res: Response): Promise<boolean> {
+  try {
+    const data = await res.clone().json();
+    const msg: string = data && typeof data.error === 'string' ? data.error : '';
+    return /session expired|invalid or expired session/i.test(msg);
+  } catch (_) {
+    return false;
+  }
+}
+
 /**
  * fetch() wrapper that attaches the current session's Bearer token.
  * Use for every authenticated API call so requests survive the backend
  * interceptor's token check. Accepts either a path ("/api/...") or an
  * absolute URL.
+ *
+ * If the backend rejects the attached token as expired/invalid, auth storage
+ * is cleared and the app reloads to the sign-in screen. Business-level 401s
+ * (e.g., wrong role) are passed through untouched.
  */
 export async function authFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const headers = new Headers(options.headers || {});
@@ -43,7 +70,14 @@ export async function authFetch(path: string, options: RequestInit = {}): Promis
     headers.set('Authorization', `Bearer ${token}`);
   }
   const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
-  return fetch(url, { ...options, headers });
+  const res = await fetch(url, { ...options, headers });
+  if (res.status === 401 && token && document.visibilityState === 'visible') {
+    if (await isSessionRejection(res)) {
+      clearAuthStorage();
+      window.location.href = window.location.origin + window.location.pathname;
+    }
+  }
+  return res;
 }
 
 export async function extractErrorMessage(res: Response, fallback: string): Promise<string> {
@@ -74,9 +108,5 @@ export async function logout(): Promise<void> {
       // Network failure — local cleanup below still logs the user out
     }
   }
-  try {
-    localStorage.removeItem(STUDENT_KEY);
-    localStorage.removeItem(TEACHER_KEY);
-    localStorage.removeItem(TEACHER_ROOM_STATUS_KEY);
-  } catch (_) {}
+  clearAuthStorage();
 }

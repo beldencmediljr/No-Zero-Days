@@ -66,6 +66,9 @@ public class EmailReportService {
     @Value("${google.oauth2.sender-email:}")
     private String googleSenderEmail;
 
+    @Value("${app.frontend-url:http://localhost:3000}")
+    private String frontendUrl;
+
     private static final String[] MODULES = {
         "M1_MATH", "M1_MATH", "M2_MULTIPLIERS", "M2_MULTIPLIERS",
         "M3_BUREAUCRACY", "M3_BUREAUCRACY", "M4_TRIBUNAL"
@@ -158,10 +161,19 @@ public class EmailReportService {
 
         List<RoomParticipant> participants = roomParticipantRepository.findByRoomOrderByJoinedAtAsc(room);
         List<StudentMetrics> allMetrics = new ArrayList<>();
+        List<String> skippedStudents = new ArrayList<>();
 
         for (RoomParticipant p : participants) {
-            StudentMetrics sm = computeStudentMetrics(room, p.getStudentProfile());
-            allMetrics.add(sm);
+            if (p == null || p.getStudentProfile() == null) continue;
+            try {
+                StudentMetrics sm = computeStudentMetrics(room, p.getStudentProfile());
+                allMetrics.add(sm);
+            } catch (Exception e) {
+                System.err.println("[EmailReportService] Failed to compute metrics for "
+                        + p.getStudentProfile().getStudentNumber() + ": " + e.getMessage());
+                skippedStudents.add(p.getStudentProfile().getFullName()
+                        + " (" + p.getStudentProfile().getStudentNumber() + ")");
+            }
         }
 
         // Sort: completed students first (with triggering student at the very top), then active students
@@ -175,7 +187,7 @@ public class EmailReportService {
             return Integer.compare(b.completedPhasesCount, a.completedPhasesCount);
         });
 
-        String html = buildClassroomHtml(room, allMetrics, triggeringStudent);
+        String html = buildClassroomHtml(room, allMetrics, triggeringStudent, skippedStudents);
 
         Session mailSession = mailSender != null
                 ? mailSender.createMimeMessage().getSession()
@@ -200,7 +212,7 @@ public class EmailReportService {
 
         // Attach official Excel report workbook (.xlsx)
         try {
-            byte[] excelBytes = generateClassroomReportExcel(room, allMetrics);
+            byte[] excelBytes = generateClassroomReportExcel(room, allMetrics, skippedStudents);
             helper.addAttachment(
                 "Classroom_Audit_Report_" + room.getRoomCode() + ".xlsx",
                 new ByteArrayResource(excelBytes),
@@ -238,21 +250,80 @@ public class EmailReportService {
     }
 
     /**
+     * Sends the teacher password reset email. Uses the same dispatch path as
+     * classroom reports (Gmail OAuth2 when configured, SMTP otherwise).
+     */
+    public void sendPasswordResetEmail(String toEmail, String resetToken) throws Exception {
+        String baseUrl = (frontendUrl != null && !frontendUrl.trim().isEmpty())
+                ? frontendUrl.trim().replaceAll("/+$", "") : "http://localhost:3000";
+        String resetLink = baseUrl + "/?reset=" + URLEncoder.encode(resetToken, StandardCharsets.UTF_8);
+
+        boolean hasOAuth = googleRefreshToken != null && !googleRefreshToken.trim().isEmpty() &&
+                           googleClientId != null && !googleClientId.trim().isEmpty() &&
+                           googleClientSecret != null && !googleClientSecret.trim().isEmpty();
+        boolean hasSmtp = mailSenderUsername != null && !mailSenderUsername.trim().isEmpty() &&
+                          mailSenderPassword != null && !mailSenderPassword.trim().isEmpty();
+
+        if (!hasOAuth && !hasSmtp) {
+            throw new IllegalStateException(
+                "Email credentials are not configured in backend/src/main/resources/application.properties. " +
+                "Please configure Google OAuth2 (google.oauth2.refresh-token) or SMTP credentials."
+            );
+        }
+
+        Session mailSession = mailSender != null
+                ? mailSender.createMimeMessage().getSession()
+                : Session.getInstance(new Properties());
+        MimeMessage message = new MimeMessage(mailSession);
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+        String senderAddress = (hasOAuth && googleSenderEmail != null && !googleSenderEmail.trim().isEmpty())
+                ? googleSenderEmail.trim()
+                : (mailSenderUsername != null && !mailSenderUsername.trim().isEmpty() ? mailSenderUsername.trim() : "no-reply@nozerodays.edu");
+
+        helper.setFrom(senderAddress, "No Zero Days Payroll Simulator");
+        helper.setTo(toEmail.trim());
+        helper.setSubject("No Zero Days — Password Reset");
+        helper.setText(
+            "<div style='font-family:Arial,Helvetica,sans-serif;color:#1f2937;'>"
+            + "<h2 style='color:#1d4ed8;'>Password Reset</h2>"
+            + "<p>A password reset was requested for your No Zero Days teacher account.</p>"
+            + "<p>Click the link below to choose a new password. The link expires in 15 minutes.</p>"
+            + "<p><a href='" + resetLink + "' style='display:inline-block;background:#1d4ed8;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;'>Reset my password</a></p>"
+            + "<p style='color:#6b7280;font-size:12px;'>If you did not request this, you can ignore this email — your password has not been changed.</p>"
+            + "</div>", true);
+        message.saveChanges();
+
+        if (hasOAuth) {
+            String accessToken = fetchGoogleAccessToken();
+            sendViaGmailApi(message, accessToken);
+        } else {
+            if (mailSender == null) {
+                throw new IllegalStateException("JavaMailSender bean is not available in Spring context.");
+            }
+            mailSender.send(message);
+        }
+    }
+
+    /**
      * Generates HTML report content directly for browser preview or testing.
      */
     public String generateClassroomReportHtml(Room room) {
         if (room == null) return "<p>Room not found.</p>";
         List<RoomParticipant> participants = roomParticipantRepository.findByRoomOrderByJoinedAtAsc(room);
         List<StudentMetrics> allMetrics = new ArrayList<>();
+        List<String> skippedStudents = new ArrayList<>();
         for (RoomParticipant p : participants) {
             if (p == null || p.getStudentProfile() == null) continue;
             try {
                 allMetrics.add(computeStudentMetrics(room, p.getStudentProfile()));
             } catch (Exception e) {
                 System.err.println("[EmailReportService] Failed to compute metrics for html: " + e.getMessage());
+                skippedStudents.add(p.getStudentProfile().getFullName()
+                        + " (" + p.getStudentProfile().getStudentNumber() + ")");
             }
         }
-        return buildClassroomHtml(room, allMetrics, null);
+        return buildClassroomHtml(room, allMetrics, null, skippedStudents);
     }
 
     private StudentMetrics computeStudentMetrics(Room room, StudentProfile student) {
@@ -617,7 +688,7 @@ public class EmailReportService {
         return Collections.emptyList();
     }
 
-    private String buildClassroomHtml(Room room, List<StudentMetrics> list, StudentProfile triggeringStudent) {
+    private String buildClassroomHtml(Room room, List<StudentMetrics> list, StudentProfile triggeringStudent, List<String> skippedStudents) {
         StringBuilder sb = new StringBuilder();
         int totalEnrolled = list.size();
         long completedCount = list.stream().filter(m -> m.isCompletedAll).count();
@@ -641,6 +712,20 @@ public class EmailReportService {
         sb.append("<div style='flex:1;'><div style='font-size:11px;color:#94a3b8;'>FIRST ATTEMPT PASSED</div><div style='font-size:16px;font-weight:bold;color:#4ade80;'>").append(firstCompletedAllCount).append("/").append(totalEnrolled).append("</div></div>");
         sb.append("<div style='flex:1;'><div style='font-size:11px;color:#94a3b8;'>RE-AUDIT PRACTICE</div><div style='font-size:16px;font-weight:bold;color:#38bdf8;'>").append(reAuditCount).append("/").append(totalEnrolled).append("</div></div>");
         sb.append("</div>");
+
+        // Data Warning Banner: students whose metrics could not be computed
+        if (skippedStudents != null && !skippedStudents.isEmpty()) {
+            sb.append("<div style='background:rgba(250, 204, 21, 0.10);border:1px solid #facc15;border-radius:8px;padding:12px 18px;margin-bottom:25px;'>");
+            sb.append("<div style='font-size:14px;font-weight:bold;color:#facc15;'>⚠️ DATA WARNING — ").append(skippedStudents.size()).append(" STUDENT(S) OMITTED</div>");
+            sb.append("<div style='font-size:12px;color:#cbd5e1;margin-top:4px;'>Metrics could not be computed for the following students, so they are excluded from this report: ");
+            sb.append("<strong>");
+            for (int i = 0; i < skippedStudents.size(); i++) {
+                if (i > 0) sb.append(", ");
+                sb.append(esc(skippedStudents.get(i)));
+            }
+            sb.append("</strong></div>");
+            sb.append("</div>");
+        }
 
         // Excel Attachment Notice
         sb.append("<div style='background:rgba(16, 185, 129, 0.12);border:1px solid #10b981;border-radius:8px;padding:12px 18px;margin-bottom:25px;'>");
@@ -790,21 +875,24 @@ public class EmailReportService {
         if (room == null) throw new IllegalArgumentException("Room cannot be null");
         List<RoomParticipant> participants = roomParticipantRepository.findByRoomOrderByJoinedAtAsc(room);
         List<StudentMetrics> allMetrics = new ArrayList<>();
+        List<String> skippedStudents = new ArrayList<>();
         for (RoomParticipant p : participants) {
             if (p == null || p.getStudentProfile() == null) continue;
             try {
                 allMetrics.add(computeStudentMetrics(room, p.getStudentProfile()));
             } catch (Exception e) {
                 System.err.println("[EmailReportService] Failed to compute metrics for student in room " + room.getRoomCode() + ": " + e.getMessage());
+                skippedStudents.add(p.getStudentProfile().getFullName()
+                        + " (" + p.getStudentProfile().getStudentNumber() + ")");
             }
         }
-        return generateClassroomReportExcel(room, allMetrics);
+        return generateClassroomReportExcel(room, allMetrics, skippedStudents);
     }
 
     /**
      * Generates a multi-sheet Microsoft Excel spreadsheet report (.xlsx) with styled summary, First Attempt grading sheet, Re-Audit mastery sheet, and combined roster.
      */
-    public byte[] generateClassroomReportExcel(Room room, List<StudentMetrics> list) throws Exception {
+    public byte[] generateClassroomReportExcel(Room room, List<StudentMetrics> list, List<String> skippedStudents) throws Exception {
         try (Workbook workbook = new XSSFWorkbook()) {
             DataFormat textFormat = workbook.createDataFormat();
 
@@ -1209,6 +1297,26 @@ public class EmailReportService {
                     rosterSheet.autoSizeColumn(col);
                 } catch (Throwable ignored) {}
                 rosterSheet.setColumnWidth(col, Math.max(rosterSheet.getColumnWidth(col) + 1000, 3600));
+            }
+
+            // DATA WARNINGS sheet: lists students whose metrics could not be computed
+            if (skippedStudents != null && !skippedStudents.isEmpty()) {
+                Sheet warnSheet = workbook.createSheet("DATA WARNINGS");
+                Row wHeader = warnSheet.createRow(0);
+                Cell wc0 = wHeader.createCell(0);
+                wc0.setCellValue("Students omitted (metrics unavailable)");
+                wc0.setCellStyle(headerStyle);
+                int wr = 1;
+                for (String skipped : skippedStudents) {
+                    Row wRow = warnSheet.createRow(wr++);
+                    Cell wcell = wRow.createCell(0);
+                    wcell.setCellValue(skipped);
+                    wcell.setCellStyle(cellStyle);
+                }
+                try {
+                    warnSheet.autoSizeColumn(0);
+                } catch (Throwable ignored) {}
+                warnSheet.setColumnWidth(0, Math.max(warnSheet.getColumnWidth(0) + 1000, 5000));
             }
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

@@ -168,29 +168,44 @@ public class Phase3ValidationService {
             Double fromSubmittedResult = request.getSubmittedResult();
             double userGross = fromGrossPay != null ? fromGrossPay : (fromSubmittedResult != null ? fromSubmittedResult : 0.0);
 
-            double expectedGrossByHourly = hourlyRate * 8.0 * targetDaysPresent;
-            BigDecimal expectedGrossBD = BigDecimal.valueOf(hourlyRate)
+            // Ground truth must come from the registered scenario snapshot.
+            // Client-supplied rates pass checkScenarioConsistency only when the
+            // snapshot holds the same values; legacy snapshots without registered
+            // rates cannot validate gross pay, so force a phase restart instead
+            // of trusting fabricated client parameters.
+            Double snapHourly = null;
+            Double snapDaily = null;
+            Integer snapDays = null;
+            Optional<ScenarioSnapshot> grossSnapOpt = validationService.getScenarioSnapshot(student, "M2_MULTIPLIERS", 1);
+            if (grossSnapOpt.isPresent()) {
+                ScenarioSnapshot grossSnap = grossSnapOpt.get();
+                snapHourly = grossSnap.getHourlyRate();
+                snapDaily = grossSnap.getDailyRate();
+                snapDays = grossSnap.getDaysPresent();
+            }
+            double trustedHourly = (snapHourly != null && snapHourly > 0.0) ? snapHourly
+                    : (snapDaily != null && snapDaily > 0.0) ? snapDaily / 8.0 : 0.0;
+            if (trustedHourly <= 0.0 || snapDays == null || snapDays <= 0) {
+                return validationService.runDrillEngineAndLog(student, request, false, false,
+                        "Validation Error: This phase's registered scenario is missing rate parameters. Please restart the phase.", null, null, false);
+            }
+
+            double expectedGrossByHourly = trustedHourly * 8.0 * snapDays;
+            BigDecimal expectedGrossBD = BigDecimal.valueOf(trustedHourly)
                     .multiply(BigDecimal.valueOf(8.0))
-                    .multiply(BigDecimal.valueOf(targetDaysPresent))
+                    .multiply(BigDecimal.valueOf(snapDays))
                     .setScale(2, RoundingMode.HALF_UP);
             double expectedRounded = expectedGrossBD.doubleValue();
 
-            Double dailyRate = request.getDailyRate();
-            if (dailyRate == null && hourlyRate > 0.0) {
-                dailyRate = hourlyRate * 8.0;
-            }
-            double expectedGrossByDaily = dailyRate != null ? dailyRate * targetDaysPresent : expectedGrossByHourly;
-
             if (Math.abs(userGross - expectedGrossByHourly) <= 0.02
-                    || Math.abs(userGross - expectedRounded) <= 0.02
-                    || Math.abs(userGross - expectedGrossByDaily) <= 0.02) {
+                    || Math.abs(userGross - expectedRounded) <= 0.02) {
                 success = true;
                 message = "Gross Basic Pay verified at ₱" + String.format("%.2f", expectedRounded)
                         + ". Proceed to Step 7 — Establish Synthesis Formula.";
             } else {
                 message = "Gross Pay is incorrect. Review the employee contract file for the correct hourly rate (₱"
-                        + String.format("%.2f", hourlyRate) + ") and multiply by 8 hours and days present ("
-                        + targetDaysPresent + ").";
+                        + String.format("%.2f", trustedHourly) + ") and multiply by 8 hours and days present ("
+                        + snapDays + ").";
                 auditExpected = expectedRounded;
                 auditReceived = userGross;
             }

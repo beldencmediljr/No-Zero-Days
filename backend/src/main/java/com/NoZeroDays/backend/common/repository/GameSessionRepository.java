@@ -27,12 +27,27 @@ public interface GameSessionRepository extends JpaRepository<GameSession, Long> 
         @Param("roomCode") String roomCode
     );
 
+    Optional<GameSession> findFirstByStudentProfileAndRoomCodeIgnoreCaseOrderByIdDesc(
+        StudentProfile studentProfile,
+        String roomCode
+    );
+
+    Optional<GameSession> findFirstByStudentProfileAndRoomCodeIsNullOrderByIdDesc(
+        StudentProfile studentProfile
+    );
+
     default Optional<GameSession> findFirstByStudentProfileAndRoomCodeOrderByIdDesc(
         StudentProfile studentProfile,
         String roomCode
     ) {
-        List<GameSession> list = findAllByStudentProfileAndRoomCodeOrderByIdDesc(studentProfile, roomCode);
-        return (list == null || list.isEmpty()) ? Optional.empty() : Optional.of(list.get(0));
+        // A session tagged with this room must win over any untagged session —
+        // an untagged ACTIVE session (e.g. one minted at registration) has a
+        // higher id and would otherwise shadow the room's own session.
+        Optional<GameSession> tagged = findFirstByStudentProfileAndRoomCodeIgnoreCaseOrderByIdDesc(studentProfile, roomCode);
+        if (tagged.isPresent()) {
+            return tagged;
+        }
+        return findFirstByStudentProfileAndRoomCodeIsNullOrderByIdDesc(studentProfile);
     }
 
     @Modifying

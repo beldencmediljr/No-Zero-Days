@@ -428,6 +428,73 @@ public class RoomController {
     }
 
     // -------------------------------------------------------------------------
+    // 4B. CLOSE ROOM (Archive — non-destructive)
+    // -------------------------------------------------------------------------
+    @PostMapping("/rooms/{roomCode}/close")
+    public ResponseEntity<?> closeRoom(@PathVariable String roomCode, HttpServletRequest request) {
+        Optional<Room> roomOpt = roomRepository.findByRoomCodeIgnoreCase(roomCode);
+        if (roomOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "Room not found: " + roomCode));
+        }
+
+        Room room = roomOpt.get();
+        ResponseEntity<?> ownershipError = requireRoomOwner(room, request);
+        if (ownershipError != null) return ownershipError;
+
+        if ("COMPLETED".equalsIgnoreCase(room.getStatus())) {
+            Map<String, Object> already = new HashMap<>();
+            already.put("success", true);
+            already.put("alreadyClosed", true);
+            already.put("roomCode", room.getRoomCode());
+            already.put("status", "COMPLETED");
+            return ResponseEntity.ok(already);
+        }
+
+        // Archive only: student data, sessions, and attempt history are kept.
+        room.setStatus("COMPLETED");
+        roomRepository.save(room);
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("success", true);
+        resp.put("roomCode", room.getRoomCode());
+        resp.put("status", "COMPLETED");
+        return ResponseEntity.ok(resp);
+    }
+
+    // -------------------------------------------------------------------------
+    // 4C. DELETE ROOM (Owner-only; removes only this room's records)
+    // -------------------------------------------------------------------------
+    @DeleteMapping("/rooms/{roomCode}")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> deleteRoom(@PathVariable String roomCode, HttpServletRequest request) {
+        Optional<Room> roomOpt = roomRepository.findByRoomCodeIgnoreCase(roomCode);
+        if (roomOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "Room not found: " + roomCode));
+        }
+
+        Room room = roomOpt.get();
+        ResponseEntity<?> ownershipError = requireRoomOwner(room, request);
+        if (ownershipError != null) return ownershipError;
+
+        // Cascade is scoped strictly to this room: participants, and the
+        // sessions/attempts tagged with this room's code. Untagged free-play
+        // records and other rooms' data are never touched.
+        List<RoomParticipant> participants = roomParticipantRepository.findByRoomOrderByJoinedAtAsc(room);
+        for (RoomParticipant p : participants) {
+            StudentProfile student = p.getStudentProfile();
+            if (student == null) continue;
+            gameSessionRepository.deleteByStudentProfileAndRoomCode(student, room.getRoomCode());
+            attemptLogRepository.deleteByStudentProfileAndRoomCode(student, room.getRoomCode());
+        }
+        roomParticipantRepository.deleteByRoom(room);
+        roomRepository.delete(room);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Room " + roomCode + " and its classroom records have been deleted."));
+    }
+
+    // -------------------------------------------------------------------------
     // 5. STUDENT JOINS ROOM
     // -------------------------------------------------------------------------
     @PostMapping("/rooms/join")
@@ -862,6 +929,20 @@ public class RoomController {
         if (studentOpt.isEmpty()) return ResponseEntity.ok(Map.of("ok", true));
 
         StudentProfile student = studentOpt.get();
+
+        // N5: only actual participants of a room may enter its phases.
+        // Free-play calls hit /students/phase-enter (no roomCode) and skip this.
+        if (roomCode != null && !roomCode.isBlank()) {
+            Optional<Room> roomOpt = roomRepository.findByRoomCodeIgnoreCase(roomCode.trim());
+            if (roomOpt.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of("error", "Room not found."));
+            }
+            if (roomParticipantRepository.findByRoomAndStudentProfile(roomOpt.get(), student).isEmpty()) {
+                return ResponseEntity.status(403).body(Map.of("error",
+                        "You must be a participant of this room to enter its phases."));
+            }
+        }
+
         Optional<GameSession> sessionOpt =
                 gameSessionRepository.findFirstByStudentProfileAndStatusOrderByIdDesc(student, "ACTIVE");
         if (sessionOpt.isEmpty()) return ResponseEntity.ok(Map.of("ok", true));
@@ -1083,6 +1164,7 @@ public class RoomController {
             LocalDateTime roomStartedAt = room.getStartedAt() != null ? room.getStartedAt() : room.getCreatedAt();
 
             List<Map<String, Object>> studentResults = new ArrayList<>();
+            java.util.List<String> dataErrorStudents = new java.util.ArrayList<>();
 
             // Aggregators for Class Summary & Charts: Combined
             int[] classPhaseCompletedCounts = new int[7];
@@ -1444,8 +1526,17 @@ public class RoomController {
                     if (chosenSeconds != null && chosenSeconds > 0) {
                         reAuditPhaseSeconds = chosenSeconds;
                     } else if (reAuditStart != null) {
+                        // Bound the wall-clock fallback to the most recent run (after
+                        // the last DRILL_RESET barrier) so it never spans days.
+                        LocalDateTime runStart = reAuditStart;
+                        for (int k = reAuditAttempts.size() - 1; k >= 0; k--) {
+                            if (reAuditAttempts.get(k).isDrillReset()) {
+                                runStart = reAuditAttempts.get(k).getAttemptTime();
+                                break;
+                            }
+                        }
                         LocalDateTime endRef = reAuditLastSuccess != null ? reAuditLastSuccess : (reAuditEnd != null ? reAuditEnd : reAuditStart);
-                        long diff = (endRef != null) ? ChronoUnit.SECONDS.between(reAuditStart, endRef) : 0L;
+                        long diff = (endRef != null && !endRef.isBefore(runStart)) ? ChronoUnit.SECONDS.between(runStart, endRef) : 0L;
                         reAuditPhaseSeconds = Math.max(diff, 0L);
                     }
                     studentReAuditTotalSeconds += reAuditPhaseSeconds;
@@ -1621,6 +1712,11 @@ public class RoomController {
                             fallbackMap.put("totalTimeFormatted", "--");
                             fallbackMap.put("phases", Collections.emptyList());
                             fallbackMap.put("hasReAudited", false);
+                            // Placeholder row — flagged so the teacher knows this
+                            // student's real metrics could not be computed.
+                            fallbackMap.put("dataError", true);
+                            fallbackMap.put("errorNote", "Metrics unavailable for this student.");
+                            dataErrorStudents.add(student.getStudentNumber());
                             Map<String, Object> fallbackSub = new HashMap<>();
                             fallbackSub.put("completedPhases", 0);
                             fallbackSub.put("attempts", 0);
@@ -1723,12 +1819,19 @@ public class RoomController {
         response.put("summary", summary);
         response.put("students", studentResults);
         response.put("attemptMode", attemptMode);
+        if (!dataErrorStudents.isEmpty()) {
+            Map<String, Object> warnings = new HashMap<>();
+            warnings.put("count", dataErrorStudents.size());
+            warnings.put("studentNumbers", dataErrorStudents);
+            warnings.put("note", "Metrics for these students could not be computed and are shown as placeholders.");
+            response.put("dataWarnings", warnings);
+        }
         return ResponseEntity.ok(response);
     } catch (Exception e) {
         System.err.println("[RoomController] Unexpected error in getRoomDashboard for room " + roomCode + ": " + e.getMessage());
         e.printStackTrace();
         return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Internal server error: " + e.getMessage()));
+                .body(Map.of("error", "Failed to load the room dashboard. Please try again."));
     }
 }
 
@@ -1947,12 +2050,31 @@ public class RoomController {
     // 13. RE-AUDIT ROOM LEADERBOARD / SPEED RANKINGS
     // -------------------------------------------------------------------------
     @GetMapping("/rooms/{roomCode}/reaudit-rankings")
-    public ResponseEntity<?> getRoomReAuditRankings(@PathVariable String roomCode) {
+    public ResponseEntity<?> getRoomReAuditRankings(@PathVariable String roomCode, HttpServletRequest request) {
         Optional<Room> roomOpt = roomRepository.findByRoomCodeIgnoreCase(roomCode);
         if (roomOpt.isEmpty()) {
             return ResponseEntity.status(404).body(Map.of("error", "Room not found: " + roomCode));
         }
         Room room = roomOpt.get();
+
+        // Rankings expose student names and numbers. Restrict to the room's
+        // teacher or its participants — never anonymous callers.
+        String role = (String) request.getAttribute(AuthInterceptor.ATTR_ROLE);
+        if ("TEACHER".equals(role)) {
+            ResponseEntity<?> ownership = requireRoomOwner(room, request);
+            if (ownership != null) return ownership;
+        } else if ("STUDENT".equals(role)) {
+            String studentNumber = (String) request.getAttribute(AuthInterceptor.ATTR_STUDENT_NUMBER);
+            Optional<StudentProfile> student = studentRepository.findByStudentNumber(studentNumber);
+            boolean isParticipant = student.isPresent()
+                    && roomParticipantRepository.findByRoomAndStudentProfile(room, student.get()).isPresent();
+            if (!isParticipant) {
+                return ResponseEntity.status(403).body(Map.of("error",
+                        "Only participants of this room can view its rankings."));
+            }
+        } else {
+            return ResponseEntity.status(401).body(Map.of("error", "Authentication required."));
+        }
 
         try {
             List<RoomParticipant> participants = roomParticipantRepository.findByRoomOrderByJoinedAtAsc(room);
@@ -2044,12 +2166,24 @@ public class RoomController {
                         if (chosenSeconds != null && chosenSeconds > 0) {
                             fastestSeconds = chosenSeconds;
                         } else if (reAuditStart != null) {
+                            // Legacy logs without recorded seconds: bound the wall-clock
+                            // fallback to the most recent run (after the last DRILL_RESET
+                            // barrier) so rankings never span multiple runs/days.
+                            LocalDateTime runStart = reAuditStart;
+                            for (int k = reAuditAttempts.size() - 1; k >= 0; k--) {
+                                if (reAuditAttempts.get(k).isDrillReset()) {
+                                    runStart = reAuditAttempts.get(k).getAttemptTime();
+                                    break;
+                                }
+                            }
                             LocalDateTime endRef = reAuditLastSuccess != null ? reAuditLastSuccess : (reAuditEnd != null ? reAuditEnd : reAuditStart);
-                            fastestSeconds = Math.max(ChronoUnit.SECONDS.between(reAuditStart, endRef), 0L);
+                            if (endRef != null && !endRef.isBefore(runStart)) {
+                                fastestSeconds = Math.max(ChronoUnit.SECONDS.between(runStart, endRef), 0L);
+                            }
                         }
                     }
 
-                    if (isReAuditCompleted && fastestSeconds > 0) {
+                    if (isReAuditCompleted) {
                         completedReAuditPhasesCount++;
                         totalFastestReAuditSeconds += fastestSeconds;
                     }

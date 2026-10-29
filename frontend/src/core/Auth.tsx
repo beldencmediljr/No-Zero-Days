@@ -22,6 +22,19 @@ export default function Login({ onLoginSuccess, onTeacherCreateRoom }: LoginProp
   const [teacherEmail, setTeacherEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
+
+  // Password recovery: link emailed via /auth/forgot-password carries
+  // ?reset=<token>; presence of the token switches this screen into
+  // the reset form.
+  const [resetToken] = useState<string | null>(
+    () => new URLSearchParams(window.location.search).get('reset')
+  );
+  const [resetDone, setResetDone] = useState(false);
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetConfirm, setResetConfirm] = useState('');
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
 
   const isTeacher = role === 'OM-TEACHER';
 
@@ -35,6 +48,74 @@ export default function Login({ onLoginSuccess, onTeacherCreateRoom }: LoginProp
   const validateTeacherEmail = (email: string) => {
     const gmailRegex = /^[^\s@]+@gmail\.com$/i;
     return gmailRegex.test(email.trim());
+  };
+
+  // Teacher: forgot password (emails a reset link)
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail.trim()) {
+      setError('Please enter your Gmail address.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    setInfo('');
+    try {
+      const res = await authFetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail.trim() })
+      });
+      if (!res.ok) {
+        throw new Error(await extractErrorMessage(res, 'Failed to send reset email.'));
+      }
+      const data = await res.json().catch(() => ({}));
+      setInfo(data.message || 'If a teacher account exists for that email, a password reset link has been sent.');
+      setShowForgot(false);
+      setForgotEmail('');
+    } catch (err: any) {
+      console.error('[Auth] Forgot password error:', err);
+      setError(err.message || 'Server connection error.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Teacher: complete the reset from the emailed link (?reset=<token>)
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetToken) return;
+    if (resetPassword.length < 8) {
+      setError('Password must be at least 8 characters.');
+      return;
+    }
+    if (resetPassword !== resetConfirm) {
+      setError('Passwords do not match.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const res = await authFetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: resetToken, password: resetPassword })
+      });
+      if (!res.ok) {
+        throw new Error(await extractErrorMessage(res, 'Password reset failed.'));
+      }
+      setResetPassword('');
+      setResetConfirm('');
+      setResetDone(true);
+      setInfo('✓ Password has been reset. You can now sign in with your new password.');
+      // Drop the token from the URL so a refresh doesn't reopen this form.
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } catch (err: any) {
+      console.error('[Auth] Reset password error:', err);
+      setError(err.message || 'Server connection error.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Student: Login handler (existing account check)
@@ -413,6 +494,110 @@ export default function Login({ onLoginSuccess, onTeacherCreateRoom }: LoginProp
             <p className="subtitle">Interactive Philippine Payroll Accounting Laboratory</p>
           </div>
 
+          {resetToken && !resetDone ? (
+            <form onSubmit={handleResetPassword} className="auth-form">
+              <div style={{
+                background: 'rgba(251, 191, 36, 0.12)',
+                border: '1px solid #fbbf24',
+                color: '#fbbf24',
+                padding: '12px 14px',
+                borderRadius: '6px',
+                fontSize: '0.85rem',
+                marginBottom: '14px',
+                letterSpacing: '0.5px'
+              }}>
+                ⚠ PASSWORD RESET — Choose a new password for your teacher account.
+              </div>
+              {error && <div className="error-banner">{error}</div>}
+              <div className="input-group">
+                <label>NEW PASSWORD</label>
+                <input
+                  type="password"
+                  placeholder="At least 8 characters"
+                  value={resetPassword}
+                  onChange={(e) => setResetPassword(e.target.value)}
+                  disabled={loading}
+                  className="retro-input"
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
+              <div className="input-group">
+                <label>CONFIRM NEW PASSWORD</label>
+                <input
+                  type="password"
+                  placeholder="Re-enter your new password"
+                  value={resetConfirm}
+                  onChange={(e) => setResetConfirm(e.target.value)}
+                  disabled={loading}
+                  className="retro-input"
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
+              <button type="submit" disabled={loading} className="login-btn">
+                {loading ? 'RESETTING PASSWORD...' : 'RESET PASSWORD >'}
+              </button>
+            </form>
+          ) : showForgot ? (
+            <form onSubmit={handleForgotPassword} className="auth-form">
+              <div style={{
+                background: 'rgba(59, 130, 246, 0.12)',
+                border: '1px solid #3b82f6',
+                color: '#93c5fd',
+                padding: '12px 14px',
+                borderRadius: '6px',
+                fontSize: '0.85rem',
+                marginBottom: '14px',
+                letterSpacing: '0.5px'
+              }}>
+                Enter your teacher Gmail address and we'll email you a password reset link (valid for 15 minutes).
+              </div>
+              {error && <div className="error-banner">{error}</div>}
+              <div className="input-group">
+                <label>TEACHER GMAIL ADDRESS</label>
+                <input
+                  type="email"
+                  placeholder="e.g., teacher@gmail.com"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  disabled={loading}
+                  className="retro-input"
+                  autoComplete="email"
+                  required
+                />
+              </div>
+              <button type="submit" disabled={loading} className="login-btn">
+                {loading ? 'SENDING RESET LINK...' : 'SEND RESET LINK >'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowForgot(false); setError(''); }}
+                disabled={loading}
+                className="logout-btn"
+                style={{ width: '100%', marginTop: '10px' }}
+              >
+                [ BACK TO LOGIN ]
+              </button>
+            </form>
+          ) : (
+          <>
+          {info && (
+            <div style={{
+              background: 'rgba(34, 197, 94, 0.12)',
+              border: '1px solid #22c55e',
+              color: '#4ade80',
+              padding: '10px 14px',
+              borderRadius: '6px',
+              fontSize: '0.85rem',
+              marginBottom: '14px',
+              letterSpacing: '0.5px',
+              textAlign: 'center'
+            }}>
+              {info}
+            </div>
+          )}
+
           {/* Unmerged Login & Sign Up Navigation Tabs */}
           {!upgradePending && (
           <div className="auth-tabs" role="tablist">
@@ -551,9 +736,28 @@ export default function Login({ onLoginSuccess, onTeacherCreateRoom }: LoginProp
                     required={authMode === 'SIGNUP'}
                   />
                   {authMode === 'LOGIN' && (
+                    <>
                     <span style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px', display: 'block' }}>
                       No password yet? Leave this blank to sign in. Entering one here secures and claims your account.
                     </span>
+                    <button
+                      type="button"
+                      onClick={() => { setShowForgot(true); setForgotEmail(teacherEmail); setError(''); }}
+                      disabled={loading}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#60a5fa',
+                        cursor: 'pointer',
+                        fontSize: '0.8rem',
+                        padding: 0,
+                        marginTop: '6px',
+                        textDecoration: 'underline'
+                      }}
+                    >
+                      Forgot password?
+                    </button>
+                    </>
                   )}
                 </div>
 
@@ -742,6 +946,8 @@ export default function Login({ onLoginSuccess, onTeacherCreateRoom }: LoginProp
               </span>
             )}
           </div>
+          )}
+          </>
           )}
         </div>
 

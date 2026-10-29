@@ -225,7 +225,7 @@ public class ValidationController {
         } else {
             profile = studentRepository.save(new StudentProfile(studentNumber, fullName, section));
         }
-        profile.setSessionToken(authService.issueSessionToken());
+        authService.issueSession(profile);
         profile = studentRepository.save(profile);
 
         // NOTE: Do NOT create a GameSession here.
@@ -264,7 +264,7 @@ public class ValidationController {
                 resp.put("role", "STUDENT");
                 return ResponseEntity.ok(resp);
             }
-            profile.setSessionToken(authService.issueSessionToken());
+            authService.issueSession(profile);
             profile = studentRepository.save(profile);
             return ResponseEntity.ok(profile);
         } catch (IllegalArgumentException e) {
@@ -377,7 +377,9 @@ public class ValidationController {
                 for (AttemptLog log : attempts) {
                     if ("system=DRILL_RESET".equals(log.getUserInputData())) {
                         drillResets++;
-                    } else if (!log.isSuccessful()) {
+                    } else if (!log.isSuccessful() && !"RE_AUDIT".equalsIgnoreCase(log.getAttemptType())) {
+                        // failedAttempts tracks the first-attempt stream only, so it
+                        // measures the same set as attemptsCount (1 run + drill resets)
                         failures++;
                     }
                 }

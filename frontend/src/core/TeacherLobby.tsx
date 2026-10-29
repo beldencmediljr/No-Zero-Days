@@ -54,6 +54,20 @@ export default function TeacherLobby({ roomCode, teacherName, teacherEmail, sect
   const [sendingEmailReport, setSendingEmailReport] = useState(false);
   const [emailReportToast, setEmailReportToast] = useState('');
 
+  // Room lifecycle state (archive/delete)
+  const [roomArchived, setRoomArchived] = useState(false);
+  const [archivingRoom, setArchivingRoom] = useState(false);
+  const [deletingRoom, setDeletingRoom] = useState(false);
+  const [roomActionMsg, setRoomActionMsg] = useState('');
+
+  // Change password state
+  const [showChangePw, setShowChangePw] = useState(false);
+  const [currentPw, setCurrentPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [confirmPw, setConfirmPw] = useState('');
+  const [changePwLoading, setChangePwLoading] = useState(false);
+  const [changePwMsg, setChangePwMsg] = useState('');
+
   const generateRandomCode = () => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let code = '';
@@ -90,6 +104,7 @@ export default function TeacherLobby({ roomCode, teacherName, teacherEmail, sect
         // Track the authoritative room status in both directions so a room
         // reset back to WAITING also restores the INITIATE button.
         setSessionActive(data.status === 'ACTIVE');
+        setRoomArchived(data.status === 'COMPLETED');
         if (data.teacherEmail) {
           setCurrentTeacherEmail(data.teacherEmail);
         }
@@ -328,6 +343,104 @@ export default function TeacherLobby({ roomCode, teacherName, teacherEmail, sect
     }
   };
 
+  // Archive (close) the room — non-destructive; all classroom data is kept.
+  const handleArchiveRoom = async () => {
+    if (!window.confirm('Archive this room? The room can no longer be started, but all classroom data is preserved.')) {
+      return;
+    }
+    setArchivingRoom(true);
+    setRoomActionMsg('');
+    try {
+      const res = await authFetch(`/api/rooms/${roomCode}/close`, { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setSessionActive(false);
+        setRoomArchived(true);
+        setRoomActionMsg('✓ Room archived. Classroom data is preserved.');
+      } else {
+        setRoomActionMsg(`✕ ${data.error || 'Failed to archive room.'}`);
+      }
+    } catch (err: any) {
+      setRoomActionMsg(`✕ Error archiving room: ${err.message}`);
+    } finally {
+      setArchivingRoom(false);
+    }
+  };
+
+  // Permanently delete the room and its classroom records. Free-play
+  // (untagged) progress is preserved by the backend.
+  const handleDeleteRoom = async () => {
+    if (!window.confirm(`DELETE room ${roomCode}? This permanently removes the room, its participants, and this room's classroom records. Free-play progress is preserved.`)) {
+      return;
+    }
+    if (!window.confirm('This action CANNOT be undone. Are you absolutely sure you want to permanently delete this room?')) {
+      return;
+    }
+    setDeletingRoom(true);
+    setRoomActionMsg('');
+    try {
+      const res = await authFetch(`/api/rooms/${roomCode}`, { method: 'DELETE' });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        const saved = localStorage.getItem('teacher');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            parsed.roomCode = '';
+            localStorage.setItem('teacher', JSON.stringify(parsed));
+          } catch (_) {}
+        }
+        localStorage.removeItem('teacherRoomStatus');
+        onBack();
+      } else {
+        setRoomActionMsg(`✕ ${data.error || 'Failed to delete room.'}`);
+      }
+    } catch (err: any) {
+      setRoomActionMsg(`✕ Error deleting room: ${err.message}`);
+    } finally {
+      setDeletingRoom(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPw) {
+      setChangePwMsg('✕ Please enter your current password.');
+      return;
+    }
+    if (newPw.length < 8) {
+      setChangePwMsg('✕ New password must be at least 8 characters.');
+      return;
+    }
+    if (newPw !== confirmPw) {
+      setChangePwMsg('✕ New passwords do not match.');
+      return;
+    }
+    setChangePwLoading(true);
+    setChangePwMsg('');
+    try {
+      const res = await authFetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword: currentPw, newPassword: newPw })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setChangePwMsg('✓ Password changed successfully.');
+        setCurrentPw('');
+        setNewPw('');
+        setConfirmPw('');
+        setShowChangePw(false);
+      } else {
+        setChangePwMsg(`✕ ${data.error || 'Failed to change password.'}`);
+      }
+    } catch (err: any) {
+      setChangePwMsg(`✕ Error: ${err.message}`);
+    } finally {
+      setChangePwLoading(false);
+    }
+  };
+
   return (
     <div className="lobby-container">
       <div className="glow-overlay"></div>
@@ -507,6 +620,100 @@ export default function TeacherLobby({ roomCode, teacherName, teacherEmail, sect
                   <span>SECTION: </span><strong>{section || 'N/A'}</strong>
                 </div>
                 <button className="lobby-back-btn" onClick={onBack}>[ EXIT ROOM ]</button>
+              </div>
+
+              {/* Account Settings (change password) */}
+              <div style={{ marginBottom: '15px' }}>
+                <button
+                  type="button"
+                  onClick={() => { setShowChangePw(!showChangePw); setChangePwMsg(''); }}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#60a5fa',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    textDecoration: 'underline',
+                    padding: 0
+                  }}
+                >
+                  {showChangePw ? '▾ HIDE ACCOUNT SETTINGS' : '▸ ACCOUNT SETTINGS (CHANGE PASSWORD)'}
+                </button>
+                {showChangePw && (
+                  <form onSubmit={handleChangePassword} style={{
+                    marginTop: '10px',
+                    background: 'rgba(15, 23, 42, 0.7)',
+                    border: '1px solid #334155',
+                    borderRadius: '6px',
+                    padding: '14px'
+                  }}>
+                    <div style={{ marginBottom: '10px' }}>
+                      <label style={{ display: 'block', color: '#94a3b8', fontSize: '0.75rem', marginBottom: '4px' }}>CURRENT PASSWORD</label>
+                      <input
+                        type="password"
+                        value={currentPw}
+                        onChange={(e) => setCurrentPw(e.target.value)}
+                        disabled={changePwLoading}
+                        style={{ width: '100%', padding: '10px', background: '#0b1120', border: '1px solid #334155', color: '#fff', borderRadius: '4px', boxSizing: 'border-box' }}
+                        autoComplete="current-password"
+                        required
+                      />
+                    </div>
+                    <div style={{ marginBottom: '10px' }}>
+                      <label style={{ display: 'block', color: '#94a3b8', fontSize: '0.75rem', marginBottom: '4px' }}>NEW PASSWORD</label>
+                      <input
+                        type="password"
+                        placeholder="At least 8 characters"
+                        value={newPw}
+                        onChange={(e) => setNewPw(e.target.value)}
+                        disabled={changePwLoading}
+                        style={{ width: '100%', padding: '10px', background: '#0b1120', border: '1px solid #334155', color: '#fff', borderRadius: '4px', boxSizing: 'border-box' }}
+                        autoComplete="new-password"
+                        required
+                      />
+                    </div>
+                    <div style={{ marginBottom: '10px' }}>
+                      <label style={{ display: 'block', color: '#94a3b8', fontSize: '0.75rem', marginBottom: '4px' }}>CONFIRM NEW PASSWORD</label>
+                      <input
+                        type="password"
+                        placeholder="Re-enter your new password"
+                        value={confirmPw}
+                        onChange={(e) => setConfirmPw(e.target.value)}
+                        disabled={changePwLoading}
+                        style={{ width: '100%', padding: '10px', background: '#0b1120', border: '1px solid #334155', color: '#fff', borderRadius: '4px', boxSizing: 'border-box' }}
+                        autoComplete="new-password"
+                        required
+                      />
+                    </div>
+                    {changePwMsg && (
+                      <div style={{
+                        color: changePwMsg.startsWith('✕') ? '#f87171' : '#4ade80',
+                        fontSize: '0.8rem',
+                        marginBottom: '10px',
+                        fontWeight: 'bold'
+                      }}>
+                        {changePwMsg}
+                      </div>
+                    )}
+                    <button
+                      type="submit"
+                      disabled={changePwLoading}
+                      style={{
+                        padding: '9px 16px',
+                        background: '#2563eb',
+                        border: 'none',
+                        color: '#fff',
+                        fontWeight: 'bold',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        letterSpacing: '0.5px'
+                      }}
+                    >
+                      {changePwLoading ? 'CHANGING...' : 'CHANGE PASSWORD >'}
+                    </button>
+                  </form>
+                )}
               </div>
 
               {/* Action Row & Student Counter */}
@@ -724,7 +931,7 @@ export default function TeacherLobby({ roomCode, teacherName, teacherEmail, sect
                   <button
                     className="initiate-btn"
                     onClick={handleInitiate}
-                    disabled={initiating || participantCount === 0 || !roomCode}
+                    disabled={initiating || participantCount === 0 || !roomCode || roomArchived}
                   >
                     {initiating ? 'STARTING SESSION...' : `INITIATE SESSION > (${participantCount} STUDENT${participantCount !== 1 ? 'S' : ''})`}
                   </button>
@@ -777,6 +984,81 @@ export default function TeacherLobby({ roomCode, teacherName, teacherEmail, sect
 
                 </div>
               )}
+
+              {/* Room Lifecycle Controls (owner-only) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
+                {roomArchived && (
+                  <div style={{
+                    background: 'rgba(148, 163, 184, 0.15)',
+                    border: '1px solid #94a3b8',
+                    color: '#cbd5e1',
+                    padding: '10px 14px',
+                    borderRadius: '4px',
+                    fontWeight: 'bold',
+                    fontSize: '0.85rem',
+                    textAlign: 'center',
+                    letterSpacing: '1px'
+                  }}>
+                    📦 THIS ROOM IS ARCHIVED // CLASSROOM DATA PRESERVED
+                  </div>
+                )}
+                {roomActionMsg && (
+                  <div style={{
+                    color: roomActionMsg.startsWith('✕') ? '#f87171' : '#4ade80',
+                    fontSize: '0.85rem',
+                    textAlign: 'center',
+                    fontWeight: 'bold',
+                    padding: '8px 12px',
+                    background: roomActionMsg.startsWith('✕') ? 'rgba(239, 68, 68, 0.12)' : 'rgba(34, 197, 94, 0.12)',
+                    borderRadius: '4px',
+                    border: roomActionMsg.startsWith('✕') ? '1px solid #ef4444' : '1px solid #22c55e'
+                  }}>
+                    {roomActionMsg}
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={handleArchiveRoom}
+                    disabled={archivingRoom || deletingRoom || roomArchived}
+                    style={{
+                      flex: 1,
+                      background: 'rgba(148, 163, 184, 0.15)',
+                      border: '1px solid #94a3b8',
+                      color: '#cbd5e1',
+                      padding: '9px 14px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                      fontWeight: 'bold',
+                      letterSpacing: '0.5px'
+                    }}
+                    title="Archive this room. Data is kept; the room can no longer be started."
+                  >
+                    {archivingRoom ? 'ARCHIVING...' : '📦 ARCHIVE ROOM'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDeleteRoom}
+                    disabled={archivingRoom || deletingRoom}
+                    style={{
+                      flex: 1,
+                      background: 'rgba(239, 68, 68, 0.12)',
+                      border: '1px solid #ef4444',
+                      color: '#f87171',
+                      padding: '9px 14px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                      fontWeight: 'bold',
+                      letterSpacing: '0.5px'
+                    }}
+                    title="Permanently delete this room and its classroom records. Free-play data is preserved."
+                  >
+                    {deletingRoom ? 'DELETING...' : '🗑 DELETE ROOM'}
+                  </button>
+                </div>
+              </div>
             </>
           )}
         </div>

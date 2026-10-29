@@ -26,6 +26,21 @@ public class Teacher {
     @Column(name = "session_token")
     private String sessionToken;
 
+    /** Expiry for the session token. NULL = legacy token (never expires). */
+    private LocalDateTime sessionTokenExpiresAt;
+
+    /** Consecutive failed password attempts (for throttling). */
+    private int failedLoginAttempts = 0;
+
+    /** Lockout deadline set after too many failed attempts; NULL when unlocked. */
+    private LocalDateTime lockedUntil;
+
+    /** One-time password reset token (email flow). */
+    private String resetToken;
+
+    /** Deadline for the password reset token. */
+    private LocalDateTime resetTokenExpiresAt;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -57,6 +72,21 @@ public class Teacher {
 
     public String getSessionToken() { return sessionToken; }
     public void setSessionToken(String sessionToken) { this.sessionToken = sessionToken; }
+
+    public LocalDateTime getSessionTokenExpiresAt() { return sessionTokenExpiresAt; }
+    public void setSessionTokenExpiresAt(LocalDateTime sessionTokenExpiresAt) { this.sessionTokenExpiresAt = sessionTokenExpiresAt; }
+
+    public int getFailedLoginAttempts() { return failedLoginAttempts; }
+    public void setFailedLoginAttempts(int failedLoginAttempts) { this.failedLoginAttempts = failedLoginAttempts; }
+
+    public LocalDateTime getLockedUntil() { return lockedUntil; }
+    public void setLockedUntil(LocalDateTime lockedUntil) { this.lockedUntil = lockedUntil; }
+
+    public String getResetToken() { return resetToken; }
+    public void setResetToken(String resetToken) { this.resetToken = resetToken; }
+
+    public LocalDateTime getResetTokenExpiresAt() { return resetTokenExpiresAt; }
+    public void setResetTokenExpiresAt(LocalDateTime resetTokenExpiresAt) { this.resetTokenExpiresAt = resetTokenExpiresAt; }
 
     public List<Room> getRooms() { return rooms; }
     public void setRooms(List<Room> rooms) { this.rooms = rooms; }

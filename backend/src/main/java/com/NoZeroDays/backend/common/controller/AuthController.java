@@ -77,12 +77,14 @@ public class AuthController {
             String email = (String) httpRequest.getAttribute(AuthInterceptor.ATTR_TEACHER_EMAIL);
             teacherRepository.findByEmailIgnoreCase(email).ifPresent(t -> {
                 t.setSessionToken(null);
+                t.setSessionTokenExpiresAt(null);
                 teacherRepository.save(t);
             });
         } else if ("STUDENT".equals(role)) {
             String studentNumber = (String) httpRequest.getAttribute(AuthInterceptor.ATTR_STUDENT_NUMBER);
             studentRepository.findByStudentNumber(studentNumber).ifPresent(s -> {
                 s.setSessionToken(null);
+                s.setSessionTokenExpiresAt(null);
                 studentRepository.save(s);
             });
         }
@@ -137,12 +139,93 @@ public class AuthController {
                     request.getEffectiveName(),
                     request.getEffectiveEmail(),
                     request.getPassword());
-            profile.setSessionToken(authService.issueSessionToken());
+            authService.issueSession(profile);
             profile = studentRepository.save(profile);
             return ResponseEntity.ok(studentResponse(profile));
         } catch (IllegalArgumentException e) {
             int status = e.getMessage().contains("not found") ? 404 : 400;
             return ResponseEntity.status(status).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * POST /api/auth/forgot-password — teacher account recovery.
+     * Always answers with the same neutral message; a reset link is emailed
+     * only when the account exists.
+     */
+    @PostMapping(value = {"/forgot-password", "/forgot-password/"})
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
+        String email = body != null ? body.get("email") : null;
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Email is required."));
+        }
+        try {
+            boolean sent = authService.requestTeacherPasswordReset(email);
+            if (!sent) {
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "message", "If a teacher account exists for that email, a password reset link has been sent."));
+            }
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "A password reset link has been sent to your email. It expires in "
+                            + AuthService.RESET_TOKEN_MINUTES + " minutes."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            System.err.println("[AuthController] Failed to send password reset email: " + e.getMessage());
+            return ResponseEntity.status(502).body(Map.of("error",
+                    "The password reset email could not be sent. Please contact your administrator."));
+        }
+    }
+
+    /**
+     * POST /api/auth/reset-password — completes the teacher password reset.
+     */
+    @PostMapping(value = {"/reset-password", "/reset-password/"})
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
+        String token = body != null ? body.get("token") : null;
+        String password = body != null ? body.get("password") : null;
+        try {
+            authService.resetTeacherPassword(token, password);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Password has been reset. You can now sign in."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * POST /api/auth/change-password — authenticated password change for
+     * teachers and students. Requires the current password.
+     */
+    @PostMapping(value = {"/change-password", "/change-password/"})
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> body, HttpServletRequest httpRequest) {
+        String currentPassword = body != null ? body.get("currentPassword") : null;
+        String newPassword = body != null ? body.get("newPassword") : null;
+        String role = (String) httpRequest.getAttribute(AuthInterceptor.ATTR_ROLE);
+        try {
+            if ("TEACHER".equals(role)) {
+                String email = (String) httpRequest.getAttribute(AuthInterceptor.ATTR_TEACHER_EMAIL);
+                Optional<Teacher> opt = teacherRepository.findByEmailIgnoreCase(email);
+                if (opt.isEmpty()) {
+                    return ResponseEntity.status(401).body(Map.of("error", "Session not found."));
+                }
+                authService.changeTeacherPassword(opt.get(), currentPassword, newPassword);
+            } else if ("STUDENT".equals(role)) {
+                String studentNumber = (String) httpRequest.getAttribute(AuthInterceptor.ATTR_STUDENT_NUMBER);
+                Optional<StudentProfile> opt = studentRepository.findByStudentNumber(studentNumber);
+                if (opt.isEmpty()) {
+                    return ResponseEntity.status(401).body(Map.of("error", "Session not found."));
+                }
+                authService.changeStudentPassword(opt.get(), currentPassword, newPassword);
+            } else {
+                return ResponseEntity.status(401).body(Map.of("error", "Authentication required."));
+            }
+            return ResponseEntity.ok(Map.of("success", true, "message", "Password changed successfully."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -173,7 +256,7 @@ public class AuthController {
                 resp.put("role", "STUDENT");
                 return ResponseEntity.ok(resp);
             }
-            profile.setSessionToken(authService.issueSessionToken());
+            authService.issueSession(profile);
             profile = studentRepository.save(profile);
             return ResponseEntity.ok(studentResponse(profile));
         } catch (IllegalArgumentException e) {
@@ -238,7 +321,7 @@ public class AuthController {
             profile.setEmail(email);
             profile.setPasswordHash(com.NoZeroDays.backend.common.auth.PasswordHasher.hash(password));
         }
-        profile.setSessionToken(authService.issueSessionToken());
+        authService.issueSession(profile);
         profile = studentRepository.save(profile);
 
         // Ensure student has an active game session

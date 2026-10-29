@@ -19,5 +19,6 @@ public interface RoomParticipantRepository extends JpaRepository<RoomParticipant
     Optional<RoomParticipant> findByRoomAndStudentProfile(Room room, StudentProfile studentProfile);
     void deleteByRoomAndStudentProfile(Room room, StudentProfile studentProfile);
     void deleteByStudentProfile(StudentProfile studentProfile);
+    void deleteByRoom(Room room);
     long countByRoom(Room room);
 }
